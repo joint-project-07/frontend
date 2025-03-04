@@ -11,5 +11,7 @@ function App() {
       </main>
       <Footer />
     </>
+  )
+}
 
 export default App;
