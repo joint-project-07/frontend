@@ -1,0 +1,56 @@
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 20px;
+  width: 100%;
+
+  margin: 0 auto; /* 화면 중앙 정렬 */
+  box-sizing: border-box;
+  background-color: #fff;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+}
+
+.logo {
+  height: 40px; /* 로고 크기 조정 (40px로 설정) */
+  width: auto; /* 비율에 맞게 가로 크기 자동 설정 */
+}
+
+@media (max-width: 1200px) {
+  .logo {
+    height: 30px; /* 작은 화면에서는 30px로 로고 크기 더 줄이기 */
+  }
+}
+
+.nav {
+  display: flex;
+  justify-content: space-around;
+  width: 50%; /* 네비게이션 항목들을 균등하게 배치 */
+}
+
+.nav a {
+  text-decoration: none;
+  color: #333;
+  font-size: 18px;
+  padding: 10px 20px;
+  font-weight: bold;
+}
+
+.nav a:hover {
+  color: #0073e6;
+}
+
+@media (max-width: 1200px) {
+  .nav {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .nav a {
+    margin-bottom: 10px;
+  }
+}
