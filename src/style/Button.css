@@ -1,0 +1,16 @@
+button {/
+    /*버튼 스타일링*/
+      padding: 10px 15px;
+      background-color: #F8C1CC;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background-color 0.3s ease;
+    }
+    
+    button:hover {
+      background-color: #d99fa9;
+    }
+    
