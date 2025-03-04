@@ -12,7 +12,6 @@
 .footer-content {
   display: flex;
   justify-content: space-between;
-  width: 100%;
 }
 
 .footer-content > div {
