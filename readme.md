@@ -99,3 +99,58 @@ frontend
 └─ vite.config.ts
 
 ```
+```
+frontend
+├─ eslint.config.js
+├─ index.html
+├─ package-lock.json
+├─ package.json
+├─ public
+│  └─ vite.svg
+├─ readme.md
+├─ src
+│  ├─ App.css
+│  ├─ App.tsx
+│  ├─ assets
+│  │  ├─ logo.png
+│  │  └─ react.svg
+│  ├─ components
+│  │  ├─ common
+│  │  │  ├─ CardComponent.css
+│  │  │  ├─ CardComponent.tsx
+│  │  │  ├─ Footer.tsx
+│  │  │  ├─ Header.tsx
+│  │  │  └─ Modal.tsx
+│  │  ├─ feature
+│  │  │  └─ feature.tsx
+│  │  └─ layout
+│  │     └─ layout.tsx
+│  ├─ constasnts
+│  │  └─ constants.tsx
+│  ├─ hooks
+│  │  └─ useModal.ts
+│  ├─ index.css
+│  ├─ main.tsx
+│  ├─ pages
+│  │  └─ pages.tsx
+│  ├─ service
+│  │  └─ service.tsx
+│  ├─ store
+│  │  └─ store.tsx
+│  ├─ style
+│  │  ├─ Button.css
+│  │  ├─ Footer.css
+│  │  ├─ Header.css
+│  │  ├─ Input.css
+│  │  └─ Modal.css
+│  ├─ types
+│  │  └─ custom.d.ts
+│  ├─ utils
+│  │  └─ utils.tsx
+│  └─ vite-env.d.ts
+├─ tsconfig.app.json
+├─ tsconfig.json
+├─ tsconfig.node.json
+└─ vite.config.ts
+
+```

@@ -1,18 +1,24 @@
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import "./App.css";
 import Header from "./components/common/Header";
 import Footer from "./components/common/Footer";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import LandingPage from "./pages/LandingPage";
+import MyPage from "./pages/Mypage";
 import UsersSignupForm from "./pages/UsersSignup";
 
 function App() {
   return (
-    <BrowserRouter>
+    <Router>
       <Header />
-      <Routes>
-        <Route path="/UsersSignup" element={<UsersSignupForm />} />
-      </Routes>
+      <main>
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/MyPage" element={<MyPage />} />
+          <Route path="/UsersSignup" element={<UsersSignupForm />} />
+        </Routes>
+      </main>
       <Footer />
-    </BrowserRouter>
+    </Router>
   );
 }
 
