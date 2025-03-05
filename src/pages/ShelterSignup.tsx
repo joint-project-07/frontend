@@ -1,4 +1,5 @@
 import { useState } from "react";
+import "../style/Button.css";
 
 interface FormData {
   name: string;
@@ -36,8 +37,8 @@ const ShelterSignupForm: React.FC = () => {
   };
 
   return (
-    <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold text-center mb-6">보호소 회원가입</h2>
+    <div>
+      <h2>보호소 회원가입</h2>
       <form onSubmit={handleSubmit}>
         <label>보호소 이름</label>
         <input
@@ -46,7 +47,6 @@ const ShelterSignupForm: React.FC = () => {
           placeholder="보호소 이름"
           value={form.name}
           onChange={handleChange}
-          className="w-full p-2 mb-3 border rounded"
           required
         />
         <label>보호소 유형</label>
@@ -56,7 +56,6 @@ const ShelterSignupForm: React.FC = () => {
           placeholder="보호소 유형"
           value={form.shelter_type}
           onChange={handleChange}
-          className="w-full p-2 mb-3 border rounded"
           required
         />
         <label>사업자 등록번호</label>
@@ -66,7 +65,6 @@ const ShelterSignupForm: React.FC = () => {
           placeholder="사업자 등록번호"
           value={form.business_registration_number}
           onChange={handleChange}
-          className="w-full p-2 mb-3 border rounded"
           required
         />
         <label>사업자등록 메일</label>
@@ -76,7 +74,6 @@ const ShelterSignupForm: React.FC = () => {
           placeholder="사업자등록 메일"
           value={form.business_registration_email}
           onChange={handleChange}
-          className="w-full p-2 mb-3 border rounded"
           required
         />
         <label>보호소 주소</label>
@@ -86,7 +83,6 @@ const ShelterSignupForm: React.FC = () => {
           placeholder="보호소 주소"
           value={form.address}
           onChange={handleChange}
-          className="w-full p-2 mb-3 border rounded"
           required
         />
         <label>대표자 명</label>
@@ -96,7 +92,6 @@ const ShelterSignupForm: React.FC = () => {
           placeholder="대표자 명"
           value={form.owner_name}
           onChange={handleChange}
-          className="w-full p-2 mb-3 border rounded"
           required
         />
         <label>보호소 연락처</label>
@@ -106,13 +101,9 @@ const ShelterSignupForm: React.FC = () => {
           placeholder="보호소 연락처"
           value={form.contact_number}
           onChange={handleChange}
-          className="w-full p-2 mb-5 border rounded"
           required
         />
-        <button
-          type="submit"
-          className="w-full bg-blue-500 text-white p-3 rounded hover:bg-blue-600 transition"
-        >
+        <button type="submit" className="button">
           회원가입
         </button>
       </form>
