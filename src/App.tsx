@@ -4,6 +4,7 @@ import Header from "./components/common/Header";
 import Footer from "./components/common/Footer";
 import LandingPage from "./pages/LandingPage";
 import MyPage from "./pages/Mypage";
+import UsersSignupForm from "./pages/UsersSignup";
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/MyPage" element={<MyPage />} />
+          <Route path="/UsersSignup" element={<UsersSignupForm />} />
         </Routes>
       </main>
       <Footer />
