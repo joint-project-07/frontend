@@ -1,9 +1,14 @@
+// src/components/Header.tsx
 import React from "react";
 import { Link } from "react-router-dom";
 import "../../style/Header.css";
 import Logo from "../../assets/logo.png";
+import LoginModal from "./LoginModal";
+import { useAuth } from "../../contexts/AuthContext";
 
 const Header: React.FC = () => {
+  const { isLoggedIn, logout } = useAuth();
+  
   return (
     <header className="header">
       <div className="logo-container">
@@ -15,10 +20,22 @@ const Header: React.FC = () => {
           />
         </Link>
       </div>
+      
       <nav className="nav">
-        <Link to="/">홈</Link>
-        <Link to="/MyPage">마이페이지</Link>
-        <Link to="/volunteer-schedule">봉사 일정</Link>
+        {isLoggedIn ? (
+          // 로그인된 경우 표시할 메뉴
+          <>
+            <Link to="/">홈</Link>
+            <Link to="/MyPage">마이페이지</Link>
+            <Link to="/volunteer-schedule">봉사 일정</Link>
+            <button className="logout-btn" onClick={logout}>
+              로그아웃
+            </button>
+          </>
+        ) : (
+          // 로그인되지 않은 경우 표시할 메뉴
+          <LoginModal />
+        )}
       </nav>
     </header>
   );
