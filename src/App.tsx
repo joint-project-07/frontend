@@ -5,9 +5,11 @@ import Footer from "./components/common/Footer";
 import LandingPage from "./pages/LandingPage";
 import MyPage from "./pages/Mypage";
 import UsersSignupForm from "./pages/UsersSignup";
+import { AuthProvider } from "./contexts/AuthContext";
 
 function App() {
   return (
+    <AuthProvider>
     <Router>
       <Header />
       <main>
@@ -18,7 +20,9 @@ function App() {
         </Routes>
       </main>
       <Footer />
-    </Router>
+      </Router>
+      </AuthProvider>
+    
   );
 }
 

@@ -1,0 +1,19 @@
+.open-modal-btn {
+    background: transparent;
+    color: #333;
+    border: none;
+    padding: 8px 12px;
+    font-size: 15px;
+    cursor: pointer;
+    text-decoration: none;
+    font-weight: 400;
+    transition: color 0.2s ease;
+  }
+  .open-modal-btn:hover {
+    color: #0066cc;
+    text-decoration: underline;
+  }
+  
+  .open-modal-btn:focus {
+    outline: none;
+  }
