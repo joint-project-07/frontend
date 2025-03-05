@@ -1,5 +1,6 @@
 import { useState } from "react";
 import "../style/Button.css";
+import "../style/Input.css";
 
 interface FormData {
   name: string;
@@ -47,6 +48,7 @@ const ShelterSignupForm: React.FC = () => {
           placeholder="보호소 이름"
           value={form.name}
           onChange={handleChange}
+          className="input"
           required
         />
         <label>보호소 유형</label>
@@ -56,6 +58,7 @@ const ShelterSignupForm: React.FC = () => {
           placeholder="보호소 유형"
           value={form.shelter_type}
           onChange={handleChange}
+          className="input"
           required
         />
         <label>사업자 등록번호</label>
@@ -65,6 +68,7 @@ const ShelterSignupForm: React.FC = () => {
           placeholder="사업자 등록번호"
           value={form.business_registration_number}
           onChange={handleChange}
+          className="input"
           required
         />
         <label>사업자등록 메일</label>
@@ -74,6 +78,7 @@ const ShelterSignupForm: React.FC = () => {
           placeholder="사업자등록 메일"
           value={form.business_registration_email}
           onChange={handleChange}
+          className="input"
           required
         />
         <label>보호소 주소</label>
@@ -83,6 +88,7 @@ const ShelterSignupForm: React.FC = () => {
           placeholder="보호소 주소"
           value={form.address}
           onChange={handleChange}
+          className="input"
           required
         />
         <label>대표자 명</label>
@@ -92,6 +98,7 @@ const ShelterSignupForm: React.FC = () => {
           placeholder="대표자 명"
           value={form.owner_name}
           onChange={handleChange}
+          className="input"
           required
         />
         <label>보호소 연락처</label>
@@ -101,6 +108,7 @@ const ShelterSignupForm: React.FC = () => {
           placeholder="보호소 연락처"
           value={form.contact_number}
           onChange={handleChange}
+          className="input"
           required
         />
         <button type="submit" className="button">
