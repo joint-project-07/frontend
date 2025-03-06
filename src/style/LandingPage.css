@@ -1,15 +1,15 @@
-.landing-container {
-  width: 100%;  
-  max-width: 100%; 
-  padding: 0 0px; 
+/* .landing-container {
+  width: 100%;
+  max-width: 100%;
+  padding: 0 0px;
   margin: 0 auto;
-  font-family: 'Circular', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  font-family: "Circular", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
 }
-
 
 .search-bar-container {
   width: 100%;
-  max-width: 850px; 
+  max-width: 850px;
   margin: 0 auto;
   padding: 16px 0;
   position: relative;
@@ -17,29 +17,29 @@
 
 .card-grid {
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 24px; 
+  grid-template-columns: repeat(4, 1fr);
+  gap: 60px;
   width: 100%;
-  margin: 32px 0; 
+  margin: 32px 0;
   border-top: 1px solid #ebebeb; /* 연한 회색 상단 테두리 추가 */
-  padding-top: 36px;
+/* padding-top: 36px;
 }
 
 @media (max-width: 1400px) {
   .card-grid {
-    grid-template-columns: repeat(5, 1fr); 
+    grid-template-columns: repeat(5, 1fr);
   }
 }
 
 @media (max-width: 1200px) {
   .card-grid {
-    grid-template-columns: repeat(4, 1fr); 
+    grid-template-columns: repeat(4, 1fr);
   }
 }
 
 @media (max-width: 900px) {
   .card-grid {
-    grid-template-columns: repeat(3, 1fr); 
+    grid-template-columns: repeat(3, 1fr);
   }
 }
 
@@ -47,14 +47,92 @@
   .card-grid {
     grid-template-columns: repeat(2, 1fr);
   }
-  
+
   .landing-container {
-    padding: 0 16px; 
+    padding: 0 16px;
   }
 }
 
 @media (max-width: 400px) {
   .card-grid {
-    grid-template-columns: 1fr; 
+    grid-template-columns: 1fr;
+  }
+} */
+* {
+  box-sizing: border-box; /* 요소 크기 계산을 정확히 맞추기 */
+  margin: 0;
+  padding: 0;
+}
+
+body,
+html {
+  overflow-x: hidden; /* 가로 스크롤 제거 */
+}
+
+.landing-container {
+  width: 100%;
+  max-width: 100%;
+  padding: 0 40px; /* 좌우 여백 */
+  margin: 0;
+  justify-item: center;
+  font-family: "Circular", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+}
+/* 
+.search-bar-container {
+  width: 100%;
+  max-width: 850px;
+  margin: 0 auto;
+  padding: 16px 0;
+  position: relative;
+} */
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* 기본 4열 */
+  gap: 64px; /* 카드 간격 조절 (기존 60px → 40px) */
+  width: 100%;
+  margin: 32px 0;
+  padding: 36px 120px 0;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-radius: 28px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 16px;
+  text-align: center;
+}
+
+.card img {
+  width: 100%; /* 부모 요소에 맞게 조절 */
+  aspect-ratio: 1 / 1; /* 정사각형 유지 */
+  object-fit: cover; /* 이미지 찌그러짐 방지 */
+  border-radius: 24px;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 1200px) {
+  .card-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 1024px) {
+  .card-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .landing-container {
+    padding: 0 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .card-grid {
+    grid-template-columns: 1fr;
   }
 }

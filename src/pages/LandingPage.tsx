@@ -3,7 +3,6 @@ import Card from "../components/common/Card";
 import "../style/LandingPage.css";
 import SearchBar from "../components/feature/SearchBar";
 
-
 interface CardData {
   id: number;
   image: string;
@@ -22,8 +21,15 @@ const LandingPage: React.FC = () => {
       id: index + 1,
       image: "https://via.placeholder.com/300x200",
       title: `펫모어핸즈 봉사센터 ${index + 1}`,
-      region: index % 3 === 0 ? "서울특별시 종로구" : index % 3 === 1 ? "서울특별시 강남구" : "경기도 고양시",
-      date: `2025.${Math.floor(Math.random() * 12) + 1}.${Math.floor(Math.random() * 28) + 1}`,
+      region:
+        index % 3 === 0
+          ? "서울특별시 종로구"
+          : index % 3 === 1
+          ? "서울특별시 강남구"
+          : "경기도 고양시",
+      date: `2025.${Math.floor(Math.random() * 12) + 1}.${
+        Math.floor(Math.random() * 28) + 1
+      }`,
       volunteerwork: index % 2 === 0 ? "견사청소, 산책" : "급식 봉사, 놀이활동",
     }));
 
@@ -32,10 +38,10 @@ const LandingPage: React.FC = () => {
 
   return (
     <div className="landing-container">
-      <div className="search-bar-container">
-        <SearchBar />
-      </div>
-      
+      {/* <div className="search-bar-container"> */}
+      <SearchBar />
+      {/* </div> */}
+
       {/* 카드 그리드 */}
       <div className="card-grid">
         {cards.map((card) => (
