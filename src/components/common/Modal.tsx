@@ -13,7 +13,6 @@ interface ModalProps {
 const Modal: React.FC<ModalProps> = ({
   isOpen,
   onClose,
-  title,
   children,
   width = '500px',
   height = 'auto'
@@ -63,12 +62,6 @@ const Modal: React.FC<ModalProps> = ({
         className="modal-container" 
         style={{ width, height }}
       >
-        <div className="modal-header">
-          {title && <h3 className="modal-title">{title}</h3>}
-          <button className="modal-close" onClick={onClose}>
-            &times;
-          </button>
-        </div>
         <div className="modal-content">
           {children}
         </div>

@@ -1,19 +1,175 @@
 .open-modal-btn {
-    background: transparent;
-    color: #333;
-    border: none;
-    padding: 8px 12px;
-    font-size: 15px;
-    cursor: pointer;
-    text-decoration: none;
-    font-weight: 400;
-    transition: color 0.2s ease;
-  }
-  .open-modal-btn:hover {
-    color: #0066cc;
-    text-decoration: underline;
+  background-color: transparent;
+  border: 1px solid #e0e0e0;
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.open-modal-btn:hover {
+  background-color: #f5f5f5;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.login-modal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px;
+  width: 100%;
+  max-width: 400px;
+}
+
+.login-modal .logo {
+  width: 150px;
+  height: auto;
+  margin-bottom: 24px;
+}
+
+.login-modal h2 {
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #333;
+}
+
+.login-modal p {
+  font-size: 16px;
+  color: #666;
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+/* 탭 스타일 */
+.tab-container {
+  display: flex;
+  width: 100%;
+  margin-bottom: 24px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.tab {
+  flex: 1;
+  padding: 12px 0;
+  background: none;
+  border: none;
+  font-size: 16px;
+  font-weight: 500;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tab.active {
+  color: #ff9fb0;
+  border-bottom: 2px solid #ff9fb0;
+}
+
+.tab:hover:not(.active) {
+  color: #333;
+}
+
+label {
+  align-self: flex-start;
+  font-size: 14px;
+  color: #333;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.input-field {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 16px;
+  margin-bottom: 16px;
+  transition: border-color 0.2s;
+}
+
+.input-field:focus {
+  border-color: #ff9fb0;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(255, 159, 176, 0.2);
+}
+
+.button-group {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.login-btn, .signup-btn, .kakao-btn {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.login-btn {
+  background-color: #ff9fb0;
+  color: white;
+  border: none;
+}
+
+.login-btn:hover {
+  background-color: #ff8da0;
+}
+
+.signup-btn {
+  background-color: transparent;
+  color: #333;
+  border: 1px solid #e0e0e0;
+}
+
+.signup-btn:hover {
+  background-color: #f5f5f5;
+}
+
+.kakao-btn {
+  background-color: #FEE500;
+  color: #3C1E1E;
+  border: none;
+  margin-bottom: 16px;
+}
+
+.kakao-btn:hover {
+  background-color: #FCDC00;
+}
+
+.extra-links {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  gap: 8px;
+  font-size: 14px;
+  color: #666;
+}
+
+.extra-links span {
+  cursor: pointer;
+}
+
+.extra-links span:not(:nth-child(even)):hover {
+  color: #333;
+  text-decoration: underline;
+}
+
+@media (max-width: 480px) {
+  .login-modal {
+    padding: 24px 16px;
   }
   
-  .open-modal-btn:focus {
-    outline: none;
+  .tab {
+    font-size: 14px;
   }
+}

@@ -18,7 +18,7 @@ const Card: React.FC<CardProps> = ({
 }) => {
   return (
     <div className="card">
-      <img src={dangimg} alt={title} />
+      <img src={dangimg} alt={image} />
       <div>
         <h3>{title}</h3>
         <p>{region}</p>
