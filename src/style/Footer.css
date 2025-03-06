@@ -12,6 +12,7 @@
 .footer-content {
   display: flex;
   justify-content: space-between;
+  width: 100%;
 }
 
 .footer-content > div {
@@ -19,6 +20,9 @@
   margin: 10px 0;
 }
 
+.company-info {
+  padding-left: 40px;
+}
 .copyright {
   text-align: center;
   font-size: 14px;
