@@ -1,5 +1,6 @@
 import React from "react";
-import "./CardComponent.css";
+import "../../style/Card.css";
+import dangimg from "../../assets/dangimg.png";
 
 interface CardProps {
   image: string;
@@ -17,7 +18,7 @@ const Card: React.FC<CardProps> = ({
 }) => {
   return (
     <div className="card">
-      <img src={image} alt={title} />
+      <img src={dangimg} alt={title} />
       <div>
         <h3>{title}</h3>
         <p>{region}</p>
