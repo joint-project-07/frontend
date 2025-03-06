@@ -1,17 +1,27 @@
-import React, { useState } from "react";
+// src/components/LoginModal.tsx
+import React from "react";
 import Modal from "./Modal";
 import logo from "../../assets/logo.png";
+import { useAuth } from "../../contexts/AuthContext";
+import useModal from "../../hooks/useModal";
+import "../../style/LoginModal.css";
 
 const LoginModal: React.FC = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const { login } = useAuth();
+  const { isOpen, open, close } = useModal();
+
+  const handleLogin = () => {
+    login();
+    close();
+  };
 
   return (
     <>
-      <button className="open-modal-btn" onClick={() => setIsModalOpen(true)}>
+      <button className="open-modal-btn" onClick={open}>
         로그인 / 회원가입
       </button>
 
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+      <Modal isOpen={isOpen} onClose={close}>
         <div className="login-modal">
           <img src={logo} alt="펫모어핸즈 로고" className="logo" />
           <h2>반가워요!</h2>
@@ -41,12 +51,16 @@ const LoginModal: React.FC = () => {
 
           {/* 버튼 그룹 */}
           <div className="button-group">
-            <button className="login-btn">로그인</button>
+            <button className="login-btn" onClick={handleLogin}>
+              로그인
+            </button>
             <button className="signup-btn">회원가입 하기</button>
           </div>
 
           {/* 카카오 로그인 */}
-          <button className="kakao-btn">카카오톡으로 시작하기</button>
+          <button className="kakao-btn" onClick={handleLogin}>
+            카카오톡으로 시작하기
+          </button>
 
           {/* 추가 링크 */}
           <div className="extra-links">

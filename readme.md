@@ -154,3 +154,66 @@ frontend
 └─ vite.config.ts
 
 ```
+```
+frontend
+├─ eslint.config.js
+├─ index.html
+├─ package-lock.json
+├─ package.json
+├─ public
+│  └─ vite.svg
+├─ readme.md
+├─ src
+│  ├─ App.css
+│  ├─ App.tsx
+│  ├─ assets
+│  │  ├─ logo.png
+│  │  └─ react.svg
+│  ├─ components
+│  │  ├─ common
+│  │  │  ├─ Card.tsx
+│  │  │  ├─ Footer.tsx
+│  │  │  ├─ Header.tsx
+│  │  │  ├─ LoginModal.tsx
+│  │  │  └─ Modal.tsx
+│  │  ├─ feature
+│  │  │  └─ feature.tsx
+│  │  └─ layout
+│  │     └─ layout.tsx
+│  ├─ contexts
+│  │  └─ AuthContext.tsx
+│  ├─ hooks
+│  │  └─ useModal.ts
+│  ├─ index.css
+│  ├─ main.tsx
+│  ├─ pages
+│  │  ├─ LandingPage.tsx
+│  │  ├─ Mypage.tsx
+│  │  ├─ ShelterSignup.tsx
+│  │  └─ UsersSignup.tsx
+│  ├─ service
+│  │  └─ service.tsx
+│  ├─ store
+│  │  └─ store.tsx
+│  ├─ style
+│  │  ├─ Button.css
+│  │  ├─ Card.css
+│  │  ├─ Footer.css
+│  │  ├─ Header.css
+│  │  ├─ Input.css
+│  │  ├─ LoginModal.css
+│  │  ├─ Modal.css
+│  │  └─ Mypage.css
+│  ├─ types
+│  │  ├─ api
+│  │  │  └─ user.ts
+│  │  └─ custom.d.ts
+│  ├─ utils
+│  │  └─ utils.tsx
+│  └─ vite-env.d.ts
+├─ tsconfig.app.json
+├─ tsconfig.json
+├─ tsconfig.node.json
+└─ vite.config.ts
+
+```
