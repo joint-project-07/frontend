@@ -1,21 +1,60 @@
 .landing-container {
-  max-width: 1200px;
+  width: 100%;  
+  max-width: 100%; 
+  padding: 0 0px; 
   margin: 0 auto;
-  padding: 20px;
+  font-family: 'Circular', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+
+.search-bar-container {
+  width: 100%;
+  max-width: 850px; 
+  margin: 0 auto;
+  padding: 16px 0;
+  position: relative;
 }
 
 .card-grid {
   display: grid;
-  grid-template-columns: repeat(
-    auto-fill,
-    minmax(200px, 1fr)
-  ); /* 최소 250px로 카드 크기 설정 */
-  gap: 20px; /* 카드 간격 설정 */
-  justify-content: center;
-  box-sizing: border-box; /* 전체 너비가 padding을 포함하도록 설정 */
+  grid-template-columns: repeat(6, 1fr);
+  gap: 24px; 
+  width: 100%;
+  margin: 32px 0; 
+  border-top: 1px solid #ebebeb; /* 연한 회색 상단 테두리 추가 */
+  padding-top: 36px;
 }
 
-.card {
-  width: 100%; /* 카드가 그리드 너비에 맞도록 설정 */
-  box-sizing: border-box; /* padding과 border가 카드의 크기를 넘지 않도록 설정 */
+@media (max-width: 1400px) {
+  .card-grid {
+    grid-template-columns: repeat(5, 1fr); 
+  }
+}
+
+@media (max-width: 1200px) {
+  .card-grid {
+    grid-template-columns: repeat(4, 1fr); 
+  }
+}
+
+@media (max-width: 900px) {
+  .card-grid {
+    grid-template-columns: repeat(3, 1fr); 
+  }
+}
+
+@media (max-width: 600px) {
+  .card-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .landing-container {
+    padding: 0 16px; 
+  }
+}
+
+@media (max-width: 400px) {
+  .card-grid {
+    grid-template-columns: 1fr; 
+  }
 }

@@ -1,56 +1,46 @@
+/* Header.css */
 .header {
   display: flex;
-  justify-content: space-between;
+  justify-content: space-between; /* 로고와 네비게이션 사이 공간 최대화 */
   align-items: center;
-  padding: 20px 20px;
-  width: 100%;
-
-  margin: 0 auto; /* 화면 중앙 정렬 */
-  box-sizing: border-box;
+  padding: 0 20px;
+  height: 80px;
   background-color: #fff;
 }
 
 .logo-container {
-  display: flex;
-  align-items: center;
-}
-
-.logo {
-  height: 40px; /* 로고 크기 조정 (40px로 설정) */
-  width: auto; /* 비율에 맞게 가로 크기 자동 설정 */
-}
-
-@media (max-width: 1200px) {
-  .logo {
-    height: 30px; /* 작은 화면에서는 30px로 로고 크기 더 줄이기 */
-  }
+  /* 로고 컨테이너 스타일 */
 }
 
 .nav {
   display: flex;
-  justify-content: space-around;
-  width: 50%; /* 네비게이션 항목들을 균등하게 배치 */
+  align-items: center;
+  gap: 20px; /* 네비게이션 항목 간 간격 */
+  margin-left: auto; /* 이 속성이 네비게이션을 오른쪽으로 밀어냅니다 */
 }
 
 .nav a {
   text-decoration: none;
   color: #333;
-  font-size: 18px;
-  padding: 10px 20px;
-  font-weight: bold;
+  font-weight: 500;
+  transition: color 0.2s;
 }
 
 .nav a:hover {
-  color: #0073e6;
+  color: #ff9fb0; /* 호버 시 색상 변경 */
 }
 
-@media (max-width: 1200px) {
-  .nav {
-    flex-direction: column;
-    align-items: center;
-  }
+.logout-btn {
+  background-color: #ff9fb0;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
 
-  .nav a {
-    margin-bottom: 10px;
-  }
+.logout-btn:hover {
+  background-color: #ff8da0;
 }
