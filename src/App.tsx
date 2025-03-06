@@ -6,23 +6,24 @@ import LandingPage from "./pages/LandingPage";
 import MyPage from "./pages/Mypage";
 import UsersSignupForm from "./pages/UsersSignup";
 import { AuthProvider } from "./contexts/AuthContext";
+import ShelterSignupForm from "./pages/ShelterSignup";
 
 function App() {
   return (
     <AuthProvider>
-    <Router>
-      <Header />
-      <main>
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/MyPage" element={<MyPage />} />
-          <Route path="/UsersSignup" element={<UsersSignupForm />} />
-        </Routes>
-      </main>
-      <Footer />
+      <Router>
+        <Header />
+        <main>
+          <Routes>
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/MyPage" element={<MyPage />} />
+            <Route path="/UsersSignup" element={<UsersSignupForm />} />
+            <Route path="/ShelterSignup" element={<ShelterSignupForm />} />
+          </Routes>
+        </main>
+        <Footer />
       </Router>
-      </AuthProvider>
-    
+    </AuthProvider>
   );
 }
 
