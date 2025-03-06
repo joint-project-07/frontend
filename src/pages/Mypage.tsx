@@ -1,6 +1,40 @@
 import React from "react";
 import { useTabStore } from "../store/TabStore";
+import { useShelterStore } from "../store/ShelterSrore";
 import "../style/MyPage.css";
+
+const ShelterList: React.FC = () => {
+  const { shelterList } = useShelterStore();
+
+  return (
+    <section className="shelter-list">
+      {shelterList.length > 0 ? (
+        shelterList.map((item) => (
+          <div
+            key={item.application_id}
+            className={`shelter-card ${item.status}`}
+          >
+            <img
+              src="/images/shelter.jpg"
+              alt="보호소 이미지"
+              className="shelter-image"
+            />
+            <div className="shelter-info">
+              <h3>{item.shelter_name}</h3>
+              <p>예약 날짜: {item.date}</p>
+              <p>봉사 활동: {item.description}</p>
+              <p className={`status-${item.status}`}>
+                {item.status === "pending" ? "승인 대기" : "승인 완료"}
+              </p>
+            </div>
+          </div>
+        ))
+      ) : (
+        <p>예약 내역이 없습니다.</p>
+      )}
+    </section>
+  );
+};
 
 const TabContent: React.FC = () => {
   const { activeTab } = useTabStore();
@@ -24,7 +58,7 @@ const TabContent: React.FC = () => {
         </div>
       );
     case "shelter":
-      return <section>보호소 승인 대기/완료 정보</section>;
+      return <ShelterList />;
     case "volunteer":
       return <section>봉사활동 이력 정보</section>;
     default:
