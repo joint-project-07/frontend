@@ -4,7 +4,7 @@ import Modal from "./Modal";
 import logo from "../../assets/logo.png";
 import { useAuth } from "../../contexts/AuthContext";
 import useModal from "../../hooks/useModal";
-import "../../style/LoginModal.css"
+import "../../style/LoginModal.css";
 
 const LoginModal: React.FC = () => {
   const { login } = useAuth();
@@ -51,12 +51,16 @@ const LoginModal: React.FC = () => {
 
           {/* 버튼 그룹 */}
           <div className="button-group">
-            <button className="login-btn" onClick={handleLogin}>로그인</button>
+            <button className="login-btn" onClick={handleLogin}>
+              로그인
+            </button>
             <button className="signup-btn">회원가입 하기</button>
           </div>
 
           {/* 카카오 로그인 */}
-          <button className="kakao-btn" onClick={handleLogin}>카카오톡으로 시작하기</button>
+          <button className="kakao-btn" onClick={handleLogin}>
+            카카오톡으로 시작하기
+          </button>
 
           {/* 추가 링크 */}
           <div className="extra-links">

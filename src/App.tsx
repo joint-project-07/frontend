@@ -7,6 +7,7 @@ import MyPage from "./pages/Mypage";
 import UsersSignupForm from "./pages/UsersSignup";
 import { AuthProvider } from "./contexts/AuthContext";
 import ShelterSignupForm from "./pages/ShelterSignup";
+import DetailPage from "./pages/DetailPage";
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
         <main>
           <Routes>
             <Route path="/" element={<LandingPage />} />
+            <Route path="/detail/:id" element={<DetailPage />} />
             <Route path="/MyPage" element={<MyPage />} />
             <Route path="/UsersSignup" element={<UsersSignupForm />} />
             <Route path="/ShelterSignup" element={<ShelterSignupForm />} />

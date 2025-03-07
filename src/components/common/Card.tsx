@@ -8,16 +8,19 @@ interface CardProps {
   region: string;
   date: string;
   volunteerwork: string;
+  onClick?: () => void; // Make sure to include onClick in the props
 }
+
 const Card: React.FC<CardProps> = ({
   image,
   title,
   region,
   date,
   volunteerwork,
+  onClick, // Destructure onClick
 }) => {
   return (
-    <div className="card">
+    <div className="card" onClick={onClick}>
       <img src={dangimg} alt={image} />
       <div>
         <h3>{title}</h3>

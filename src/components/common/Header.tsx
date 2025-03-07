@@ -8,7 +8,7 @@ import { useAuth } from "../../contexts/AuthContext";
 
 const Header: React.FC = () => {
   const { isLoggedIn, logout } = useAuth();
-  
+
   return (
     <header className="header">
       <div className="logo-container">
@@ -20,7 +20,7 @@ const Header: React.FC = () => {
           />
         </Link>
       </div>
-      
+
       <nav className="nav">
         {isLoggedIn ? (
           // 로그인된 경우 표시할 메뉴

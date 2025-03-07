@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import Card from "../components/common/Card";
 import "../style/LandingPage.css";
 import SearchBar from "../components/feature/SearchBar";
+import { useNavigate } from "react-router-dom";
 
 interface CardData {
   id: number;
@@ -14,6 +15,7 @@ interface CardData {
 
 const LandingPage: React.FC = () => {
   const [cards, setCards] = useState<CardData[]>([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Array.from을 사용하여 15개 데이터 생성
@@ -45,7 +47,11 @@ const LandingPage: React.FC = () => {
       {/* 카드 그리드 */}
       <div className="card-grid">
         {cards.map((card) => (
-          <Card key={card.id} {...card} />
+          <Card
+            key={card.id}
+            {...card}
+            onClick={() => navigate(`/detail/${card.id}`)} // ✅ 클릭 시 이동
+          />
         ))}
       </div>
     </div>
