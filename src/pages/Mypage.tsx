@@ -1,7 +1,7 @@
 import React from "react";
 import { useTabStore } from "../store/TabStore";
 import { useShelterStore } from "../store/ShelterStore";
-import "../style/MyPage.css";
+import "../style/Mypage.css"
 import { usePaginationStore } from "../store/CurrentStore";
 
 const ShelterList: React.FC = () => {
