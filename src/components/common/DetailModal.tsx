@@ -1,5 +1,6 @@
 import dogImage from "../../assets/dog-image.png";
 import useModalStore from "../../store/modalStore";
+import "../../style/DetailModal.css";
 
 const DetailModal: React.FC = () => {
   const { isOpen, closeModal } = useModalStore();
