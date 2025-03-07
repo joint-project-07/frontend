@@ -40,9 +40,9 @@ const LandingPage: React.FC = () => {
 
   return (
     <div className="landing-container">
-      <div className="search-bar-container">
-        <SearchBar />
-      </div>
+      {/* <div className="search-bar-container"> */}
+      <SearchBar />
+      {/* </div> */}
 
       {/* 카드 그리드 */}
       <div className="card-grid">

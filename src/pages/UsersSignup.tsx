@@ -1,32 +1,15 @@
-import { useState } from "react";
-
-interface FormData {
-  email: string;
-  password: string;
-  password_confirm: string;
-  name: string;
-  phone_number: string;
-}
+import { useUsersStore } from "../store/UsersStore";
 
 const UsersSignupForm: React.FC = () => {
-  const [form, setForm] = useState<FormData>({
-    email: "",
-    password: "",
-    password_confirm: "",
-    name: "",
-    phone_number: "",
-  });
+  const { form, setForm } = useUsersStore();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setForm({
-      ...form,
-      [name]: value,
-    });
+    setForm({ [name]: value });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault;
+    e.preventDefault();
 
     if (form.password !== form.password_confirm) {
       alert("비밀번호가 일치하지 않습니다.");
@@ -61,7 +44,7 @@ const UsersSignupForm: React.FC = () => {
         />
         <label>비밀번호 확인</label>
         <input
-          type="Password"
+          type="password"
           name="password_confirm"
           placeholder="비밀번호 확인"
           value={form.password_confirm}

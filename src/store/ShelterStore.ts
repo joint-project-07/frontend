@@ -1,5 +1,15 @@
 import { create } from "zustand";
 
+interface FormData {
+  name: string;
+  shelter_type: string;
+  business_registration_number: string;
+  business_registration_email: string;
+  address: string;
+  owner_name: string;
+  contact_number: string;
+}
+
 interface ShelterData {
   application_id: number;
   recruitment_id: number;
@@ -10,11 +20,27 @@ interface ShelterData {
 }
 
 interface ShelterState {
+  form: FormData;
+  setForm: (form: Partial<FormData>) => void;
+
   shelterList: ShelterData[];
   setShelterList: (data: ShelterData[]) => void;
 }
 
 export const useShelterStore = create<ShelterState>((set) => ({
+  form: {
+    name: "",
+    shelter_type: "",
+    business_registration_number: "",
+    business_registration_email: "",
+    address: "",
+    owner_name: "",
+    contact_number: "",
+  },
+  setForm: (newForm) =>
+    set((state) => ({
+      form: { ...state.form, ...newForm },
+    })),
   shelterList: [
     {
       application_id: 12,
