@@ -56,16 +56,15 @@ export interface Shelter {
     created_at: string;
   }
   
-  export interface ShelterSignupResponse extends ApiResponse<{
+  export type ShelterSignupResponse = ApiResponse<{
     user: ShelterUserData;
     shelter: ShelterData;
-  }> {
-  }
+}>;
 
   //일반로그인
   export interface LoginRequest {
     email: string;
-    passsword: string;
+    password: string;
   }
 
   export interface LoginResponse {
