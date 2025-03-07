@@ -3,7 +3,6 @@
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
-  min-height: 100vh;
 }
 
 .mypage-content {
@@ -57,4 +56,44 @@
 
 .info-button:last-child {
   margin-bottom: 50px;
+}
+
+.shelter-card,
+.volunteer-card {
+  display: flex;
+  flex-direction: row;  /* 가로 배치 */
+  justify-content: space-between; /* 요소들 사이 간격 조정 */
+  align-items: center;  /* 세로 중앙 정렬 */
+  width: 100%;
+  gap: 20px; /* 요소 간 간격 */
+  border: 1px solid #ddd;
+  padding: 16px;
+  margin: 12px 0;
+  border-radius: 8px;
+}
+
+.shelter-info {
+  display: flex;
+  flex-direction: row;  /* 가로 배치 */
+  justify-content: space-between; /* 요소들 사이 간격 조정 */
+  align-items: center;  /* 세로 중앙 정렬 */
+  width: 100%;
+  gap: 20px; /* 요소 간 간격 */
+  text-align: center;
+  margin-top: 10px;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center; /* 중앙 정렬 */
+  align-items: center;
+  margin-top: 16px;
+  gap: 8px; /* 버튼 간격 */
+}
+
+.shelter-logo {
+  display: block;
+  margin: 0 auto 30px; /* 위쪽 여백 0, 아래쪽 여백 30px */
+  width: 150px; /* 크기 조정 */
+  height: auto;
 }
