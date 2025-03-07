@@ -1,7 +1,7 @@
 import React from "react";
 import { useTabStore } from "../store/TabStore";
 import { useShelterStore } from "../store/ShelterStore";
-import "../style/MyPage.css";
+import "../style/Mypage.css";
 import { usePaginationStore } from "../store/CurrentStore";
 
 const ShelterList: React.FC = () => {
@@ -25,7 +25,10 @@ const ShelterList: React.FC = () => {
           {shelterList
             .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
             .map((item) => (
-              <div key={item.application_id} className={`shelter-card ${item.status}`}>
+              <div
+                key={item.application_id}
+                className={`shelter-card ${item.status}`}
+              >
                 <img
                   src="/images/shelter.jpg"
                   alt={`${item.shelter_name} 보호소 이미지`}
