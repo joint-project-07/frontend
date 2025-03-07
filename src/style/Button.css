@@ -1,8 +1,5 @@
-button {/
-    /*버튼 스타일링*/
+button {
       padding: 10px 15px;
-      background-color: #F8C1CC;
-      color: white;
       border: none;
       border-radius: 5px;
       cursor: pointer;

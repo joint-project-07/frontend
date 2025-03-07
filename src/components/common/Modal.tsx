@@ -62,9 +62,9 @@ const Modal: React.FC<ModalProps> = ({
         className="modal-container" 
         style={{ width, height }}
       >
-        <div className="modal-content">
+        
           {children}
-        </div>
+      
       </div>
     </div>
   );

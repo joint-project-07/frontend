@@ -117,7 +117,7 @@
 
 .nav-button {
   position: absolute;
-  top: -120px;
+  top: -268px;
   background: transparent;  
   border: none;             
   width: 32px;
@@ -132,12 +132,12 @@
 }
 
 .nav-button.prev {
-  left: -22px;
+  left: -10px;
   
 }
 
 .nav-button.next {
-  right: -22px;
+  right: -10px;
 }
 
 .action-buttons {
