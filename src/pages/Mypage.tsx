@@ -4,8 +4,25 @@ import { useShelterStore } from "../store/ShelterStore";
 import "../style/MyPage.css";
 import { usePaginationStore } from "../store/CurrentStore";
 
-const ShelterList: React.FC = () => {
-  const { shelterList } = useShelterStore();
+interface ShelterItem {
+  application_id: number;
+  shelter_name: string;
+  date: string;
+  description: string;
+  status: string;
+}
+
+interface ListProps {
+  list: ShelterItem[];
+  renderItem: (item: ShelterItem) => React.ReactNode;
+  emptyMessage: string;
+}
+
+const PaginatedList: React.FC<ListProps> = ({
+  list,
+  renderItem,
+  emptyMessage,
+}) => {
   const { currentPage, itemsPerPage, totalPages, nextPage, prevPage, setPage } =
     usePaginationStore();
 
@@ -17,31 +34,16 @@ const ShelterList: React.FC = () => {
     { length: endPage - startPage + 1 },
     (_, i) => startPage + i
   );
+  const slicedList = list.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   return (
-    <section className="shelter-list">
-      {shelterList.length > 0 ? (
+    <section>
+      {slicedList.length > 0 ? (
         <>
-          {shelterList
-            .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
-            .map((item) => (
-              <div key={item.application_id} className={`shelter-card ${item.status}`}>
-                <img
-                  src="/images/shelter.jpg"
-                  alt={`${item.shelter_name} 보호소 이미지`}
-                  className="shelter-image"
-                />
-                <div className="shelter-info">
-                  <h3>{item.shelter_name}</h3>
-                  <p>예약 날짜: {item.date}</p>
-                  <p>봉사 활동: {item.description}</p>
-                  <p className={`status-${item.status}`}>
-                    {item.status === "pending" ? "승인 대기" : "승인 완료"}
-                  </p>
-                </div>
-              </div>
-            ))}
-
+          {slicedList.map(renderItem)}
           <div>
             <button onClick={prevPage} disabled={currentPage === 1}>
               이전
@@ -61,9 +63,63 @@ const ShelterList: React.FC = () => {
           </div>
         </>
       ) : (
-        <p>예약 내역이 없습니다.</p>
+        <p>{emptyMessage}</p>
       )}
     </section>
+  );
+};
+
+const ShelterList: React.FC = () => {
+  const { shelterList } = useShelterStore();
+
+  return (
+    <PaginatedList
+      list={shelterList}
+      renderItem={(item) => (
+        <div
+          key={item.application_id}
+          className={`shelter-card ${item.status}`}
+        >
+          <img
+            src="/images/shelter.jpg"
+            alt={`${item.shelter_name} 보호소 이미지`}
+            className="shelter-image"
+          />
+          <div className="shelter-info">
+            <h3>{item.shelter_name}</h3>
+            <p>예약 날짜: {item.date}</p>
+            <p>봉사 활동: {item.description}</p>
+            <p className={`status-${item.status}`}>
+              {item.status === "pending" ? "승인 대기" : "승인 완료"}
+            </p>
+          </div>
+        </div>
+      )}
+      emptyMessage="예약 내역이 없습니다."
+    />
+  );
+};
+
+const VolunteerHistory: React.FC = () => {
+  const { shelterList } = useShelterStore();
+
+  return (
+    <PaginatedList
+      list={shelterList}
+      renderItem={(item) => (
+        <div key={item.application_id} className="volunteer-card">
+          <h3>{item.shelter_name}</h3>
+          <p>예약 날짜: {item.date}</p>
+          <p>봉사 활동: {item.description}</p>
+          <button
+            onClick={() => alert(`${item.shelter_name} 만족도 조사 완료!`)}
+          >
+            만족도 조사
+          </button>
+        </div>
+      )}
+      emptyMessage="봉사활동 이력이 없습니다."
+    />
   );
 };
 
@@ -91,7 +147,7 @@ const TabContent: React.FC = () => {
     case "shelter":
       return <ShelterList />;
     case "volunteer":
-      return <section>봉사활동 이력 정보</section>;
+      return <VolunteerHistory />;
     default:
       return null;
   }
