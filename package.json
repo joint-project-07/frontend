@@ -5,9 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
-    "lint": "eslint .",
-    "preview": "vite preview"
+    "build": "react-scripts build",
+    "lint":  "eslint src --ext .ts,.tsx",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "test": "react-scripts test --watchAll=false"
   },
   "dependencies": {
     "dayjs": "^1.11.13",
