@@ -1,4 +1,3 @@
-// src/contexts/AuthContext.tsx
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 interface AuthContextType {
@@ -7,8 +6,6 @@ interface AuthContextType {
   logout: () => void;
 }
 
-const AuthContext = createContext<AuthContextType | null>(null);
-
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
@@ -16,6 +13,8 @@ export const useAuth = () => {
   }
   return context;
 };
+
+export const AuthContext = createContext<AuthContextType | null>(null);
 
 interface AuthProviderProps {
   children: ReactNode;

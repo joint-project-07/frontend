@@ -36,7 +36,7 @@ const SearchRange: React.FC<TimeRangePickerProps> = ({ onSelectRange, onClose })
     if (startTime && !selectingEndTime) {
       setSelectingEndTime(true);
     }
-  }, [startTime]);
+  }, [startTime, selectingEndTime]);
 
   // 시간 선택 처리
   const handleTimeSelect = (time: string, isStartTime: boolean) => {

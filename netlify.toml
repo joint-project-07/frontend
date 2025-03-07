@@ -1,0 +1,59 @@
+[build]
+  base = "/"
+  
+  publish = "build"
+  
+  command = "npm run build"
+
+[context.production]
+  environment = { NODE_VERSION = "18.x", NPM_VERSION = "9.x" }
+
+[context.deploy-preview]
+  command = "npm run build && npm run preview"
+
+[context.branch-deploy]
+  command = "npm run build"
+
+[context.develop]
+  command = "npm run build"
+  environment = { NODE_VERSION = "18.x", NPM_VERSION = "9.x" }
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[[headers]]
+  for = "/*"
+    [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[functions]
+  directory = "netlify/functions"
+
+[build.processing]
+  skip_processing = false
+
+[build.processing.css]
+  bundle = true
+  minify = true
+
+[build.processing.js]
+  bundle = true
+  minify = true
+
+[build.processing.html]
+  pretty_urls = true
+
+[build.processing.images]
+  compress = true
+
+[[plugins]]
+  package = "@netlify/plugin-lighthouse"
+
+[dev]
+  command = "npm run dev"
+  port = 8888
+  targetPort = 3000
+  publish = "build"
+  framework = "#custom"
