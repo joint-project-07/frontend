@@ -10,7 +10,7 @@ const DetailPage: React.FC = () => {
   const selectedDate = useStore((state) => state.selectedDate);
   const selectedTime = useStore((state) => state.selectedTime);
   const setSelectedTime = useStore((state) => state.setSelectedTime);
-  const { openModal, closeModal } = useModalStore(); // ✅ Zustand 모달 상태 사용
+  const { openModal } = useModalStore(); // ✅ Zustand 모달 상태 사용
 
   const handleTimeSelect = (time: string) => {
     setSelectedTime(time);
