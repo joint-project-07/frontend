@@ -1,0 +1,201 @@
+.institution-info {
+  display: flex;
+  justify-content: space-between; /* 왼쪽, 오른쪽 영역을 띄워줌 */
+  gap: 20px; /* 두 영역 사이에 간격을 추가 */
+  margin-top: 30px;
+  flex-wrap: wrap; /* 화면이 줄어들 때 wrap으로 자동 줄바꿈 */
+}
+
+.institution-left,
+.institution-right {
+  flex: 1; /* 왼쪽과 오른쪽 영역을 균등하게 분배 */
+  border-radius: 16px;
+  padding: 20px;
+  background-color: #ffffff; /* 배경 색상 */
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* 그림자 추가 */
+  text-align: center; /* 내용 중앙 정렬 */
+}
+
+.institution-left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  place-content: center;
+}
+
+.institution-right {
+  min-width: 250px; /* 크기 고정 */
+}
+
+/* 이미지 스타일 */
+.institution-images {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+  margin-bottom: 20px;
+}
+
+.institution-images img {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  object-fit: cover; /* 이미지 비율 유지하면서 자르기 */
+}
+
+/* 화살표 버튼 스타일 */
+.institution-images .prev-btn,
+.institution-images .next-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  padding: 10px;
+  border: none;
+  cursor: pointer;
+  font-size: 20px;
+}
+
+.institution-images .prev-btn {
+  left: 10px;
+}
+
+.institution-images .next-btn {
+  right: 10px;
+}
+
+/* 보호소 정보 스타일 */
+.volunteer-info {
+  margin-top: 20px;
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-radius: 16px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.volunteer-info h2 {
+  color: #e91e63;
+}
+
+.volunteer-info ul {
+  list-style-type: disc;
+  margin-left: 20px;
+}
+
+.volunteer-info p {
+  font-size: 16px;
+  margin-top: 10px;
+}
+
+/* 봉사자 리스트 */
+.volunteer-list {
+  display: flex; /* 리스트가 보이도록 수정 */
+  flex-direction: column;
+  gap: 10px;
+  min-height: 200px; /* 높이 기본값 설정 */
+  overflow: visible; /* 숨겨지지 않도록 설정 */
+  margin-top: 30px;
+}
+
+.volunteer-item {
+  display: flex;
+  align-items: center;
+  background: #f0f0f0;
+  padding: 10px;
+  border-radius: 10px;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.profile-pic {
+  width: 40px;
+  height: 40px;
+  background: #f5a9b8;
+  border-radius: 50%;
+}
+
+.user-info {
+  flex: 1;
+  margin-left: 10px;
+}
+
+.status {
+  font-weight: bold;
+}
+
+/* 봉사자 상태별 색상 */
+.status.승인 {
+  color: #4caf50;
+}
+
+.status.반려 {
+  color: #f44336;
+}
+
+.status.대기 {
+  color: #ff9800;
+}
+
+/* 승인/반려 버튼 */
+.buttons button {
+  margin-left: 5px;
+  padding: 5px 10px;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.approve {
+  background: #4caf50;
+  color: white;
+}
+
+.reject {
+  background: #f8c8d4; /* 부드러운 핑크색 */
+  color: white;
+}
+
+/* 반응형 */
+@media (max-width: 1200px) and (min-width: 1024px) {
+  .institution-left,
+  .institution-right {
+    flex: 1 1 45%; /* 각 영역의 크기를 45%로 설정하여 좌우 공간을 유지 */
+    width: 45%;
+  }
+
+  .institution-images img {
+    width: 90%; /* 이미지는 90%로 설정해서 충분히 공간을 확보 */
+    margin: 0 auto; /* 중앙 정렬 */
+  }
+}
+
+@media (max-width: 768px) and (min-width: 680px) {
+  .institution-left,
+  .institution-right {
+    flex: 1 1 100%; /* 각 영역이 100% 너비를 차지하도록 설정 */
+    width: 100%;
+  }
+
+  .institution-images img {
+    width: 90%; /* 모바일에서도 이미지 크기 제한 */
+    height: auto;
+    margin: 0 auto; /* 중앙 정렬 */
+  }
+}
+
+@media (max-width: 680px) {
+  .institution-info {
+    flex-direction: column; /* 세로로 정렬 */
+    gap: 10px;
+  }
+
+  .institution-left,
+  .institution-right {
+    width: 100%; /* 두 영역이 세로로 배치되도록 100% 너비를 차지 */
+  }
+
+  .institution-images img {
+    width: 100%; /* 모바일 화면에서는 이미지가 화면 크기에 맞게 꽉 차도록 */
+    height: auto;
+  }
+}
