@@ -14,19 +14,16 @@ const InstitutionDetailPage = () => {
   const [volunteers, setVolunteers] = useState<Volunteer[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0); // 현재 이미지 인덱스 상태
 
-  console.log("기관 ID:", institutionId); // 기관 ID 확인
-  if (!institutionId) return <p>기관 정보를 불러올 수 없습니다.</p>; // 기관 ID 없을 때 메시지 표시
-
-  // 가짜 데이터 로딩 (목업 데이터로 대체)
   useEffect(() => {
-    console.log("봉사자 목록 불러오기...");
+    if (!institutionId) return;
 
-    setVolunteers([
+    const data: Volunteer[] = [
       { id: 1, name: "홍길동", phone: "010-1234-5678", status: "대기" },
       { id: 2, name: "김철수", phone: "010-5678-1234", status: "대기" },
       { id: 3, name: "이영희", phone: "010-9876-5432", status: "승인" },
-    ]);
-  }, []); // 페이지 로딩 시 한 번만 실행
+    ];
+    setVolunteers(data);
+  }, [institutionId]);
 
   const handleStatusChange = (id: number, status: "승인" | "반려") => {
     setVolunteers((prev) =>
