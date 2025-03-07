@@ -8,6 +8,8 @@ import UsersSignupForm from "./pages/UsersSignup";
 import { AuthProvider } from "./contexts/AuthContext";
 import ShelterSignupForm from "./pages/ShelterSignup";
 import DetailPage from "./pages/DetailPage";
+import InstitutionDetailPage from "./pages/InstitutionDetailPage";
+import VolunteerScheduleForm from "./pages/VolunteerScheduleForm";
 
 function App() {
   return (
@@ -21,6 +23,14 @@ function App() {
             <Route path="/MyPage" element={<MyPage />} />
             <Route path="/UsersSignup" element={<UsersSignupForm />} />
             <Route path="/ShelterSignup" element={<ShelterSignupForm />} />
+            <Route
+              path="volunteer-schedule"
+              element={<VolunteerScheduleForm />}
+            />
+            <Route
+              path="/institution/:institutionId"
+              element={<InstitutionDetailPage />}
+            />
           </Routes>
         </main>
         <Footer />

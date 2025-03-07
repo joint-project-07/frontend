@@ -26,6 +26,8 @@ const Header: React.FC = () => {
           // 로그인된 경우 표시할 메뉴
           <>
             <Link to="/MyPage">마이페이지</Link>
+            <Link to="/institution/:institutionId">test</Link>
+            <Link to="/volunteer-schedule">test2</Link>
             <button className="logout-btn" onClick={logout}>
               로그아웃
             </button>

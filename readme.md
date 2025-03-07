@@ -24,33 +24,33 @@ export default tseslint.config({
   languageOptions: {
     // other options...
     parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
+      project: ["./tsconfig.node.json", "./tsconfig.app.json"],
       tsconfigRootDir: import.meta.dirname,
     },
   },
-})
+});
 ```
 
 You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
 
 ```js
 // eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+import reactX from "eslint-plugin-react-x";
+import reactDom from "eslint-plugin-react-dom";
 
 export default tseslint.config({
   plugins: {
     // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
+    "react-x": reactX,
+    "react-dom": reactDom,
   },
   rules: {
     // other rules...
     // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
+    ...reactX.configs["recommended-typescript"].rules,
     ...reactDom.configs.recommended.rules,
   },
-})
+});
 ```
 
 ```
@@ -66,118 +66,21 @@ frontend
 │  ├─ App.css
 │  ├─ App.tsx
 │  ├─ assets
-│  │  └─ react.svg
-│  ├─ components
-│  │  ├─ common
-│  │  │  └─ common.jsx
-│  │  ├─ feature
-│  │  │  └─ feature.tsx
-│  │  └─ layout
-│  │     └─ layout.tsx
-│  ├─ constasnts
-│  │  └─ constants.tsx
-│  ├─ hooks
-│  │  └─ hooks.tsx
-│  ├─ index.css
-│  ├─ main.tsx
-│  ├─ pages
-│  │  └─ pages.tsx
-│  ├─ service
-│  │  └─ service.tsx
-│  ├─ store
-│  │  └─ store.tsx
-│  ├─ style
-│  │  └─ style.css
-│  ├─ types
-│  │  └─ custom.d.ts
-│  ├─ utils
-│  │  └─ utils.tsx
-│  └─ vite-env.d.ts
-├─ tsconfig.app.json
-├─ tsconfig.json
-├─ tsconfig.node.json
-└─ vite.config.ts
-
-```
-```
-frontend
-├─ eslint.config.js
-├─ index.html
-├─ package-lock.json
-├─ package.json
-├─ public
-│  └─ vite.svg
-├─ readme.md
-├─ src
-│  ├─ App.css
-│  ├─ App.tsx
-│  ├─ assets
-│  │  ├─ logo.png
-│  │  └─ react.svg
-│  ├─ components
-│  │  ├─ common
-│  │  │  ├─ CardComponent.css
-│  │  │  ├─ CardComponent.tsx
-│  │  │  ├─ Footer.tsx
-│  │  │  ├─ Header.tsx
-│  │  │  └─ Modal.tsx
-│  │  ├─ feature
-│  │  │  └─ feature.tsx
-│  │  └─ layout
-│  │     └─ layout.tsx
-│  ├─ constasnts
-│  │  └─ constants.tsx
-│  ├─ hooks
-│  │  └─ useModal.ts
-│  ├─ index.css
-│  ├─ main.tsx
-│  ├─ pages
-│  │  └─ pages.tsx
-│  ├─ service
-│  │  └─ service.tsx
-│  ├─ store
-│  │  └─ store.tsx
-│  ├─ style
-│  │  ├─ Button.css
-│  │  ├─ Footer.css
-│  │  ├─ Header.css
-│  │  ├─ Input.css
-│  │  └─ Modal.css
-│  ├─ types
-│  │  └─ custom.d.ts
-│  ├─ utils
-│  │  └─ utils.tsx
-│  └─ vite-env.d.ts
-├─ tsconfig.app.json
-├─ tsconfig.json
-├─ tsconfig.node.json
-└─ vite.config.ts
-
-```
-```
-frontend
-├─ eslint.config.js
-├─ index.html
-├─ package-lock.json
-├─ package.json
-├─ public
-│  └─ vite.svg
-├─ readme.md
-├─ src
-│  ├─ App.css
-│  ├─ App.tsx
-│  ├─ assets
+│  │  ├─ dangimg.png
 │  │  ├─ logo.png
 │  │  └─ react.svg
 │  ├─ components
 │  │  ├─ common
 │  │  │  ├─ Card.tsx
+│  │  │  ├─ DetailModal.tsx
 │  │  │  ├─ Footer.tsx
 │  │  │  ├─ Header.tsx
 │  │  │  ├─ LoginModal.tsx
 │  │  │  └─ Modal.tsx
 │  │  ├─ feature
-│  │  │  └─ feature.tsx
+│  │  │  ├─ SearchBar.tsx
+│  │  │  ├─ SearchRange.tsx
+│  │  │  └─ Searchdate.tsx
 │  │  └─ layout
 │  │     └─ layout.tsx
 │  ├─ contexts
@@ -187,6 +90,8 @@ frontend
 │  ├─ index.css
 │  ├─ main.tsx
 │  ├─ pages
+│  │  ├─ DetailPage.tsx
+│  │  ├─ InstitutionDetailPage.tsx
 │  │  ├─ LandingPage.tsx
 │  │  ├─ Mypage.tsx
 │  │  ├─ ShelterSignup.tsx
@@ -194,16 +99,26 @@ frontend
 │  ├─ service
 │  │  └─ service.tsx
 │  ├─ store
-│  │  └─ store.tsx
+│  │  ├─ CurrentStore.ts
+│  │  ├─ Detail.ts
+│  │  ├─ ShelterStore.ts
+│  │  ├─ TabStore.ts
+│  │  └─ UsersStore.ts
 │  ├─ style
 │  │  ├─ Button.css
 │  │  ├─ Card.css
+│  │  ├─ DetailPage.css
 │  │  ├─ Footer.css
 │  │  ├─ Header.css
 │  │  ├─ Input.css
+│  │  ├─ InstitutionDetailPage.css
+│  │  ├─ LandingPage.css
 │  │  ├─ LoginModal.css
 │  │  ├─ Modal.css
-│  │  └─ Mypage.css
+│  │  ├─ Mypage.css
+│  │  ├─ SearchBar.css
+│  │  ├─ SearchRange.css
+│  │  └─ Searchdate.css
 │  ├─ types
 │  │  ├─ api
 │  │  │  └─ user.ts
