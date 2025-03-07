@@ -1,10 +1,6 @@
 import React from "react";
 import { useTabStore } from "../store/TabStore";
 import { useShelterStore } from "../store/ShelterStore";
-<<<<<<< HEAD
-import "../style/Mypage.css"
-=======
->>>>>>> f0bad7d74ccdf7881b9d6c98ec8042f7e08cfd38
 import { usePaginationStore } from "../store/CurrentStore";
 import "../style/MyPage.css";
 import "../style/Button.css"
