@@ -8,10 +8,10 @@ input {
   background-color: white;
   box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
   transition: box-shadow 0.3s ease, border-color 0.3s ease;
-}
+} 
 
-input:focus {
+ input:focus {
   border-color: #f8c1cc;
   outline: none;
   box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.2);
-}
+} 
