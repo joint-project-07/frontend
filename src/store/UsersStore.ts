@@ -4,7 +4,7 @@ interface FormData {
   agree_marketing: boolean;
   agree_privacy: boolean;
   agree_terms: boolean;
-  agree_all: any;
+  agree_all:  boolean | undefined;
   email: string;
   password: string;
   password_confirm: string;

@@ -14,6 +14,11 @@ interface CardData {
   volunteerwork: string;
 }
 
+interface LocationState {
+  openLoginModal?: boolean;
+  [key: string]: unknown;
+}
+
 const LandingPage: React.FC = () => {
   const [cards, setCards] = useState<CardData[]>([]);
   const navigate = useNavigate();
@@ -21,7 +26,8 @@ const LandingPage: React.FC = () => {
   const { openLoginModal } = useModalContext();
 
   useEffect(() => {
-    if (location.state && (location.state as any).openLoginModal) {
+    const state = location.state as LocationState | null;
+    if (state && state.openLoginModal) {
       openLoginModal();
     }
   }, [location, openLoginModal])

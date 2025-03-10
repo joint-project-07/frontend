@@ -5,6 +5,10 @@ import { useState } from "react";
 import logoImage from "../assets/logo.png";
 import { useNavigate } from 'react-router-dom';
 
+interface LocationState {
+  openLoginModal: boolean;
+}
+
 const ShelterSignupForm: React.FC = () => {
   const { form, setForm } = useShelterStore();
   const [passwordConfirm, setPasswordConfirm] = useState(form.password_confirm || "");
@@ -250,7 +254,7 @@ const ShelterSignupForm: React.FC = () => {
         
         <div 
       className="back-link" 
-      onClick={() => navigate("/", { state: { openLoginModal: true } as any })}
+      onClick={() => navigate("/", { state: { openLoginModal: true } as LocationState  })}
     >
       이미 계정이 있으신가요? 로그인하기
     </div>
