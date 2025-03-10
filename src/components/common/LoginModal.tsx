@@ -16,7 +16,13 @@ const LoginModal: React.FC = () => {
   const handleLogin = () => {
     login();
     closeLoginModal();
-  };
+
+  if (activeTab === "organization") {
+    navigate("/institution-schedule");
+  } else {
+    navigate("/LandingPage");
+  }
+};
 
   const handleTabChange = (tab: TabType) => {
     setActiveTab(tab);
@@ -44,7 +50,6 @@ const LoginModal: React.FC = () => {
           <h2>반가워요!</h2>
           <p>펫모어핸즈에 오신 것을 환영합니다.</p>
 
-          {/* 탭 메뉴 */}
           <div className="tab-container">
           <button 
               className={`tab ${activeTab === "volunteer" ? "active" : ""}`}
@@ -60,10 +65,8 @@ const LoginModal: React.FC = () => {
             </button>
           </div>
 
-          {/* 탭 내용 - 조건부 렌더링 */}
           {activeTab === "volunteer" ? (
             <div className="tab-content">
-              {/* 봉사자 로그인 폼 */}
               <label>이메일 입력</label>
               <input
                 type="email"
@@ -91,7 +94,6 @@ const LoginModal: React.FC = () => {
             </div>
           ) : (
             <div className="tab-content">
-              {/* 봉사기관 로그인 폼 */}
               <label>기관 아이디</label>
               <input
                 type="text"
@@ -115,7 +117,6 @@ const LoginModal: React.FC = () => {
             </div>
           )}
 
-          {/* 추가 링크 */}
           <div className="extra-links">
             <span>잊으셨나요?</span>
             <span>|</span>

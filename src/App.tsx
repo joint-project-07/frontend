@@ -9,6 +9,8 @@ import DetailPage from "./pages/DetailPage";
 import SearchNotFound from "./pages/SearchNotFound";
 import MainLayout from "./components/layout/MainLayout";
 import { ModalProvider } from "./contexts/ModalContext";
+import InstitutionScheduleList from "./pages/InstitutionScheduleList";
+import InstitutionDetailPage from "./pages/InstitutionDetailPage";
 
 function App() {
   return (
@@ -21,6 +23,8 @@ function App() {
           <Route path="/detail/:id" element={<DetailPage /> } />
           <Route path="/MyPage" element={<MyPage />}/>
           <Route path="/searchnotfound"element={<SearchNotFound />}/>
+          <Route path="/institution-schedule" element={<InstitutionScheduleList/>} />
+          <Route path="/institution-detail/:institutionId" element={<InstitutionDetailPage />} />
           </Route>
           <Route path="/UsersSignup" element={<UsersSignupForm />} />
           <Route path="/ShelterSignup" element={<ShelterSignupForm />} />
