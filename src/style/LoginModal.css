@@ -79,15 +79,20 @@ label {
   color: #333;
   margin-bottom: 8px;
   font-weight: 500;
+  width: 100%;
+  text-align: left; 
+  display: block;
 }
 
 .input-field {
+  width: 300px;
   padding: 12px 16px;
   border: 1px solid #e0e0e0;
   border-radius: 8px;
   font-size: 16px;
   margin-bottom: 16px;
   transition: border-color 0.2s;
+  box-sizing: border-box;
 }
 
 .input-field:focus {

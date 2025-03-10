@@ -1,18 +1,37 @@
 // src/components/LoginModal.tsx
-import React from "react";
+import React, { useState } from "react";
 import Modal from "./Modal";
 import logo from "../../assets/logo.png";
 import { useAuth } from "../../contexts/AuthContext";
 import useModal from "../../hooks/useModal";
 import "../../style/LoginModal.css";
+import { useNavigate } from "react-router-dom";
+
+type TabType = "volunteer" | "organization";
 
 const LoginModal: React.FC = () => {
   const { login } = useAuth();
   const { isOpen, open, close } = useModal();
+  const [activeTab, setActiveTab] = useState<TabType>("volunteer");
+  const navigate = useNavigate();
 
   const handleLogin = () => {
     login();
     close();
+  };
+
+  const handleTabChange = (tab: TabType) => {
+    setActiveTab(tab);
+  };
+
+  const goToVolunteerSignup = () => {
+    close();
+    navigate("/UsersSignup", {state: {fromLoginModal:true}});
+  }
+
+  const goToShelterSignup = () => {
+    close();
+    navigate("/ShelterSignup", { state: { fromLoginModal: true } });
   };
 
   return (
@@ -29,38 +48,74 @@ const LoginModal: React.FC = () => {
 
           {/* 탭 메뉴 */}
           <div className="tab-container">
-            <button className="tab active">봉사자</button>
-            <button className="tab">봉사기관</button>
-          </div>
-
-          {/* 이메일 입력 */}
-          <label>이메일 입력</label>
-          <input
-            type="email"
-            className="input-field"
-            placeholder="이메일 입력"
-          />
-
-          {/* 비밀번호 입력 */}
-          <label>비밀번호 입력</label>
-          <input
-            type="password"
-            className="input-field"
-            placeholder="비밀번호 입력"
-          />
-
-          {/* 버튼 그룹 */}
-          <div className="button-group">
-            <button className="login-btn" onClick={handleLogin}>
-              로그인
+          <button 
+              className={`tab ${activeTab === "volunteer" ? "active" : ""}`}
+              onClick={() => handleTabChange("volunteer")}
+            >
+              봉사자
             </button>
-            <button className="signup-btn">회원가입 하기</button>
+            <button 
+              className={`tab ${activeTab === "organization" ? "active" : ""}`}
+              onClick={() => handleTabChange("organization")}
+            >
+              봉사기관
+            </button>
           </div>
 
-          {/* 카카오 로그인 */}
-          <button className="kakao-btn" onClick={handleLogin}>
-            카카오톡으로 시작하기
-          </button>
+          {/* 탭 내용 - 조건부 렌더링 */}
+          {activeTab === "volunteer" ? (
+            <div className="tab-content">
+              {/* 봉사자 로그인 폼 */}
+              <label>이메일 입력</label>
+              <input
+                type="email"
+                className="input-field"
+                placeholder="이메일 입력"
+              />
+
+              <label>비밀번호 입력</label>
+              <input
+                type="password"
+                className="input-field"
+                placeholder="비밀번호 입력"
+              />
+
+              <div className="button-group">
+                <button className="login-btn" onClick={handleLogin}>
+                  로그인
+                </button>
+                <button className="signup-btn" onClick={goToVolunteerSignup}>회원가입 하기</button>
+              </div>
+
+              <button className="kakao-btn" onClick={handleLogin}>
+                카카오톡으로 시작하기
+              </button>
+            </div>
+          ) : (
+            <div className="tab-content">
+              {/* 봉사기관 로그인 폼 */}
+              <label>기관 아이디</label>
+              <input
+                type="text"
+                className="input-field"
+                placeholder="기관 아이디 입력"
+              />
+
+              <label>비밀번호 입력</label>
+              <input
+                type="password"
+                className="input-field"
+                placeholder="비밀번호 입력"
+              />
+
+              <div className="button-group">
+                <button className="login-btn" onClick={handleLogin}>
+                  로그인
+                </button>
+                <button className="signup-btn" onClick={goToShelterSignup}>기관 회원가입</button>
+              </div>
+            </div>
+          )}
 
           {/* 추가 링크 */}
           <div className="extra-links">
