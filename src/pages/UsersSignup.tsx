@@ -52,11 +52,10 @@ const UsersSignupForm: React.FC = () => {
 
   return (
     <div className="signup-page">
+      <div className="signup-container">
       <div className="logo-container">
         <img src={logoImage} alt="로고" className="logo-image" />
       </div>
-      
-      <div className="signup-container">
         <h2>회원가입</h2>
         <form className="signup-form" onSubmit={handleSubmit}>
           <div className="form-group">
