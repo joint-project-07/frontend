@@ -15,6 +15,7 @@ interface CardData {
 }
 
 interface LocationState {
+  activeTab: string;
   openLoginModal?: boolean;
   from?: string;
 }
@@ -23,14 +24,17 @@ const LandingPage: React.FC = () => {
   const [cards, setCards] = useState<CardData[]>([]);
   const navigate = useNavigate();
   const location = useLocation();
-  const { openLoginModal } = useModalContext();
+  const { openLoginModal, setActiveTab } = useModalContext();
 
   useEffect(() => {
     const state = location.state as LocationState | null;
     if (state && state.from === 'signup' && state.openLoginModal === true) {
       openLoginModal();
+      if (state.activeTab === 'organization') {
+        setActiveTab('organization');
+      }
     }
-  }, [location.state, openLoginModal]);
+  }, [location.state, openLoginModal, setActiveTab]);
   
   useEffect(() => {
     // Array.from을 사용하여 15개 데이터 생성
