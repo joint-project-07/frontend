@@ -54,11 +54,10 @@ const ShelterSignupForm: React.FC = () => {
 
   return (
     <div className="landing-container">
+      <div className="signup-container">
       <div className="logo-container">
         <img src={logoImage} alt="로고" className="logo-image" />
       </div>
-      
-      <div className="signup-container">
         <h2>보호소 회원가입</h2>
         <form className="signup-form" onSubmit={handleSubmit}>
           <div className="form-group">
@@ -181,8 +180,6 @@ const ShelterSignupForm: React.FC = () => {
               required
             />
           </div>
-          
-          {/* 이용약관 동의 섹션 */}
           <div className="terms-container">
             <p className="terms-title">이용약관 동의</p>
             
