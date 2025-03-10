@@ -4,6 +4,11 @@ import "../style/UsersSignupForm.css";
 import { useState } from "react";
 import logoImage from "../assets/logo.png"; 
 
+interface LocationState {
+  openLoginModal: boolean;
+  from: string;
+}
+
 const UsersSignupForm: React.FC = () => {
   const { form, setForm } = useUsersStore();
   const [passwordConfirm, setPasswordConfirm] = useState(form.password_confirm || "");
@@ -191,10 +196,13 @@ const UsersSignupForm: React.FC = () => {
             </Link>
           </div>
           <div 
-      className="back-link" 
-      onClick={() => navigate("/", { 
-        state: { openLoginModal: true } as { openLoginModal: boolean }
-      })}
+  className="back-link" 
+  onClick={() => navigate("/", { 
+    state: { 
+      openLoginModal: true,
+      from: 'signup'
+    } as LocationState
+  })}
     >
       이미 계정이 있으신가요? 로그인하기
     </div>

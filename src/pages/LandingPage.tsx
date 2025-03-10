@@ -16,7 +16,7 @@ interface CardData {
 
 interface LocationState {
   openLoginModal?: boolean;
-  [key: string]: unknown;
+  from?: string;
 }
 
 const LandingPage: React.FC = () => {
@@ -27,10 +27,10 @@ const LandingPage: React.FC = () => {
 
   useEffect(() => {
     const state = location.state as LocationState | null;
-    if (state && state.openLoginModal) {
+    if (state && state.from === 'signup' && state.openLoginModal === true) {
       openLoginModal();
     }
-  }, [location, openLoginModal])
+  }, [location.state, openLoginModal]);
   
   useEffect(() => {
     // Array.from을 사용하여 15개 데이터 생성

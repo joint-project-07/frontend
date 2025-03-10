@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 
 interface LocationState {
   openLoginModal: boolean;
+  from: string;
 }
 
 const ShelterSignupForm: React.FC = () => {
@@ -254,7 +255,7 @@ const ShelterSignupForm: React.FC = () => {
         
         <div 
       className="back-link" 
-      onClick={() => navigate("/", { state: { openLoginModal: true } as LocationState  })}
+      onClick={() => navigate("/", { state: { openLoginModal: true, from: 'signup' } as LocationState  })}
     >
       이미 계정이 있으신가요? 로그인하기
     </div>
