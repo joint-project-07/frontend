@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import Modal from "./Modal";
 import logo from "../../assets/logo.png";
 import { useAuth } from "../../contexts/AuthContext";
@@ -10,8 +10,7 @@ type TabType = "volunteer" | "organization";
 
 const LoginModal: React.FC = () => {
   const { login } = useAuth();
-  const { isLoginModalOpen, closeLoginModal, openLoginModal } = useModalContext();
-  const [activeTab, setActiveTab] = useState<TabType>("volunteer");
+  const { isLoginModalOpen, closeLoginModal, openLoginModal, activeTab, setActiveTab } = useModalContext();
   const navigate = useNavigate();
 
   const handleLogin = () => {

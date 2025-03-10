@@ -3,6 +3,7 @@ import { useUsersStore } from "../store/UsersStore";
 import "../style/UsersSignupForm.css";
 import { useState } from "react";
 import logoImage from "../assets/logo.png"; 
+import TermsAgreement from "../components/common/TermsAgreement";
 
 interface LocationState {
   openLoginModal: boolean;
@@ -30,11 +31,6 @@ const UsersSignupForm: React.FC = () => {
     setPasswordConfirm(value);
     setForm({ password_confirm: value });
     setPasswordMatch(value === form.password);
-  };
-
-  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, checked } = e.target;
-    setForm({ [name]: checked });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -129,63 +125,41 @@ const UsersSignupForm: React.FC = () => {
             />
           </div>
           
-          {/* 이용약관 동의 섹션 */}
           <div className="terms-container">
             <p className="terms-title">이용약관 동의</p>
             
-            <div className="terms-checkbox">
-              <input
-                type="checkbox"
-                id="agree_all"
-                name="agree_all"
-                checked={form.agree_all || false}
-                onChange={handleCheckboxChange}
-              />
-              <label htmlFor="agree_all">
-                전체 동의합니다
-              </label>
-            </div>
-            
-            <div className="terms-checkbox">
-              <input
-                type="checkbox"
-                id="agree_terms"
-                name="agree_terms"
-                checked={form.agree_terms || false}
-                onChange={handleCheckboxChange}
-              />
-              <label htmlFor="agree_terms">
-                (필수) 이용약관 동의
-                <a href="#" className="terms-link">보기</a>
-              </label>
-            </div>
-            
-            <div className="terms-checkbox">
-              <input
-                type="checkbox"
-                id="agree_privacy"
-                name="agree_privacy"
-                checked={form.agree_privacy || false}
-                onChange={handleCheckboxChange}
-              />
-              <label htmlFor="agree_privacy">
-                (필수) 개인정보 수집 및 이용 동의
-                <a href="#" className="terms-link">보기</a>
-              </label>
-            </div>
-            
-            <div className="terms-checkbox">
-              <input
-                type="checkbox"
-                id="agree_marketing"
-                name="agree_marketing"
-                checked={form.agree_marketing || false}
-                onChange={handleCheckboxChange}
-              />
-              <label htmlFor="agree_marketing">
-                (선택) 마케팅 정보 수신 동의
-              </label>
-            </div>
+            <TermsAgreement
+              agreements={[
+                {
+                  name: 'agree_terms',
+                  label: '이용약관 동의',
+                  required: true,
+                  link: '#'
+                },
+                {
+                  name: 'agree_privacy',
+                  label: '개인정보 수집 및 이용 동의',
+                  required: true,
+                  link: '#'
+                },
+                {
+                  name: 'agree_marketing',
+                  label: '마케팅 정보 수신 동의',
+                  required: false
+                }
+              ]}
+              initialValues={{
+                agree_all: form.agree_all || false,
+                agree_terms: form.agree_terms || false,
+                agree_privacy: form.agree_privacy || false,
+                agree_marketing: form.agree_marketing || false
+              }}
+              onAgreementChange={(newState) => {
+                Object.entries(newState).forEach(([key, value]) => {
+                  setForm({ [key]: value });
+                });
+              }}
+            />
           </div>
           
           <button type="submit">회원가입 완료</button>
