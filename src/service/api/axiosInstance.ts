@@ -30,7 +30,7 @@ axiosInstance.interceptors.response.use(
   async (error: AxiosError) => {
    
     if (error.response?.status === 401) {
-
+      console.log('401 에러: 인증 실패');
     }
     
     return Promise.reject(error);

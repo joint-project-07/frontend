@@ -3,6 +3,13 @@ import { KAKAO_AUTH } from '../../utils/constants';
 import { KakaoTokenResponse, KakaoUserInfo, User } from '../../types/auth';
 import axiosInstance from '../api/axiosInstance';
 
+interface BackendResponse {
+  token: string;
+  user: {
+    id: string;
+  };
+}
+
 export const redirectToKakaoLogin = (): void => {
   const kakaoAuthUrl = new URL(KAKAO_AUTH.AUTH_URL);
   
@@ -70,7 +77,7 @@ export const formatKakaoUser = (kakaoUser: KakaoUserInfo, accessToken: string, r
   };
 };
 
-export const registerKakaoUserToBackend = async (kakaoUser: User): Promise<any> => {
+export const registerKakaoUserToBackend = async (kakaoUser: User): Promise<BackendResponse> => {
   try {
     const response = await axiosInstance.post('/auth/kakao/login', {
       kakaoId: kakaoUser.id,
