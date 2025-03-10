@@ -1,6 +1,12 @@
 import { create } from "zustand";
 
 interface FormData {
+  agree_marketing: boolean;
+  agree_privacy: boolean;
+  agree_terms: boolean;
+  agree_all: any;
+  password_confirm: string;
+  password: string;
   name: string;
   shelter_type: string;
   business_registration_number: string;
@@ -36,6 +42,12 @@ export const useShelterStore = create<ShelterState>((set) => ({
     address: "",
     owner_name: "",
     contact_number: "",
+    agree_marketing: false,
+    agree_privacy: false,
+    agree_terms: false,
+    agree_all: undefined,
+    password_confirm: "",
+    password: ""
   },
   setForm: (newForm) =>
     set((state) => ({

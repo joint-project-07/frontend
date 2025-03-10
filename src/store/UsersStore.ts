@@ -1,6 +1,10 @@
 import { create } from "zustand";
 
 interface FormData {
+  agree_marketing: boolean;
+  agree_privacy: boolean;
+  agree_terms: boolean;
+  agree_all: any;
   email: string;
   password: string;
   password_confirm: string;
@@ -20,6 +24,10 @@ export const useUsersStore = create<UsersState>((set) => ({
     password_confirm: "",
     name: "",
     phone_number: "",
+    agree_all: undefined,
+    agree_marketing: false,
+    agree_privacy: false,
+    agree_terms: false
   },
   setForm: (newForm) =>
     set((state) => ({

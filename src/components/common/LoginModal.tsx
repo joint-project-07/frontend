@@ -1,23 +1,22 @@
-// src/components/LoginModal.tsx
 import React, { useState } from "react";
 import Modal from "./Modal";
 import logo from "../../assets/logo.png";
 import { useAuth } from "../../contexts/AuthContext";
-import useModal from "../../hooks/useModal";
 import "../../style/LoginModal.css";
 import { useNavigate } from "react-router-dom";
+import { useModalContext } from '../../contexts/ModalContext';
 
 type TabType = "volunteer" | "organization";
 
 const LoginModal: React.FC = () => {
   const { login } = useAuth();
-  const { isOpen, open, close } = useModal();
+  const { isLoginModalOpen, closeLoginModal, openLoginModal } = useModalContext();
   const [activeTab, setActiveTab] = useState<TabType>("volunteer");
   const navigate = useNavigate();
 
   const handleLogin = () => {
     login();
-    close();
+    closeLoginModal();
   };
 
   const handleTabChange = (tab: TabType) => {
@@ -25,22 +24,22 @@ const LoginModal: React.FC = () => {
   };
 
   const goToVolunteerSignup = () => {
-    close();
+    closeLoginModal();
     navigate("/UsersSignup", {state: {fromLoginModal:true}});
   }
 
   const goToShelterSignup = () => {
-    close();
+    closeLoginModal();
     navigate("/ShelterSignup", { state: { fromLoginModal: true } });
   };
 
   return (
     <>
-      <button className="open-modal-btn" onClick={open}>
+      <button className="open-modal-btn" onClick={openLoginModal}>
         로그인 / 회원가입
       </button>
 
-      <Modal isOpen={isOpen} onClose={close}>
+      <Modal isOpen={isLoginModalOpen} onClose={closeLoginModal}>
         <div className="login-modal">
           <img src={logo} alt="펫모어핸즈 로고" className="logo" />
           <h2>반가워요!</h2>
