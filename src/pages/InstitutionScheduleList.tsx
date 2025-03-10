@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Card from "../components/common/Card";
 import "../style/InstitutionScheduleList.css";
+import { useNavigate } from "react-router-dom";
 
 interface CardData {
   id: number;
@@ -13,6 +14,7 @@ interface CardData {
 
 const InstitutionScheduleList: React.FC = () => {
   const [cards, setCards] = useState<CardData[]>([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const data = Array.from({ length: 12 }, (_, index) => ({
@@ -34,12 +36,24 @@ const InstitutionScheduleList: React.FC = () => {
     setCards(data);
   }, []);
 
+  const handleCardClick = (id: number) => {
+    navigate(`/institution-detail/${id}`);
+  };
+
   return (
     <div className="institution-container">
       <h2 className="institution-title">보호기관 일정</h2>
       <div className="institution-grid">
         {cards.map((card) => (
-          <Card key={card.id} {...card} />
+          <Card 
+            key={card.id}
+            image={card.image}
+            title={card.title}
+            region={card.region}
+            date={card.date}
+            volunteerwork={card.volunteerwork}
+            onClick={() => handleCardClick(card.id)}
+          />
         ))}
       </div>
     </div>
