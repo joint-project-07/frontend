@@ -13,15 +13,20 @@ const LoginModal: React.FC = () => {
   const { isLoginModalOpen, closeLoginModal, openLoginModal, activeTab, setActiveTab } = useModalContext();
   const navigate = useNavigate();
 
-  const handleLogin = () => {
-    login();
-    closeLoginModal();
+  const handleLogin = async () => {
+    try {
+      login();
+      closeLoginModal();
 
   if (activeTab === "organization") {
     navigate("/institution-schedule");
   } else {
-    navigate("/LandingPage");
+    navigate("/");
   }
+} catch (error) {
+  console.error("로그인 중 오류 발생:", error);
+  // 에러 처리 로직 추가
+}
 };
 
   const handleTabChange = (tab: TabType) => {
