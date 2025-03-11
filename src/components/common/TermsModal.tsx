@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import '../../style/TermsModal.css';
+import styles from '../../style/TermsModal.module.scss';
 
 interface TermsModalProps {
   isOpen: boolean;
@@ -34,19 +34,19 @@ const TermsModal: React.FC<TermsModalProps> = ({ isOpen, onClose, title, content
     <>
       {isVisible && (
         <div 
-          className={`terms-modal-backdrop ${isOpen ? 'show' : 'hide'}`} 
+          className={`${styles.termsModalBackdrop} ${isOpen ? styles.show : styles.hide}`} 
           onClick={handleBackdropClick}
         >
-          <div className={`terms-modal-container ${isOpen ? 'show' : 'hide'}`}>
-            <div className="terms-modal-header">
+          <div className={`${styles.termsModalContainer} ${isOpen ? styles.show : styles.hide}`}>
+            <div className={styles.termsModalHeader}>
               <h2>{title}</h2>
-              <button className="terms-modal-close" onClick={onClose}>×</button>
+              <button className={styles.termsModalClose} onClick={onClose}>×</button>
             </div>
-            <div className="terms-modal-content">
+            <div className={styles.termsModalContent}>
               {content}
             </div>
-            <div className="terms-modal-footer">
-              <button onClick={onClose} className="terms-modal-confirm-btn">확인</button>
+            <div className={styles.termsModalFooter}>
+              <button onClick={onClose} className={styles.termsModalConfirmBtn}>확인</button>
             </div>
           </div>
         </div>

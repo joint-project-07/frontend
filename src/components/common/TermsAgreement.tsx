@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import TermsModal from './TermsModal';
 import { TermsOfServiceContent, PrivacyPolicyContent, MarketingConsentContent } from './TermsContent';
+import styles from '../../style/TermsModal.module.scss';
 
 interface AgreementItem {
   name: string;
@@ -51,29 +52,51 @@ const TermsAgreement: React.FC<TermsAgreementProps> = ({
   const [modalTitle, setModalTitle] = useState('');
   const [modalContent, setModalContent] = useState<React.ReactNode>(null);
   
-  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, checked } = e.target;
+  const handleAgreeAll = () => {
+    const newChecked = !agreementState.agree_all;
+    const newState: AgreementState = { 
+      ...agreementState, 
+      agree_all: newChecked 
+    };
     
-    const newState: AgreementState = { ...agreementState };
-    
-    if (name === 'agree_all') {
-      newState.agree_all = checked;
-      
-      agreements.forEach(item => {
-        newState[item.name] = checked;
-      });
-    } 
-    else {
-      newState[name] = checked;
-      
-      const allAgreed = agreements.every(item => newState[item.name]);
-      newState.agree_all = allAgreed;
-    }
+    agreements.forEach(item => {
+      newState[item.name] = newChecked;
+    });
     
     setAgreementState(newState);
     
     if (onAgreementChange) {
       onAgreementChange(newState);
+    }
+  };
+  
+  const handleAgreementChange = (name: string) => {
+    const newChecked = !agreementState[name];
+    const newState: AgreementState = { 
+      ...agreementState, 
+      [name]: newChecked 
+    };
+    
+    // 모든 약관에 동의했는지 확인
+    const allAgreed = agreements.every(agreement => 
+      agreement.name === name ? newChecked : newState[agreement.name]
+    );
+    newState.agree_all = allAgreed;
+    
+    setAgreementState(newState);
+    
+    if (onAgreementChange) {
+      onAgreementChange(newState);
+    }
+  };
+  
+  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name } = e.target;
+    
+    if (name === 'agree_all') {
+      handleAgreeAll();
+    } else {
+      handleAgreementChange(name);
     }
   };
   
@@ -112,41 +135,62 @@ const TermsAgreement: React.FC<TermsAgreementProps> = ({
   };
   
   return (
-    <div className="terms-agreement-container">
-      <div className="terms-checkbox">
-        <input
-          type="checkbox"
-          id="agree_all"
-          name="agree_all"
-          checked={agreementState.agree_all}
-          onChange={handleCheckboxChange}
-        />
-        <label htmlFor="agree_all">
-          전체 동의합니다
-        </label>
+    <div className={styles.termsAgreementContainer}>
+      <div className={styles.termsItem}>
+        <div className={styles.checkboxWrapper}>
+          {/* 전체 동의 체크박스 */}
+          <input
+            type="checkbox"
+            id="agree_all"
+            name="agree_all"
+            checked={agreementState.agree_all}
+            onChange={handleCheckboxChange}
+            className={styles.checkboxInput}
+          />
+          <label 
+            htmlFor="agree_all"
+            className={`${styles.checkboxLabel} ${styles.termsAllLabel}`}
+          >
+            <div 
+              className={`${styles.customCheckbox} ${agreementState.agree_all ? styles.checked : ''}`}
+            ></div>
+            전체 동의합니다
+          </label>
+        </div>
       </div>
       
       {agreements.map((item) => (
-        <div className="terms-checkbox" key={item.name}>
-          <input
-            type="checkbox"
-            id={item.name}
-            name={item.name}
-            checked={!!agreementState[item.name]}
-            onChange={handleCheckboxChange}
-          />
-          <label htmlFor={item.name}>
-            {item.required ? `(필수) ${item.label}` : `(선택) ${item.label}`}
-            {showLinks && (
-              <a 
-                href="#" 
-                className="terms-link"
-                onClick={(e) => handleTermsLinkClick(e, item)}
-              >
-                보기
-              </a>
-            )}
-          </label>
+        <div className={styles.termsItem} key={item.name}>
+          <div className={styles.checkboxWrapper}>
+            {/* 개별 동의 체크박스 */}
+            <input
+              type="checkbox"
+              id={item.name}
+              name={item.name}
+              checked={!!agreementState[item.name]}
+              onChange={handleCheckboxChange}
+              className={styles.checkboxInput}
+            />
+            <label 
+              htmlFor={item.name}
+              className={styles.checkboxLabel}
+            >
+              <div 
+                className={`${styles.customCheckbox} ${agreementState[item.name] ? styles.checked : ''}`}
+              ></div>
+              {item.required ? `(필수) ${item.label}` : `(선택) ${item.label}`}
+            </label>
+          </div>
+          
+          {showLinks && item.link && (
+            <a 
+              href="#" 
+              className={styles.termsLink}
+              onClick={(e) => handleTermsLinkClick(e, item)}
+            >
+              보기
+            </a>
+          )}
         </div>
       ))}
       

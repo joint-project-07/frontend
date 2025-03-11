@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import "../style/InstitutionDetailPage.css";
+import styles from "../style/InstitutionDetailPage.module.scss";
 import dangimg from "../assets/dangimg.png";
 
 type Volunteer = {
@@ -91,8 +91,8 @@ const InstitutionDetailPage = () => {
 
   if (loading) {
     return (
-      <div className="loading">
-        <div className="loading-spinner"></div>
+      <div className={styles.loading}>
+        <div className={styles.loadingSpinner}></div>
         <p>데이터를 불러오는 중...</p>
       </div>
     );
@@ -100,9 +100,9 @@ const InstitutionDetailPage = () => {
 
   if (!institutionData) {
     return (
-      <div className="loading">
+      <div className={styles.loading}>
         <p>해당 기관 정보를 찾을 수 없습니다.</p>
-        <button className="back-button" onClick={handleBackClick}>
+        <button className={styles.backButton} onClick={handleBackClick}>
           보호기관 목록으로 돌아가기
         </button>
       </div>
@@ -110,46 +110,46 @@ const InstitutionDetailPage = () => {
   }
 
   return (
-    <main className="institution-detail">
-      <button className="back-button" onClick={handleBackClick}>
+    <main className={styles.institutionDetail}>
+      <button className={styles.backButton} onClick={handleBackClick}>
         &larr; 보호기관 목록으로 돌아가기
       </button>
       
-      <h1 className="institution-title">{institutionData.title}</h1>
+      <h1 className={styles.institutionTitle}>{institutionData.title}</h1>
       
-      <div className="institution-info">
-        <div className="institution-left">
-          <div className="institution-images">
-            <button className="prev-btn" onClick={goToPrevImage}>
+      <div className={styles.institutionInfo}>
+        <div className={styles.institutionLeft}>
+          <div className={styles.institutionImages}>
+            <button className={styles.prevBtn} onClick={goToPrevImage}>
               {"<"}
             </button>
             <img
               src={images[currentIndex]}
               alt={`기관 이미지 ${currentIndex + 1}`}
             />
-            <button className="next-btn" onClick={goToNextImage}>
+            <button className={styles.nextBtn} onClick={goToNextImage}>
               {">"}
             </button>
-            <div className="image-indicator">
+            <div className={styles.imageIndicator}>
               {images.map((_, idx) => (
                 <span 
                   key={idx} 
-                  className={`indicator-dot ${idx === currentIndex ? 'active' : ''}`}
+                  className={`${styles.indicatorDot} ${idx === currentIndex ? styles.active : ''}`}
                   onClick={() => setCurrentIndex(idx)}
                 ></span>
               ))}
             </div>
           </div>
 
-          <section className="volunteer-info">
+          <section className={styles.volunteerInfo}>
             <h2>보호소 정보</h2>
-            <div className="info-item">
-              <span className="info-label">위치:</span>
-              <span className="info-value">{institutionData.region}</span>
+            <div className={styles.infoItem}>
+              <span className={styles.infoLabel}>위치:</span>
+              <span className={styles.infoValue}>{institutionData.region}</span>
             </div>
             
-            <div className="info-item">
-              <span className="info-label">주요 봉사 활동:</span>
+            <div className={styles.infoItem}>
+              <span className={styles.infoLabel}>주요 봉사 활동:</span>
               <ul>
                 {institutionData.mainActivities.map((activity, index) => (
                   <li key={index}>{activity}</li>
@@ -157,54 +157,54 @@ const InstitutionDetailPage = () => {
               </ul>
             </div>
             
-            <div className="info-item">
-              <span className="info-label">준비물:</span>
-              <div className="preparations">
+            <div className={styles.infoItem}>
+              <span className={styles.infoLabel}>준비물:</span>
+              <div className={styles.preparations}>
                 {institutionData.preparations.map((item, index) => (
-                  <span key={index} className="preparation-item">{item}</span>
+                  <span key={index} className={styles.preparationItem}>{item}</span>
                 ))}
               </div>
             </div>
           </section>
         </div>
 
-        <div className="institution-right">
-          <section className="volunteer-list">
+        <div className={styles.institutionRight}>
+          <section className={styles.volunteerList}>
             <h2>봉사 신청자 목록</h2>
             
             {volunteers.length === 0 ? (
               <p>아직 봉사 신청자가 없습니다.</p>
             ) : (
               <>
-                <div className="list-summary">
+                <div className={styles.listSummary}>
                   총 {volunteers.length}명 | 승인: {volunteers.filter(v => v.status === "승인").length}명 | 
                   대기: {volunteers.filter(v => v.status === "대기").length}명 |
                   반려: {volunteers.filter(v => v.status === "반려").length}명
                 </div>
                 
-                <div className="volunteer-list-container">
+                <div className={styles.volunteerListContainer}>
                   {volunteers.map((volunteer) => (
-                    <div className="volunteer-item" key={volunteer.id}>
-                      <div className="profile-pic">
+                    <div className={styles.volunteerItem} key={volunteer.id}>
+                      <div className={styles.profilePic}>
                         <span>{volunteer.name[0]}</span>
                       </div>
-                      <div className="user-info">
-                        <p className="user-name">{volunteer.name}</p>
-                        <p className="user-phone">{volunteer.phone}</p>
-                        <p className={`status ${volunteer.status}`}>
+                      <div className={styles.userInfo}>
+                        <p className={styles.userName}>{volunteer.name}</p>
+                        <p className={styles.userPhone}>{volunteer.phone}</p>
+                        <p className={`${styles.status} ${styles[volunteer.status]}`}>
                           {volunteer.status}
                         </p>
                       </div>
                       {volunteer.status === "대기" && (
-                        <div className="buttons">
+                        <div className={styles.buttons}>
                           <button
-                            className="approve"
+                            className={styles.approve}
                             onClick={() => handleStatusChange(volunteer.id, "승인")}
                           >
                             승인
                           </button>
                           <button
-                            className="reject"
+                            className={styles.reject}
                             onClick={() => handleStatusChange(volunteer.id, "반려")}
                           >
                             반려

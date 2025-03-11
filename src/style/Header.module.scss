@@ -7,8 +7,9 @@
   background-color: #fff;
 }
 
-.logo-container {
-  /* 로고 컨테이너 스타일 */
+.logoContainer {
+  display: flex;
+  align-items: center;
 }
 
 .nav {
@@ -16,20 +17,20 @@
   align-items: center;
   gap: 20px; /* 네비게이션 항목 간 간격 */
   margin-left: auto; /* 이 속성이 네비게이션을 오른쪽으로 밀어냅니다 */
+  
+  a {
+    text-decoration: none;
+    color: #333;
+    font-weight: 500;
+    transition: color 0.2s;
+    
+    &:hover {
+      color: #ff9fb0; /* 호버 시 색상 변경 */
+    }
+  }
 }
 
-.nav a {
-  text-decoration: none;
-  color: #333;
-  font-weight: 500;
-  transition: color 0.2s;
-}
-
-.nav a:hover {
-  color: #ff9fb0; /* 호버 시 색상 변경 */
-}
-
-.logout-btn {
+.logoutBtn {
   background-color: #ff9fb0;
   color: white;
   border: none;
@@ -38,8 +39,8 @@
   cursor: pointer;
   font-weight: 500;
   transition: background-color 0.2s;
-}
-
-.logout-btn:hover {
-  background-color: #ff8da0;
+  
+  &:hover {
+    background-color: #ff8da0;
+  }
 }

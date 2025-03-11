@@ -1,8 +1,8 @@
 import React from "react";
 import { useParams } from "react-router-dom";
-import "../style/DetailPage.css";
+import styles from "../style/DetailPage.module.scss"; 
 import useStore from "../store/Detail";
-import  useModalStore  from "../store/ModalStore"; // ✅ Zustand 모달 상태 가져오기
+import useModalStore from "../store/ModalStore";
 import DetailModal from "../components/common/DetailModal";
 
 const DetailPage: React.FC = () => {
@@ -10,7 +10,7 @@ const DetailPage: React.FC = () => {
   const selectedDate = useStore((state) => state.selectedDate);
   const selectedTime = useStore((state) => state.selectedTime);
   const setSelectedTime = useStore((state) => state.setSelectedTime);
-  const { openModal } = useModalStore(); // ✅ Zustand 모달 상태 사용
+  const { openModal } = useModalStore();
 
   const handleTimeSelect = (time: string) => {
     setSelectedTime(time);
@@ -18,15 +18,15 @@ const DetailPage: React.FC = () => {
 
   return (
     <>
-      <main className="detail-content">
+      <main className={styles["detail-content"]}>
         <h2>📌 상세 페이지 - {id}번 보호소</h2>
         <img
           src="/assets/main-image.png"
           alt="메인 이미지"
-          className="detail-image"
+          className={styles["detail-image"]}
         />
 
-        <section className="volunteer-info">
+        <section className={styles["volunteer-info"]}>
           <h2>보호소 위치: 서울특별시 / 동작구</h2>
           <p>주요 봉사 활동 내용:</p>
           <ul>
@@ -39,34 +39,33 @@ const DetailPage: React.FC = () => {
           <p>준비물: 물, 막 입을 수 있는 옷</p>
         </section>
 
-        <section className="volunteer-time">
+        <section className={styles["volunteer-time"]}>
           <h3>선택 날짜:</h3>
           <input
             type="date"
             value={selectedDate}
             readOnly
-            className="date-picker"
+            className={styles["date-picker"]}
           />
 
           <h3>봉사시간:</h3>
-          <div className="time-buttons">
+          <div className={styles["time-buttons"]}>
             <button
-              className={selectedTime === "16:00 ~ 18:00" ? "selected" : ""}
+              className={selectedTime === "16:00 ~ 18:00" ? styles.selected : ""}
               onClick={() => handleTimeSelect("16:00 ~ 18:00")}
             >
               16:00 ~ 18:00
             </button>
             <button
-              className={selectedTime === "19:00 ~ 21:00" ? "selected" : ""}
+              className={selectedTime === "19:00 ~ 21:00" ? styles.selected : ""}
               onClick={() => handleTimeSelect("19:00 ~ 21:00")}
             >
               19:00 ~ 21:00
             </button>
           </div>
 
-          {/* ✅ 신청하기 버튼 클릭 시 모달 오픈 */}
           <button
-            className="apply-btn"
+            className={styles["apply-btn"]}
             disabled={!selectedDate || !selectedTime}
             onClick={() => openModal({
               shelter_name: `${id}번 보호소`, 
@@ -78,7 +77,6 @@ const DetailPage: React.FC = () => {
         </section>
       </main>
 
-      {/* ✅ 모달 추가 */}
       <DetailModal />
     </>
   );

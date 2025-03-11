@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ko';
-import '../../style/Searchdate.css';
+import styles from '../../style/Searchdate.module.scss';
 
 // dayjs 한국어 설정
 dayjs.locale('ko');
@@ -93,7 +93,7 @@ const Searchdate: React.FC<SearchdateProps> = ({ onSelectRange, onClose }) => {
     
     // 범위 내 날짜
     if (isInRange(day)) {
-      return 'in-range';
+      return 'inRange';
     }
     
     // 일반 날짜
@@ -185,29 +185,29 @@ const Searchdate: React.FC<SearchdateProps> = ({ onSelectRange, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="date-range-picker">
-      <div className="calendars-container">
+    <div className={styles.dateRangePicker}>
+      <div className={styles.calendarsContainer}>
         {/* 현재 달 캘린더 */}
-        <div className="calendar">
-          <div className="calendar-nav">
-            <span className="month-title">{currentMonth.format('YYYY년 M월')}</span>
+        <div className={styles.calendar}>
+          <div className={styles.calendarNav}>
+            <span className={styles.monthTitle}>{currentMonth.format('YYYY년 M월')}</span>
           </div>
           
-          <div className="weekdays">
+          <div className={styles.weekdays}>
             {WEEKDAYS.map(day => (
-              <div key={day} className="weekday">{day}</div>
+              <div key={day} className={styles.weekday}>{day}</div>
             ))}
           </div>
           
-          <div className="days">
+          <div className={styles.days}>
             {chunkedCurrentMonth.map((week, weekIndex) => (
-              <div key={`week-${weekIndex}`} className="week">
+              <div key={`week-${weekIndex}`} className={styles.week}>
                 {week.map((day, dayIndex) => {
                   const status = getDateStatus(day);
                   return (
                     <div
                       key={`day-${dayIndex}`}
-                      className={`day ${day.isCurrentMonth ? '' : 'other-month'} ${status}`}
+                      className={`${styles.day} ${!day.isCurrentMonth ? styles.otherMonth : ''} ${styles[status]}`}
                       onClick={() => day.isCurrentMonth && handleDateClick(day)}
                     >
                       {day.day}
@@ -220,26 +220,26 @@ const Searchdate: React.FC<SearchdateProps> = ({ onSelectRange, onClose }) => {
         </div>
         
         {/* 다음 달 캘린더 */}
-        <div className="calendar">
-          <div className="calendar-nav">
-            <span className="month-title">{currentMonth.add(1, 'month').format('YYYY년 M월')}</span>
+        <div className={styles.calendar}>
+          <div className={styles.calendarNav}>
+            <span className={styles.monthTitle}>{currentMonth.add(1, 'month').format('YYYY년 M월')}</span>
           </div>
           
-          <div className="weekdays">
+          <div className={styles.weekdays}>
             {WEEKDAYS.map(day => (
-              <div key={day} className="weekday">{day}</div>
+              <div key={day} className={styles.weekday}>{day}</div>
             ))}
           </div>
           
-          <div className="days">
+          <div className={styles.days}>
             {chunkedNextMonth.map((week, weekIndex) => (
-              <div key={`next-week-${weekIndex}`} className="week">
+              <div key={`next-week-${weekIndex}`} className={styles.week}>
                 {week.map((day, dayIndex) => {
                   const status = getDateStatus(day);
                   return (
                     <div
                       key={`next-day-${dayIndex}`}
-                      className={`day ${day.isCurrentMonth ? '' : 'other-month'} ${status}`}
+                      className={`${styles.day} ${!day.isCurrentMonth ? styles.otherMonth : ''} ${styles[status]}`}
                       onClick={() => day.isCurrentMonth && handleDateClick(day)}
                     >
                       {day.day}
@@ -252,14 +252,14 @@ const Searchdate: React.FC<SearchdateProps> = ({ onSelectRange, onClose }) => {
         </div>
       </div>
       
-      <div className="calendar-navigation">
-        <button className="nav-button prev" onClick={prevMonth}>&lt;</button>
-        <button className="nav-button next" onClick={nextMonth}>&gt;</button>
+      <div className={styles.calendarNavigation}>
+        <button className={`${styles.navButton} ${styles.prev}`} onClick={prevMonth}>&lt;</button>
+        <button className={`${styles.navButton} ${styles.next}`} onClick={nextMonth}>&gt;</button>
       </div>
       
-      <div className="action-buttons">
-        <button className="reset-button" onClick={resetSelection}>취소</button>
-        <button className="confirm-button" onClick={confirmSelection}>적용하기</button>
+      <div className={styles.actionButtons}>
+        <button className={styles.resetButton} onClick={resetSelection}>취소</button>
+        <button className={styles.confirmButton} onClick={confirmSelection}>적용하기</button>
       </div>
     </div>
   );

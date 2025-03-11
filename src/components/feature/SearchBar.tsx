@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ko'; 
-import '../../style/SearchBar.css'; 
+import styles from '../../style/SearchBar.module.scss';
 import DateRangePicker from './Searchdate';
 import TimeRangePicker from './SearchRange';
 
@@ -44,6 +44,10 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
         setSelectedLocations([...selectedLocations, loc]);
       }
     }
+  };
+
+  const resetLocations = (): void => {
+    setSelectedLocations([]);
   };
 
   const handleDateRangeSelect = (range: {
@@ -101,34 +105,34 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
   };
 
   return (
-    <div className="search-bar-container">
-      <div className="search-bar">
+    <div className={styles.searchBarContainer}>
+      <div className={styles.searchBar}>
         <div 
-          className={`search-section ${activeTab === 'location' ? 'active' : ''}`}
+          className={`${styles.searchSection} ${activeTab === 'location' ? styles.active : ''}`}
           onClick={() => setActiveTab(activeTab === 'location' ? null : 'location')}
         >
-          <div className="section-label">지역</div>
-          <div className="section-value">{getLocationDisplayText()}</div>
+          <div className={styles.sectionLabel}>지역</div>
+          <div className={styles.sectionValue}>{getLocationDisplayText()}</div>
         </div>
         
         <div 
-          className={`search-section ${activeTab === 'date' ? 'active' : ''}`}
+          className={`${styles.searchSection} ${activeTab === 'date' ? styles.active : ''}`}
           onClick={() => setActiveTab(activeTab === 'date' ? null : 'date')}
         >
-          <div className="section-label">날짜</div>
-          <div className="section-value">{formatDateRange()}</div>
+          <div className={styles.sectionLabel}>날짜</div>
+          <div className={styles.sectionValue}>{formatDateRange()}</div>
         </div>
         
         <div 
-          className={`search-section ${activeTab === 'time' ? 'active' : ''}`}
+          className={`${styles.searchSection} ${activeTab === 'time' ? styles.active : ''}`}
           onClick={() => setActiveTab(activeTab === 'time' ? null : 'time')}
         >
-          <div className="section-label">시간</div>
-          <div className="section-value">{formatTimeRange()}</div>
+          <div className={styles.sectionLabel}>시간</div>
+          <div className={styles.sectionValue}>{formatTimeRange()}</div>
         </div>
         
         <button 
-          className="search-button"
+          className={styles.searchButton}
           onClick={handleSearch}
           type="button"
           aria-label="검색"
@@ -141,17 +145,17 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
       </div>
 
       {activeTab && (
-        <div className="dropdown-container">
+        <div className={styles.dropdownContainer}>
           {activeTab === 'location' && (
             <div>
-              <h3 className="dropdown-title">지역 선택</h3>
-              <p className="selection-info">최대 3개까지 선택이 가능합니다.</p>
+              <h3 className={styles.dropdownTitle}>지역 선택</h3>
+              <p className={styles.selectionInfo}>최대 3개까지 선택이 가능합니다.</p>
               
-              <div className="location-grid">
+              <div className={styles.locationGrid}>
                 {locations.map((loc) => (
                   <button
                     key={loc}
-                    className={`location-pill ${selectedLocations.includes(loc) ? 'selected' : ''}`}
+                    className={`${styles.locationPill} ${selectedLocations.includes(loc) ? styles.selected : ''}`}
                     onClick={() => handleLocationSelect(loc)}
                     type="button"
                   >
@@ -160,9 +164,16 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
                 ))}
               </div>
               
-              <div className="button-container">
+              <div className={styles.buttonContainer}>
+              <button
+                  className={styles.resetButton}
+                  onClick={resetLocations}
+                  type="button"
+                >
+                  초기화
+                </button>
                 <button
-                  className="confirm-button"
+                  className={styles.confirmButton}
                   onClick={() => setActiveTab(null)}
                   type="button"
                 >

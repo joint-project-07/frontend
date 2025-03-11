@@ -1,5 +1,5 @@
 /* 모달 배경 */
-.modal-overlay {
+.modalOverlay {
   position: fixed;
   inset: 0;
   display: flex;
@@ -10,7 +10,7 @@
 }
 
 /* 모달 박스 */
-.modal-container {
+.modalContainer {
   background: white;
   width: 380px;
   padding: 24px;
@@ -20,19 +20,18 @@
 }
 
 /* 제목 */
-.modal-title {
+.modalTitle {
   font-size: 20px;
   font-weight: bold;
   margin-bottom: 12px;
-}
-
-/* 하트 색상 */
-.modal-title span {
-  color: #ff69b4;
+  
+  span {
+    color: #ff69b4;
+  }
 }
 
 /* 이미지 */
-.modal-image {
+.modalImage {
   width: 100%; /* 부모 요소에 맞게 자동 조정 */
   max-width: 150px; /* 원하는 최대 크기로 설정 */
   height: auto; /* 비율 유지 */
@@ -43,7 +42,7 @@
 }
 
 /* 설명 텍스트 */
-.modal-text {
+.modalText {
   font-size: 14px;
   color: #555;
   text-align: left;
@@ -51,7 +50,7 @@
 }
 
 /* 버튼 컨테이너 */
-.modal-buttons {
+.modalButtons {
   display: flex;
   justify-content: center; /* 버튼을 가운데 정렬 */
   gap: 10px; /* 버튼 사이 간격 조정 */
@@ -59,22 +58,29 @@
 }
 
 /* 버튼 기본 스타일 */
-.modal-button {
+.modalButton {
   padding: 10px 16px;
   border-radius: 8px;
   font-size: 14px;
   cursor: pointer;
   border: none;
-}
-
-/* 돌아가기 버튼 */
-.modal-button.cancel {
-  background: #e0e0e0;
-  color: black;
-}
-
-/* 신청하기 버튼 */
-.modal-button.apply {
-  background: #f8c1cc;
-  color: white;
+  
+  &.cancel {
+    background: #e0e0e0;
+    color: black;
+    
+    &:hover {
+      background: #d0d0d0;
+    }
+  }
+  
+  &.apply {
+    background: #ff9fb0;
+    color: white;
+    
+    &:hover {
+      background: #ff8da0;
+      transform: translateY(-2px);
+    }
+  }
 }

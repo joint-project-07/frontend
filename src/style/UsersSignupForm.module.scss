@@ -1,0 +1,291 @@
+.signupPage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  background-color: #f5f5f7;
+  min-height: 100vh;
+}
+
+.logoContainer {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.logoImage {
+  max-width: 150px;
+  height: auto;
+  
+  @media (max-width: 480px) {
+    max-width: 120px;
+  }
+}
+
+.signupContainer {
+  width: 100%;
+  max-width: 600px;
+  margin: 20px auto;
+  padding: 40px;
+  background-color: white;
+  border-radius: 28px;
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+  
+  h2 {
+    text-align: center;
+    margin-bottom: 32px;
+    color: #333;
+    font-size: 28px;
+    font-weight: 600;
+  }
+  
+  @media (max-width: 768px) {
+    margin: 24px 16px;
+    padding: 24px;
+    border-radius: 20px;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 20px;
+    border-radius: 16px;
+    
+    h2 {
+      font-size: 24px;
+      margin-bottom: 24px;
+    }
+  }
+}
+
+.signupForm {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 0;
+  
+  label {
+    font-weight: 500;
+    color: #555;
+  }
+}
+
+.passwordGroup {
+  margin-bottom: 12px;
+}
+
+.passwordContainer {
+  position: relative;
+  width: 100%;
+}
+
+.passwordInput {
+  width: 100%;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  border-bottom-width: 1px;
+  margin-bottom: 10px;
+  
+  &.passwordError {
+    border-bottom-color: #ff6b6b;
+  }
+}
+
+.passwordConfirmWrapper {
+  width: 100%;
+  margin-top: -1px;
+}
+
+.passwordConfirmInput {
+  width: 100%;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  border-top-width: 1px;
+  
+  &.passwordError {
+    background-color: #fff0f0;
+  }
+}
+
+.passwordError {
+  border-color: #ff6b6b;
+}
+
+.required {
+  color: #ff6b6b;
+  margin-left: 3px;
+}
+
+.errorMessage {
+  color: #ff6b6b;
+  font-size: 12px;
+  margin-top: 5px;
+  margin-bottom: 0;
+}
+
+.termsContainer {
+  margin: 24px 0;
+  padding: 16px;
+  background-color: #f9f9f9;
+  border-radius: 12px;
+  
+  @media (max-width: 768px) {
+    padding: 12px;
+  }
+}
+
+.termsTitle {
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: #333;
+}
+
+.termsCheckbox {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+  position: relative;
+  
+  input[type="checkbox"] {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    position: absolute;
+    opacity: 0;
+    
+    &:checked + label::before {
+      background-color: #ff9fb0;
+      border-color: #ff9fb0;
+    }
+    
+    &:checked + label::after {
+      content: '';
+      position: absolute;
+      left: 6px;
+      top: 3px;
+      width: 6px;
+      height: 10px;
+      border: solid white;
+      border-width: 0 2px 2px 0;
+      transform: rotate(45deg);
+    }
+    
+    &:focus + label::before {
+      box-shadow: 0 0 0 3px rgba(255, 159, 176, 0.2);
+    }
+  }
+  
+  label {
+    position: relative;
+    padding-left: 30px;
+    cursor: pointer;
+    display: inline-block;
+    color: #555;
+    font-size: 14px;
+    line-height: 20px;
+    
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 18px;
+      height: 18px;
+      border: 2px solid #e0e0e0;
+      border-radius: 4px;
+      background-color: white;
+      transition: all 0.2s ease;
+    }
+    
+    &:hover::before {
+      border-color: #ff9fb0;
+    }
+  }
+  
+  &:first-of-type {
+    label {
+      font-weight: 600;
+      color: #333;
+      
+      &::before {
+        border-width: 2px;
+      }
+    }
+  }
+}
+
+.termsLink {
+  margin-left: 8px;
+  color: #ff9fb0;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 500;
+  transition: color 0.2s;
+  
+  &:hover {
+    text-decoration: underline;
+    color: #ff8da0;
+  }
+}
+
+button[type="submit"] {
+  width: 100%;
+  padding: 16px;
+  background-color: #ff9fb0;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 16px;
+  
+  &:hover {
+    background-color: #ff8da0;
+    transform: translateY(-2px);
+  }
+  
+  @media (max-width: 768px) {
+    font-size: 15px;
+    padding: 14px;
+  }
+}
+
+.backLink {
+  display: block;
+  text-align: center;
+  margin-top: 24px;
+  color: #666;
+  text-decoration: none;
+  font-weight: 500;
+  cursor: pointer;
+  
+  &:hover {
+    color: #ff9fb0;
+    text-decoration: underline;
+  }
+}
+
+.organizationLink {
+  text-align: center;
+  margin-top: 16px;
+  font-size: 14px;
+  color: #666;
+}
+
+.orgSignupLink {
+  color: #ff9fb0;
+  text-decoration: none;
+  font-weight: 500;
+  margin-left: 5px;
+  
+  &:hover {
+    text-decoration: underline;
+  }
+}

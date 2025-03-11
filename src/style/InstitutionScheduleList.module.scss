@@ -10,7 +10,7 @@ html {
 }
 
 /* 보호기관 일정 리스트 컨테이너 */
-.institution-container {
+.institutionContainer {
   width: 100%;
   max-width: 100%;
   padding: 0 40px;
@@ -20,7 +20,7 @@ html {
     Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
 }
 
-.institution-title {
+.institutionTitle {
   text-align: center;
   font-size: 24px;
   font-weight: bold;
@@ -28,13 +28,26 @@ html {
 }
 
 /* 보호기관 카드 그리드 */
-.institution-grid {
+.institutionGrid {
   display: grid;
   grid-template-columns: repeat(4, 1fr); /* 4열 그리드 */
   gap: 64px;
   width: 100%;
   margin: 32px 0;
   padding: 36px 120px 0;
+  
+  /* 반응형 처리 */
+  @media (max-width: 1200px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  @media (max-width: 1024px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* 개별 카드 */
@@ -49,36 +62,19 @@ html {
   text-align: center;
   width: 100%;
   max-width: 250px;
-}
-
-/* 카드 이미지 */
-.card img {
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  object-fit: cover;
-  border-radius: 24px;
-  margin-bottom: 16px;
-}
-
-/* 반응형 처리 */
-@media (max-width: 1200px) {
-  .institution-grid {
-    grid-template-columns: repeat(3, 1fr);
+  
+  img {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    border-radius: 24px;
+    margin-bottom: 16px;
   }
 }
 
+/* 반응형 처리 - 컨테이너 */
 @media (max-width: 1024px) {
-  .institution-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .institution-container {
+  .institutionContainer {
     padding: 0 20px;
-  }
-}
-
-@media (max-width: 768px) {
-  .institution-grid {
-    grid-template-columns: 1fr;
   }
 }

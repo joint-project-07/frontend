@@ -1,11 +1,11 @@
 import React from "react";
 import { useTabStore } from "../store/TabStore";
 import { useShelterStore } from "../store/ShelterStore";
-import "../style/Mypage.css";
+import styles from "../style/Mypage.module.scss";
 import { usePaginationStore } from "../store/CurrentStore";
 import "../style/Button.css";
 import Modal from "../components/common/Modal";
-import  useModalStore  from "../store/ModalStore";
+import useModalStore from "../store/ModalStore";
 import StarRating from "../components/common/StarRating";
 
 interface ShelterItem {
@@ -36,11 +36,11 @@ const PaginatedList: React.FC<ListProps> = ({
   );
 
   return (
-    <section className="list-section">
+    <section className={styles.listSection}>
       {slicedList.length > 0 ? (
         <>
           {slicedList.map(renderItem)}
-          <div className="pagination">
+          <div className={styles.pagination}>
             <button onClick={prevPage} disabled={currentPage === 1}>
               이전
             </button>
@@ -49,7 +49,7 @@ const PaginatedList: React.FC<ListProps> = ({
                 <button
                   key={number}
                   onClick={() => setPage(number)}
-                  className={currentPage === number ? "active-page" : ""}
+                  className={currentPage === number ? styles.activePage : ""}
                 >
                   {number}
                 </button>
@@ -71,20 +71,20 @@ const ShelterList: React.FC = () => {
   const { shelterList } = useShelterStore();
 
   return (
-    <div className="shelter-list-container">
-      <img src="/images/logo.png" alt="로고 이미지" className="shelter-logo" />
+    <div className={styles.shelterListContainer}>
+      <img src="/images/logo.png" alt="로고 이미지" className={styles.shelterLogo} />
 
       <PaginatedList
         list={shelterList}
         renderItem={(item) => (
           <div
             key={item.application_id}
-            className={`shelter-card ${item.status}`}
+            className={styles.shelterCard}
           >
             <h3>{item.shelter_name}</h3>
             <p>예약 날짜: {item.date}</p>
             <p>봉사 활동: {item.description}</p>
-            <p className={`status-${item.status}`}>
+            <p className={item.status === "pending" ? styles.statusPending : styles.statusComplete}>
               {item.status === "pending" ? "승인 대기" : "승인 완료"}
             </p>
           </div>
@@ -117,13 +117,13 @@ const VolunteerHistory: React.FC = () => {
   };
 
   return (
-    <div className="volunteer-list-container">
-      <img src="/images/logo.png" alt="로고 이미지" className="shelter-logo" />
+    <div className={styles.volunteerListContainer}>
+      <img src="/images/logo.png" alt="로고 이미지" className={styles.shelterLogo} />
 
       <PaginatedList
         list={shelterList}
         renderItem={(item) => (
-          <div key={item.application_id} className="volunteer-card">
+          <div key={item.application_id} className={styles.volunteerCard}>
             <h3>{item.shelter_name}</h3>
             <p>예약 날짜: {item.date}</p>
             <p>봉사 활동: {item.description}</p>
@@ -136,12 +136,12 @@ const VolunteerHistory: React.FC = () => {
       />
       <Modal isOpen={isOpen} onClose={closeModal} title="만족도 조사">
         {selectedShelter && (
-          <div className="survey-container">
+          <div className={styles.surveyContainer}>
             <h3>만족도 조사</h3>
             <p>이번 봉사활동은 어떠셨나요?</p>
             <StarRating rating={rating} setRating={setRating} />
             <button
-              className="submit-button"
+              className={styles.submitButton}
               onClick={handleSubmit}
               disabled={rating === 0}
             >
@@ -160,17 +160,17 @@ const TabContent: React.FC = () => {
   switch (activeTab) {
     case "info":
       return (
-        <div className="mypage-container">
-          <main className="mypage-content">
-            <section className="profile-section">
-              <div className="profile-image"></div>
-              <button className="profile-edit-btn">프로필 변경</button>
+        <div className={styles.mypageContainer}>
+          <main className={styles.mypageContent}>
+            <section className={styles.profileSection}>
+              <div className={styles.profileImage}></div>
+              <button className={styles.profileEditBtn}>프로필 변경</button>
             </section>
-            <section className="info-section">
-              <button className="info-button">사용자명</button>
-              <button className="info-button">역할</button>
-              <button className="info-button">펫모어핸즈와 함께해용💜</button>
-              <button className="info-button">추가 버튼</button>
+            <section className={styles.infoSection}>
+              <button className={styles.infoButton}>사용자명</button>
+              <button className={styles.infoButton}>역할</button>
+              <button className={styles.infoButton}>펫모어핸즈와 함께해용💜</button>
+              <button className={styles.infoButton}>추가 버튼</button>
             </section>
           </main>
         </div>
@@ -188,23 +188,23 @@ const MyPage: React.FC = () => {
   const { activeTab, setActiveTab } = useTabStore();
 
   return (
-    <div className="mypage-container">
-      <header className="mypage-header">
+    <div className={styles.mypageContainer}>
+      <header className={styles.mypageHeader}>
         <button
           onClick={() => setActiveTab("info")}
-          className={activeTab === "info" ? "active-tab" : ""}
+          className={activeTab === "info" ? styles.activeTab : ""}
         >
           내 정보
         </button>
         <button
           onClick={() => setActiveTab("shelter")}
-          className={activeTab === "shelter" ? "active-tab" : ""}
+          className={activeTab === "shelter" ? styles.activeTab : ""}
         >
           보호소 승인 대기/완료
         </button>
         <button
           onClick={() => setActiveTab("volunteer")}
-          className={activeTab === "volunteer" ? "active-tab" : ""}
+          className={activeTab === "volunteer" ? styles.activeTab : ""}
         >
           봉사활동 이력
         </button>

@@ -1,5 +1,5 @@
 import React from "react";
-import "../../style/Card.css";
+import styles from "../../style/Card.module.scss";
 import dangimg from "../../assets/dangimg.png";
 
 interface CardProps {
@@ -8,7 +8,7 @@ interface CardProps {
   region: string;
   date: string;
   volunteerwork: string;
-  onClick?: () => void; // Make sure to include onClick in the props
+  onClick?: () => void;
 }
 
 const Card: React.FC<CardProps> = ({
@@ -17,10 +17,10 @@ const Card: React.FC<CardProps> = ({
   region,
   date,
   volunteerwork,
-  onClick, // Destructure onClick
+  onClick,
 }) => {
   return (
-    <div className="card" onClick={onClick}>
+    <div className={styles.card} onClick={onClick}>
       <img src={dangimg} alt={image} />
       <div>
         <h3>{title}</h3>
