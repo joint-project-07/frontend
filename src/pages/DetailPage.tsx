@@ -2,7 +2,7 @@ import React from "react";
 import { useParams } from "react-router-dom";
 import "../style/DetailPage.css";
 import useStore from "../store/Detail";
-import useModalStore from "../store/modalStore"; // ✅ Zustand 모달 상태 가져오기
+import { useModalStore } from "../store/ModalStore"; // ✅ Zustand 모달 상태 가져오기
 import DetailModal from "../components/common/DetailModal";
 
 const DetailPage: React.FC = () => {
@@ -68,7 +68,10 @@ const DetailPage: React.FC = () => {
           <button
             className="apply-btn"
             disabled={!selectedDate || !selectedTime}
-            onClick={openModal}
+            onClick={() => openModal({
+              shelter_name: `${id}번 보호소`, 
+              description: "견사 청소, 미용, 목욕, 산책, 밥주기 등" 
+            })}
           >
             신청하기
           </button>
