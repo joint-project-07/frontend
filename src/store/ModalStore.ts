@@ -15,7 +15,7 @@ setRating: (rating: number) => void;
   resetSurvey: () => void;
 }
 
-export const useModalStore = create<ModalState>((set) => ({
+const useModalStore = create<ModalState>((set) => ({
   isOpen: false,
 selectedShelter: null,
   rating: 0,

@@ -15,7 +15,7 @@ interface ModalState {
   resetSurvey: () => void;
 }
 
-export const useModalStore = create<ModalState>((set) => ({
+const useModalStore = create<ModalState>((set) => ({
   isOpen: false,
   selectedShelter: null,
   rating: 0,
@@ -28,3 +28,5 @@ export const useModalStore = create<ModalState>((set) => ({
   setFeedback: (feedback) => set({ feedback }),
   resetSurvey: () => set({ rating: 0, feedback: "" }),
 }));
+
+export default useModalStore;
