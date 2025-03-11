@@ -141,7 +141,7 @@ const VolunteerHistory: React.FC = () => {
             <p>이번 봉사활동은 어떠셨나요?</p>
             <StarRating rating={rating} setRating={setRating} />
             <button
-              className="button submit-button"
+              className="submit-button"
               onClick={handleSubmit}
               disabled={rating === 0}
             >
