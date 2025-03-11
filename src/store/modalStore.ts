@@ -2,7 +2,7 @@ import { create } from "zustand";
 
 interface ModalState {
   isOpen: boolean;
-  selectedShelter: {
+selectedShelter: {
     shelter_name: string;
     description: string;
   } | null;
@@ -10,8 +10,8 @@ interface ModalState {
   feedback: string;
   openModal: (shelter: { shelter_name: string; description: string }) => void;
   closeModal: () => void;
-  setRating: (rating: number) => void;
-  setFeedback: (feedback: string) => void;
+    setRating: (rating: number) => void;
+    setFeedback: (feedback: string) => void;
   resetSurvey: () => void;
 }
 
