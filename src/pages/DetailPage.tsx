@@ -2,7 +2,7 @@ import React from "react";
 import { useParams } from "react-router-dom";
 import "../style/DetailPage.css";
 import useStore from "../store/Detail";
-import { useModalStore } from "../store/ModalStore"; // ✅ Zustand 모달 상태 가져오기
+import  useModalStore  from "../store/ModalStore"; // ✅ Zustand 모달 상태 가져오기
 import DetailModal from "../components/common/DetailModal";
 
 const DetailPage: React.FC = () => {
