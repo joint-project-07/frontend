@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import TermsModal from './TermsModal';
+import { TermsOfServiceContent, PrivacyPolicyContent, MarketingConsentContent } from './TermsContent';
 
 interface AgreementItem {
   name: string;
@@ -45,6 +47,10 @@ const TermsAgreement: React.FC<TermsAgreementProps> = ({
     return baseState;
   });
   
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalTitle, setModalTitle] = useState('');
+  const [modalContent, setModalContent] = useState<React.ReactNode>(null);
+  
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, checked } = e.target;
     
@@ -87,11 +93,22 @@ const TermsAgreement: React.FC<TermsAgreementProps> = ({
     }
   }, [agreements]);
   
-  const handleTermsLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, link?: string) => {
+  const handleTermsLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, item: AgreementItem) => {
     e.preventDefault();
-    if (link) {
-      console.log(`Terms link clicked: ${link}`);
+    
+    // 약관 종류에 따라 모달 내용 설정
+    if (item.name === 'agree_terms') {
+      setModalTitle('이용약관');
+      setModalContent(<TermsOfServiceContent />);
+    } else if (item.name === 'agree_privacy') {
+      setModalTitle('개인정보 수집 및 이용 동의');
+      setModalContent(<PrivacyPolicyContent />);
+    } else if (item.name === 'agree_marketing') {
+      setModalTitle('마케팅 정보 수신 동의');
+      setModalContent(<MarketingConsentContent />);
     }
+    
+    setModalOpen(true);
   };
   
   return (
@@ -120,11 +137,11 @@ const TermsAgreement: React.FC<TermsAgreementProps> = ({
           />
           <label htmlFor={item.name}>
             {item.required ? `(필수) ${item.label}` : `(선택) ${item.label}`}
-            {showLinks && item.link && (
+            {showLinks && (
               <a 
                 href="#" 
                 className="terms-link"
-                onClick={(e) => handleTermsLinkClick(e, item.link)}
+                onClick={(e) => handleTermsLinkClick(e, item)}
               >
                 보기
               </a>
@@ -132,6 +149,13 @@ const TermsAgreement: React.FC<TermsAgreementProps> = ({
           </label>
         </div>
       ))}
+      
+      <TermsModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title={modalTitle}
+        content={modalContent}
+      />
     </div>
   );
 };
