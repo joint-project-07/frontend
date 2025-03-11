@@ -1,9 +1,12 @@
 import React from "react";
 import { useTabStore } from "../store/TabStore";
 import { useShelterStore } from "../store/ShelterStore";
-import "../style/Mypage.css"
+import "../style/Mypage.css";
 import { usePaginationStore } from "../store/CurrentStore";
-import "../style/Button.css"
+import "../style/Button.css";
+import Modal from "../components/common/Modal";
+import { useModalStore } from "../store/ModalStore";
+import StarRating from "../components/common/StarRating";
 
 interface ShelterItem {
   application_id: number;
@@ -27,14 +30,6 @@ const PaginatedList: React.FC<ListProps> = ({
   const { currentPage, itemsPerPage, totalPages, nextPage, prevPage, setPage } =
     usePaginationStore();
 
-  const currentGroup = Math.ceil(currentPage / 5);
-  const startPage = (currentGroup - 1) * 5 + 1;
-  const endPage = Math.min(currentGroup * 5, totalPages);
-
-  const pageNumbers = Array.from(
-    { length: endPage - startPage + 1 },
-    (_, i) => startPage + i
-  );
   const slicedList = list.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
@@ -49,15 +44,17 @@ const PaginatedList: React.FC<ListProps> = ({
             <button onClick={prevPage} disabled={currentPage === 1}>
               이전
             </button>
-            {pageNumbers.map((number) => (
-              <button
-                key={number}
-                onClick={() => setPage(number)}
-                className={currentPage === number ? "active-page" : ""}
-              >
-                {number}
-              </button>
-            ))}
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+              (number) => (
+                <button
+                  key={number}
+                  onClick={() => setPage(number)}
+                  className={currentPage === number ? "active-page" : ""}
+                >
+                  {number}
+                </button>
+              )
+            )}
             <button onClick={nextPage} disabled={currentPage === totalPages}>
               다음
             </button>
@@ -80,20 +77,16 @@ const ShelterList: React.FC = () => {
       <PaginatedList
         list={shelterList}
         renderItem={(item) => (
-          <div key={item.application_id} className={`shelter-card ${item.status}`}>
-            <img
-              src="/images/shelter.jpg"
-              alt={`${item.shelter_name} 보호소 이미지`}
-              className="shelter-image"
-            />
-            <div className="shelter-info">
-              <h3>{item.shelter_name}</h3>
-              <p>예약 날짜: {item.date}</p>
-              <p>봉사 활동: {item.description}</p>
-              <p className={`status-${item.status}`}>
-                {item.status === "pending" ? "승인 대기" : "승인 완료"}
-              </p>
-            </div>
+          <div
+            key={item.application_id}
+            className={`shelter-card ${item.status}`}
+          >
+            <h3>{item.shelter_name}</h3>
+            <p>예약 날짜: {item.date}</p>
+            <p>봉사 활동: {item.description}</p>
+            <p className={`status-${item.status}`}>
+              {item.status === "pending" ? "승인 대기" : "승인 완료"}
+            </p>
           </div>
         )}
         emptyMessage="예약 내역이 없습니다."
@@ -104,6 +97,24 @@ const ShelterList: React.FC = () => {
 
 const VolunteerHistory: React.FC = () => {
   const { shelterList } = useShelterStore();
+  const {
+    isOpen,
+    selectedShelter,
+    openModal,
+    closeModal,
+    rating,
+    setRating,
+    resetSurvey,
+  } = useModalStore();
+
+  const handleSubmit = () => {
+    alert(`
+    보호소: ${selectedShelter?.shelter_name}
+    만족도 점수: ⭐ ${rating}점
+    제출되었습니다!`);
+    closeModal();
+    resetSurvey();
+  };
 
   return (
     <div className="volunteer-list-container">
@@ -116,16 +127,29 @@ const VolunteerHistory: React.FC = () => {
             <h3>{item.shelter_name}</h3>
             <p>예약 날짜: {item.date}</p>
             <p>봉사 활동: {item.description}</p>
-            <button
-              onClick={() => alert(`${item.shelter_name} 만족도 조사 완료!`)}
-              className="button"
-            >
+            <button className="button" onClick={() => openModal(item)}>
               만족도 조사
             </button>
           </div>
         )}
         emptyMessage="봉사활동 이력이 없습니다."
       />
+      <Modal isOpen={isOpen} onClose={closeModal} title="만족도 조사">
+        {selectedShelter && (
+          <div className="survey-container">
+            <h3>만족도 조사</h3>
+            <p>이번 봉사활동은 어떠셨나요?</p>
+            <StarRating rating={rating} setRating={setRating} />
+            <button
+              className="submit-button"
+              onClick={handleSubmit}
+              disabled={rating === 0}
+            >
+              제출
+            </button>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 };
