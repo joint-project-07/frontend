@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import "../style/VolunteerScheduleForm.css";
+import styles from "../style/VolunteerScheduleForm.module.scss";
 
 const VolunteerScheduleForm: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -30,7 +30,7 @@ const VolunteerScheduleForm: React.FC = () => {
   };
 
   return (
-    <div className="volunteer-schedule-form">
+    <div className={styles.volunteerScheduleForm}>
       <h1>봉사 일정 등록</h1>
       <form onSubmit={handleSubmit}>
         <div>

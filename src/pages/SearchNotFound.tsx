@@ -1,6 +1,6 @@
 import React from "react";
 import dogImage from "../../src/assets/dog-image.png";
-import "../style/SearchNotFound.css";
+import styles from "../style/SearchNotFound.module.scss";
 import SearchBar from "../components/feature/SearchBar";
 
 interface SearchNotFoundProps {
@@ -13,10 +13,10 @@ const SearchNotFound: React.FC<SearchNotFoundProps> = ({
   return (
     <>
       <SearchBar />
-      <div className="search-not-found">
+      <div className={styles.searchNotFound}>
         <h2>앗!</h2>
         <p>{message}</p>
-        <img src={dogImage} alt="검색 결과 없음" className="not-found-image" />
+        <img src={dogImage} alt="검색 결과 없음" className={styles.notFoundImage} />
       </div>
     </>
   );

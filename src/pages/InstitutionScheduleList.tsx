@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Card from "../components/common/Card";
-import "../style/InstitutionScheduleList.css";
+import styles from "../style/InstitutionScheduleList.module.scss";
 import { useNavigate } from "react-router-dom";
 
 interface CardData {
@@ -41,9 +41,9 @@ const InstitutionScheduleList: React.FC = () => {
   };
 
   return (
-    <div className="institution-container">
-      <h2 className="institution-title">보호기관 일정</h2>
-      <div className="institution-grid">
+    <div className={styles.institutionContainer}>
+      <h2 className={styles.institutionTitle}>보호기관 일정</h2>
+      <div className={styles.institutionGrid}>
         {cards.map((card) => (
           <Card 
             key={card.id}

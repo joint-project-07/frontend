@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useUsersStore } from "../store/UsersStore";
-import "../style/UsersSignupForm.css";
+import styles from "../style/UsersSignupForm.module.scss";
 import { useState } from "react";
 import logoImage from "../assets/logo.png"; 
 import TermsAgreement from "../components/common/TermsAgreement";
@@ -41,25 +41,26 @@ const UsersSignupForm: React.FC = () => {
       return;
     }
 
-    if (!form.agree_all) {
-      alert("이용약관에 동의해주세요.");
+    if (!form.agree_terms || !form.agree_privacy) {
+      alert("필수 약관에 모두 동의해주세요.");
       return;
     }
 
     alert("회원가입 완료!");
-    console.log("회원정보:", form);
   };
 
   return (
-    <div className="signup-page">
-      <div className="signup-container">
-      <div className="logo-container">
-        <img src={logoImage} alt="로고" className="logo-image" />
-      </div>
+    <div className={styles.signupPage}>
+      <div className={styles.signupContainer}>
+        <div className={styles.logoContainer}
+        onClick={() => navigate("/")} 
+        style={{ cursor: 'pointer' }}>
+          <img src={logoImage} alt="로고" className={styles.logoImage} />
+        </div>
         <h2>회원가입</h2>
-        <form className="signup-form" onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label>이메일 <span className="required">*</span></label>
+        <form className={styles.signupForm} onSubmit={handleSubmit}>
+          <div className={styles.formGroup}>
+            <label>이메일 <span className={styles.required}>*</span></label>
             <input
               type="email"
               name="email"
@@ -70,38 +71,38 @@ const UsersSignupForm: React.FC = () => {
             />
           </div>
           
-          <div className="form-group password-group">
-            <label>비밀번호 <span className="required">*</span></label>
-            <div className="password-container">
+          <div className={`${styles.formGroup} ${styles.passwordGroup}`}>
+            <label>비밀번호 <span className={styles.required}>*</span></label>
+            <div className={styles.passwordContainer}>
               <input
                 type="password"
                 name="password"
                 placeholder="비밀번호를 입력해 주세요. (8자리 이상)"
                 value={form.password || ""}
                 onChange={handleChange}
-                className={`password-input ${!passwordMatch && passwordConfirm !== "" ? "password-error" : ""}`}
+                className={`${styles.passwordInput} ${!passwordMatch && passwordConfirm !== "" ? styles.passwordError : ""}`}
                 minLength={8}
                 required
               />
-              <div className="password-confirm-wrapper">
+              <div className={styles.passwordConfirmWrapper}>
                 <input
                   type="password"
                   name="password_confirm"
                   placeholder="비밀번호를 한번 더 입력해 주세요."
                   value={passwordConfirm}
                   onChange={handlePasswordConfirmChange}
-                  className={`password-confirm-input ${!passwordMatch ? "password-error" : ""}`}
+                  className={`${styles.passwordConfirmInput} ${!passwordMatch ? styles.passwordError : ""}`}
                   required
                 />
               </div>
             </div>
             {!passwordMatch && passwordConfirm !== "" && (
-              <p className="error-message">비밀번호가 일치하지 않습니다.</p>
+              <p className={styles.errorMessage}>비밀번호가 일치하지 않습니다.</p>
             )}
           </div>
           
-          <div className="form-group">
-            <label>이름 <span className="required">*</span></label>
+          <div className={styles.formGroup}>
+            <label>이름 <span className={styles.required}>*</span></label>
             <input
               type="text"
               name="name"
@@ -112,7 +113,7 @@ const UsersSignupForm: React.FC = () => {
             />
           </div>
           
-          <div className="form-group">
+          <div className={styles.formGroup}>
             <label>전화번호 </label>
             <input
               type="tel"
@@ -124,8 +125,8 @@ const UsersSignupForm: React.FC = () => {
             />
           </div>
           
-          <div className="terms-container">
-            <p className="terms-title">이용약관 동의</p>
+          <div className={styles.termsContainer}>
+            <p className={styles.termsTitle}>이용약관 동의</p>
             
             <TermsAgreement
               agreements={[
@@ -163,23 +164,22 @@ const UsersSignupForm: React.FC = () => {
           
           <button type="submit">회원가입 완료</button>
         </form>
-        <div className="organization-link">
-            <Link to="/ShelterSignup" className="org-signup-link">
-              기관 이신가요? 기관 회원가입
-            </Link>
-          </div>
-          <div 
-  className="back-link" 
-  onClick={() => navigate("/", { 
-    state: { 
-      openLoginModal: true,
-      from: 'signup'
-    } as LocationState
-  })}
-    >
-      이미 계정이 있으신가요? 로그인하기
-    </div>
-
+        <div className={styles.organizationLink}>
+          <Link to="/ShelterSignup" className={styles.orgSignupLink}>
+            기관 이신가요? 기관 회원가입
+          </Link>
+        </div>
+        <div 
+          className={styles.backLink} 
+          onClick={() => navigate("/", { 
+            state: { 
+              openLoginModal: true,
+              from: 'signup'
+            } as LocationState
+          })}
+        >
+          이미 계정이 있으신가요? 로그인하기
+        </div>
       </div>
     </div>
   );

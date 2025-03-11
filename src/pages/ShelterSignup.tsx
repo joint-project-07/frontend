@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useShelterStore } from "../store/ShelterStore";
-import "../style/ShelterSignup.css";
+import styles from "../style/ShelterSignup.module.scss";
 import { useState } from "react";
 import logoImage from "../assets/logo.png";
 import TermsAgreement from "../components/common/TermsAgreement";
@@ -10,6 +10,7 @@ interface LocationState {
   from: string;
   activeTab?: string;
 }
+
 
 const ShelterSignupForm: React.FC = () => {
   const { form, setForm } = useShelterStore();
@@ -43,145 +44,146 @@ const ShelterSignupForm: React.FC = () => {
       return;
     }
 
-    if (!form.agree_all) {
-      alert("이용약관에 동의해주세요.");
+    if (!form.agree_terms || !form.agree_privacy) {
+      alert("필수 약관에 모두 동의해주세요.");
       return;
     }
 
     alert("보호소 회원가입 완료!");
-    console.log("회원가입 정보:", form);
   };
 
   return (
-    <div className="landing-container">
-      <div className="signup-container">
-      <div className="logo-container">
-        <img src={logoImage} alt="로고" className="logo-image" />
-      </div>
+    <div className={styles.landingContainer}>
+      <div className={styles.signupContainer}>
+        <div className={styles.logoContainer}
+        onClick={() => navigate("/")} 
+        style={{ cursor: 'pointer' }}>
+          <img src={logoImage} alt="로고" className={styles.logoImage} />
+        </div>
         <h2>보호소 회원가입</h2>
-        <form className="signup-form" onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label>보호소 이름 <span className="required">*</span></label>
+        <form className={styles.signupForm} onSubmit={handleSubmit}>
+          <div className={styles.formGroup}>
+            <label>보호소 이름 <span className={styles.required}>*</span></label>
             <input
               type="text"
               name="name"
               placeholder="보호소 이름"
               value={form.name || ""}
               onChange={handleChange}
-              className="input"
+              className={styles.input}
               required
             />
           </div>
 
-          <div className="form-group">
-            <label>사업자등록 메일 <span className="required">*</span></label>
+          <div className={styles.formGroup}>
+            <label>사업자등록 메일 <span className={styles.required}>*</span></label>
             <input
               type="email"
               name="business_registration_email"
               placeholder="사업자등록 메일"
               value={form.business_registration_email || ""}
               onChange={handleChange}
-              className="input"
+              className={styles.input}
               required
             />
           </div>
           
-          <div className="form-group password-group">
-            <label>비밀번호 <span className="required">*</span></label>
-            <div className="password-container">
+          <div className={`${styles.formGroup} ${styles.passwordGroup}`}>
+            <label>비밀번호 <span className={styles.required}>*</span></label>
+            <div className={styles.passwordContainer}>
               <input
                 type="password"
                 name="password"
                 placeholder="비밀번호를 입력해 주세요. (8자리 이상)"
                 value={form.password || ""}
                 onChange={handleChange}
-                className={`password-input ${!passwordMatch && passwordConfirm !== "" ? "password-error" : ""}`}
+                className={`${styles.passwordInput} ${!passwordMatch && passwordConfirm !== "" ? styles.passwordError : ""}`}
                 minLength={8}
                 required
               />
-              <div className="password-confirm-wrapper">
+              <div className={styles.passwordConfirmWrapper}>
                 <input
                   type="password"
                   name="password_confirm"
                   placeholder="비밀번호를 한번 더 입력해 주세요."
                   value={passwordConfirm}
                   onChange={handlePasswordConfirmChange}
-                  className={`password-confirm-input ${!passwordMatch ? "password-error" : ""}`}
+                  className={`${styles.passwordConfirmInput} ${!passwordMatch ? styles.passwordError : ""}`}
                   required
                 />
               </div>
             </div>
             {!passwordMatch && passwordConfirm !== "" && (
-              <p className="error-message">비밀번호가 일치하지 않습니다.</p>
+              <p className={styles.errorMessage}>비밀번호가 일치하지 않습니다.</p>
             )}
           </div>
 
-          <div className="form-group">
-            <label>보호소 유형 <span className="required">*</span></label>
+          <div className={styles.formGroup}>
+            <label>보호소 유형 <span className={styles.required}>*</span></label>
             <input
               type="text"
               name="shelter_type"
               placeholder="보호소 유형"
               value={form.shelter_type || ""}
               onChange={handleChange}
-              className="input"
+              className={styles.input}
               required
             />
           </div>
 
-          <div className="form-group">
-            <label>사업자 등록번호 <span className="required">*</span></label>
+          <div className={styles.formGroup}>
+            <label>사업자 등록번호 <span className={styles.required}>*</span></label>
             <input
               type="text"
               name="business_registration_number"
               placeholder="사업자 등록번호"
               value={form.business_registration_number || ""}
               onChange={handleChange}
-              className="input"
+              className={styles.input}
               required
             />
           </div>
 
-          <div className="form-group">
-            <label>보호소 주소 <span className="required">*</span></label>
+          <div className={styles.formGroup}>
+            <label>보호소 주소 <span className={styles.required}>*</span></label>
             <input
               type="text"
               name="address"
               placeholder="보호소 주소"
               value={form.address || ""}
               onChange={handleChange}
-              className="input"
+              className={styles.input}
               required
             />
           </div>
 
-          <div className="form-group">
-            <label>대표자 명 <span className="required">*</span></label>
+          <div className={styles.formGroup}>
+            <label>대표자 명 <span className={styles.required}>*</span></label>
             <input
               type="text"
               name="owner_name"
               placeholder="대표자 명"
               value={form.owner_name || ""}
               onChange={handleChange}
-              className="input"
+              className={styles.input}
               required
             />
           </div>
 
-          <div className="form-group">
-            <label>보호소 연락처 <span className="required">*</span></label>
+          <div className={styles.formGroup}>
+            <label>보호소 연락처 <span className={styles.required}>*</span></label>
             <input
               type="tel"
               name="contact_number"
               placeholder="'-' 없이 숫자만 입력하세요"
               value={form.contact_number || ""}
               onChange={handleChange}
-              className="input"
+              className={styles.input}
               required
             />
           </div>
-          <div className="terms-container">
-            <p className="terms-title">이용약관 동의</p>
+          <div className={styles.termsContainer}>
+            <p className={styles.termsTitle}>이용약관 동의</p>
             
             <TermsAgreement
               agreements={[
@@ -217,27 +219,27 @@ const ShelterSignupForm: React.FC = () => {
             />
           </div>
 
-          <button type="submit" className="button">
+          <button type="submit" className={styles.button}>
             회원가입 완료
           </button>
         </form>
         
-        <div className="user-link">
-          봉사자 이신가요? <Link to="/UsersSignup" className="org-signup-link">일반 회원가입</Link>
+        <div className={styles.userLink}>
+          봉사자 이신가요? <Link to="/UsersSignup" className={styles.orgSignupLink}>일반 회원가입</Link>
         </div>
         
         <div 
-  className="back-link" 
-  onClick={() => navigate("/", { 
-    state: { 
-      openLoginModal: true,
-      from: 'signup',
-      activeTab: 'organization'
-    } as LocationState
-  })}
-    >
-      이미 계정이 있으신가요? 로그인하기
-    </div>
+          className={styles.backLink} 
+          onClick={() => navigate("/", { 
+            state: { 
+              openLoginModal: true,
+              from: 'signup',
+              activeTab: 'organization'
+            } as LocationState
+          })}
+        >
+          이미 계정이 있으신가요? 로그인하기
+        </div>
       </div>
     </div>
   );

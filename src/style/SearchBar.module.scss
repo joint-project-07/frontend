@@ -1,4 +1,4 @@
-.search-bar-container {
+.searchBarContainer {
   width: 100%;
   display: flex;
   align-items: center;
@@ -10,7 +10,7 @@
     Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
 }
 
-.search-bar {
+.searchBar {
   display: flex;
   align-items: center;
   background-color: white;
@@ -22,30 +22,30 @@
   height: 64px;
 }
 
-.search-section {
+.searchSection {
   flex: 1;
   padding: 8px 16px;
   cursor: pointer;
   border-radius: 32px;
   margin-right: 4px;
+  
+  &:hover {
+    background-color: #f5f5f5;
+  }
+  
+  &.active {
+    background-color: #f5f5f5;
+  }
 }
 
-.search-section:hover {
-  background-color: #f5f5f5;
-}
-
-.search-section.active {
-  background-color: #f5f5f5;
-}
-
-.section-label {
+.sectionLabel {
   font-size: 12px;
   font-weight: 600;
   color: #333;
   margin-bottom: 4px;
 }
 
-.section-value {
+.sectionValue {
   font-size: 14px;
   color: #666;
   white-space: nowrap;
@@ -53,7 +53,7 @@
   text-overflow: ellipsis;
 }
 
-.search-button {
+.searchButton {
   background-color: #ff9fb0;
   border: none;
   border-radius: 50%;
@@ -65,45 +65,61 @@
   cursor: pointer;
   margin-left: 8px;
   transition: background-color 0.2s;
+  
+  &:hover {
+    background-color: #ff8da0;
+  }
+  
+  svg {
+    color: white;
+    width: 20px;
+    height: 20px;
+  }
 }
 
-.search-button:hover {
-  background-color: #ff8da0;
-}
-
-.search-button svg {
-  color: white;
-  width: 20px;
-  height: 20px;
-}
-
-.dropdown-container {
+.dropdownContainer {
   position: absolute;
   margin-top: 12px;
   padding: 20px;
   background-color: white;
   border-radius: 16px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  z-index: 1000;
+  z-index: 990; 
   width: 30%;
   top: 70%;
 }
 
-.dropdown-title {
+.resetButton {
+  color: #888;
+  background: none;
+  border: none;
+  font-size: 14px;
+  cursor: pointer;
+  margin-right: 10px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  transition: background-color 0.2s;
+  
+  &:hover {
+    background-color: #f5f5f5;
+  }
+}
+
+.dropdownTitle {
   font-size: 16px;
   font-weight: 600;
   margin-bottom: 16px;
   color: #333;
 }
 
-.location-grid {
+.locationGrid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 10px;
   margin-bottom: 20px;
 }
 
-.location-pill {
+.locationPill {
   padding: 10px 8px;
   font-size: 14px;
   border: 1px solid #e0e0e0;
@@ -112,35 +128,35 @@
   cursor: pointer;
   text-align: center;
   transition: all 0.2s;
+  
+  &:hover {
+    background-color: #f9f9f9;
+  }
+  
+  &.selected {
+    background-color: #ffcad4;
+    color: #333;
+    border-color: #ffcad4;
+  }
 }
 
-.location-pill:hover {
-  background-color: #f9f9f9;
-}
-
-.location-pill.selected {
-  background-color: #ffcad4;
-  color: #333;
-  border-color: #ffcad4;
-}
-
-.selection-info {
+.selectionInfo {
   margin-bottom: 16px;
   font-size: 14px;
   color: #666;
 }
 
 /* 날짜/시간 선택 */
-.date-quick-options,
-.time-quick-options {
+.dateQuickOptions,
+.timeQuickOptions {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
   margin-bottom: 16px;
 }
 
-.date-option-button,
-.time-option-button {
+.dateOptionButton,
+.timeOptionButton {
   padding: 8px 12px;
   background-color: #f5f5f5;
   border: none;
@@ -148,21 +164,19 @@
   font-size: 14px;
   cursor: pointer;
   transition: all 0.2s;
+  
+  &:hover {
+    background-color: #eee;
+  }
+  
+  &.selected {
+    background-color: #ffebef;
+    color: #ff6b8b;
+  }
 }
 
-.date-option-button:hover,
-.time-option-button:hover {
-  background-color: #eee;
-}
-
-.date-option-button.selected,
-.time-option-button.selected {
-  background-color: #ffebef;
-  color: #ff6b8b;
-}
-
-.date-input,
-.time-input {
+.dateInput,
+.timeInput {
   width: 100%;
   padding: 12px;
   border: 1px solid #ddd;
@@ -171,12 +185,12 @@
   margin-bottom: 16px;
 }
 
-.button-container {
+.buttonContainer {
   display: flex;
   justify-content: flex-end;
 }
 
-.confirm-button {
+.confirmButton {
   padding: 8px 16px;
   background-color: #ff9fb0;
   color: white;
@@ -185,15 +199,15 @@
   font-weight: 500;
   cursor: pointer;
   transition: background-color 0.2s;
-}
-
-.confirm-button:hover {
-  background-color: #ff8da0;
+  
+  &:hover {
+    background-color: #ff8da0;
+  }
 }
 
 /* 반응형 스타일 */
 @media (max-width: 768px) {
-  .search-bar {
+  .searchBar {
     flex-direction: column;
     height: auto;
     padding: 12px;
@@ -201,30 +215,30 @@
     width: 80%;
   }
 
-  .search-section {
+  .searchSection {
     width: 100%;
     padding: 12px 16px;
     border: 1px solid #EBEBEB;
     border-radius: 8px;
     margin-bottom: 8px;
+    
+    &:not(:last-child)::after {
+      display: none;
+    }
   }
   
-  .search-section:not(:last-child)::after {
-    display: none;
-  }
-  
-  .section-label {
+  .sectionLabel {
     font-size: 12px;
   }
   
-  .search-button {
+  .searchButton {
     width: 100%;
     border-radius: 8px;
     margin-top: 8px;
     margin-left: 0;
   }
   
-  .dropdown-container {
+  .dropdownContainer {
     width: 80%;
     left: 50%;
     transform: translateX(-50%);
@@ -236,16 +250,16 @@
 }
 
 @media (max-width: 480px) {
-  .search-bar {
+  .searchBar {
     width: 90%;
   }
   
-  .location-grid {
+  .locationGrid {
     grid-template-columns: repeat(2, 1fr);
     gap: 8px;
   }
   
-  .dropdown-container {
+  .dropdownContainer {
     width: 90%;
     padding: 16px;
     max-height: 70vh;

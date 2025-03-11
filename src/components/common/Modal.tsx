@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import '../../style/Modal.css';
+import styles from '../../style/Modal.module.scss';
 
 interface ModalProps {
   isOpen: boolean;
@@ -8,6 +8,7 @@ interface ModalProps {
   children: React.ReactNode;
   width?: string;
   height?: string;
+  zIndex?: number;
 }
 
 const Modal: React.FC<ModalProps> = ({
@@ -15,7 +16,8 @@ const Modal: React.FC<ModalProps> = ({
   onClose,
   children,
   width = '500px',
-  height = 'auto'
+  height = 'auto',
+  zIndex = 1000
 }) => {
   const modalRef = useRef<HTMLDivElement>(null);
 
@@ -56,15 +58,13 @@ const Modal: React.FC<ModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="modal-overlay">
+    <div className={styles.modalOverlay} style={{ zIndex }}>
       <div 
         ref={modalRef}
-        className="modal-container" 
+        className={styles.modalContainer} 
         style={{ width, height }}
       >
-        
-          {children}
-      
+        {children}
       </div>
     </div>
   );

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import '../../style/SearchRange.css';
+import styles from '../../style/SearchRange.module.scss';
 
 interface TimeRangePickerProps {
   onSelectRange?: (range: { startTime: string; endTime: string }) => void;
@@ -74,16 +74,16 @@ const SearchRange: React.FC<TimeRangePickerProps> = ({ onSelectRange, onClose })
   };
 
   return (
-    <div className="time-range-picker">
-      <div className="time-selection-container">
-        <div className="time-column">
-          <div className="time-column-label">시작 시간</div>
-          <div className="time-options-wrapper">
-            <div className="time-options" ref={startTimeRef}>
+    <div className={styles.timeRangePicker}>
+      <div className={styles.timeSelectionContainer}>
+        <div className={styles.timeColumn}>
+          <div className={styles.timeColumnLabel}>시작 시간</div>
+          <div className={styles.timeOptionsWrapper}>
+            <div className={styles.timeOptions} ref={startTimeRef}>
               {startTimeOptions.map((time) => (
                 <div
                   key={`start-${time}`}
-                  className={`time-option ${startTime === time ? 'selected' : ''}`}
+                  className={`${styles.timeOption} ${startTime === time ? styles.selected : ''}`}
                   onClick={() => handleTimeSelect(time, true)}
                 >
                   {time}
@@ -93,10 +93,10 @@ const SearchRange: React.FC<TimeRangePickerProps> = ({ onSelectRange, onClose })
           </div>
         </div>
         
-        <div className="time-column">
-          <div className="time-column-label">종료 시간</div>
-          <div className="time-options-wrapper">
-            <div className="time-options" ref={endTimeRef}>
+        <div className={styles.timeColumn}>
+          <div className={styles.timeColumnLabel}>종료 시간</div>
+          <div className={styles.timeOptionsWrapper}>
+            <div className={styles.timeOptions} ref={endTimeRef}>
               {endTimeOptions.map((time) => {
                 // 시작 시간보다 이전이거나 같은 시간은 비활성화
                 const isDisabled = startTime && parseInt(time.replace(':', '')) <= parseInt(startTime.replace(':', ''));
@@ -104,7 +104,7 @@ const SearchRange: React.FC<TimeRangePickerProps> = ({ onSelectRange, onClose })
                 return (
                   <div
                     key={`end-${time}`}
-                    className={`time-option ${endTime === time ? 'selected' : ''} ${isDisabled ? 'disabled' : ''}`}
+                    className={`${styles.timeOption} ${endTime === time ? styles.selected : ''} ${isDisabled ? styles.disabled : ''}`}
                     onClick={() => !isDisabled && handleTimeSelect(time, false)}
                   >
                     {time}
@@ -116,21 +116,21 @@ const SearchRange: React.FC<TimeRangePickerProps> = ({ onSelectRange, onClose })
         </div>
       </div>
       
-      <div className="selected-time-display">
-        <div className="selected-time-item">
-          <span className="time-label">시작:</span>
-          <span className="time-value">{startTime || '선택 안됨'}</span>
+      <div className={styles.selectedTimeDisplay}>
+        <div className={styles.selectedTimeItem}>
+          <span className={styles.timeLabel}>시작:</span>
+          <span className={styles.timeValue}>{startTime || '선택 안됨'}</span>
         </div>
-        <div className="selected-time-item">
-          <span className="time-label">종료:</span>
-          <span className="time-value">{endTime || '선택 안됨'}</span>
+        <div className={styles.selectedTimeItem}>
+          <span className={styles.timeLabel}>종료:</span>
+          <span className={styles.timeValue}>{endTime || '선택 안됨'}</span>
         </div>
       </div>
       
-      <div className="time-action-buttons">
-        <button className="reset-button" onClick={handleCancel}>취소</button>
+      <div className={styles.timeActionButtons}>
+        <button className={styles.resetButton} onClick={handleCancel}>취소</button>
         <button 
-          className="confirm-button" 
+          className={styles.confirmButton} 
           onClick={handleConfirm}
           disabled={!startTime || !endTime}
         >

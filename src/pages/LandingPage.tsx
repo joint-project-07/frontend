@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Card from "../components/common/Card";
-import "../style/LandingPage.css";
+import styles from "../style/LandingPage.module.scss";
 import SearchBar from "../components/feature/SearchBar";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useModalContext } from '../contexts/ModalContext';
@@ -58,10 +58,10 @@ const LandingPage: React.FC = () => {
   }, []);
 
   return (
-    <div className="landing-container">
+    <div className={styles.landingContainer}>
       <SearchBar />
       {/* 카드 그리드 */}
-      <div className="card-grid">
+      <div className={styles.cardGrid}>
         {cards.map((card) => (
           <Card
             key={card.id}
