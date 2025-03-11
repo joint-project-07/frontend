@@ -5,7 +5,7 @@ import "../style/Mypage.css";
 import { usePaginationStore } from "../store/CurrentStore";
 import "../style/Button.css";
 import Modal from "../components/common/Modal";
-import { useModalStore } from "../store/ModalStore";
+import  useModalStore  from "../store/ModalStore";
 import StarRating from "../components/common/StarRating";
 
 interface ShelterItem {
