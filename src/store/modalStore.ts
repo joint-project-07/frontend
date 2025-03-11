@@ -10,20 +10,20 @@ selectedShelter: {
   feedback: string;
   openModal: (shelter: { shelter_name: string; description: string }) => void;
   closeModal: () => void;
-    setRating: (rating: number) => void;
-    setFeedback: (feedback: string) => void;
+setRating: (rating: number) => void;
+  setFeedback: (feedback: string) => void;
   resetSurvey: () => void;
 }
 
 const useModalStore = create<ModalState>((set) => ({
   isOpen: false,
-  selectedShelter: null,
+selectedShelter: null,
   rating: 0,
   feedback: "",
   openModal: (shelter) =>
-    set({ isOpen: true, selectedShelter: shelter }),
+set({ isOpen: true, selectedShelter: shelter }),
   closeModal: () =>
-    set({ isOpen: false, selectedShelter: null }),
+set({ isOpen: false, selectedShelter: null }),
   setRating: (rating) => set({ rating }),
   setFeedback: (feedback) => set({ feedback }),
   resetSurvey: () => set({ rating: 0, feedback: "" }),
