@@ -1,33 +1,43 @@
 * {
-  box-sizing: border-box; /* 요소 크기 계산을 정확히 맞추기 */
+  box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
 body,
 html {
-  overflow-x: hidden; /* 가로 스크롤 제거 */
+  overflow-x: hidden;
 }
 
-.landing-container {
-  background-color:white;
+/* 보호기관 일정 리스트 컨테이너 */
+.institution-container {
   width: 100%;
   max-width: 100%;
-  padding: 20px 40px; /* 좌우 여백 */
-  margin: 0;
+  padding: 0 40px;
+  margin: 0 auto;
   justify-items: center;
   font-family: "Circular", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
 }
 
-.card-grid {
-  display: grid;
-  place-items: center;
-  grid-template-columns: repeat(4, 1fr); 
-  gap: 32px; 
-  padding: 36px 20px ;
+.institution-title {
+  text-align: center;
+  font-size: 24px;
+  font-weight: bold;
+  margin: 32px 0;
 }
 
+/* 보호기관 카드 그리드 */
+.institution-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* 4열 그리드 */
+  gap: 64px;
+  width: 100%;
+  margin: 32px 0;
+  padding: 36px 120px 0;
+}
+
+/* 개별 카드 */
 .card {
   display: flex;
   flex-direction: column;
@@ -38,36 +48,37 @@ html {
   padding: 16px;
   text-align: center;
   width: 100%;
-  max-width: 350px;
-  min-width: 200px;
+  max-width: 250px;
 }
 
+/* 카드 이미지 */
 .card img {
-  width: 100%; /* 부모 요소에 맞게 조절 */
-  aspect-ratio: 1 / 1; /* 정사각형 유지 */
-  object-fit: cover; /* 이미지 찌그러짐 방지 */
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
   border-radius: 24px;
   margin-bottom: 16px;
 }
 
+/* 반응형 처리 */
 @media (max-width: 1200px) {
-  .card-grid {
+  .institution-grid {
     grid-template-columns: repeat(3, 1fr);
   }
 }
 
 @media (max-width: 1024px) {
-  .card-grid {
+  .institution-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 
-  .landing-container {
+  .institution-container {
     padding: 0 20px;
   }
 }
 
 @media (max-width: 768px) {
-  .card-grid {
+  .institution-grid {
     grid-template-columns: 1fr;
   }
 }

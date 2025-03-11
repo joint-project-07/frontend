@@ -1,30 +1,37 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import "./App.css";
-import Header from "./components/common/Header";
-import Footer from "./components/common/Footer";
 import LandingPage from "./pages/LandingPage";
 import MyPage from "./pages/Mypage";
 import UsersSignupForm from "./pages/UsersSignup";
 import { AuthProvider } from "./contexts/AuthContext";
 import ShelterSignupForm from "./pages/ShelterSignup";
 import DetailPage from "./pages/DetailPage";
+import SearchNotFound from "./pages/SearchNotFound";
+import MainLayout from "./components/layout/MainLayout";
+import { ModalProvider } from "./contexts/ModalContext";
+import InstitutionScheduleList from "./pages/InstitutionScheduleList";
+import InstitutionDetailPage from "./pages/InstitutionDetailPage";
 
 function App() {
   return (
     <AuthProvider>
+      <ModalProvider>
       <Router>
-        <Header />
-        <main>
           <Routes>
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/detail/:id" element={<DetailPage />} />
-            <Route path="/MyPage" element={<MyPage />} />
-            <Route path="/UsersSignup" element={<UsersSignupForm />} />
-            <Route path="/ShelterSignup" element={<ShelterSignupForm />} />
-          </Routes>
-        </main>
-        <Footer />
+            <Route element={<MainLayout />}>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/detail/:id" element={<DetailPage /> } />
+          <Route path="/MyPage" element={<MyPage />}/>
+          <Route path="/searchnotfound"element={<SearchNotFound />}/>
+          <Route path="/institution-schedule" element={<InstitutionScheduleList/>} />
+          <Route path="/institution-detail/:institutionId" element={<InstitutionDetailPage />} />
+          </Route>
+          <Route path="/UsersSignup" element={<UsersSignupForm />} />
+          <Route path="/ShelterSignup" element={<ShelterSignupForm />} />
+          {import.meta.env.DEV ? <Route path="test" element/> : null}
+        </Routes>
       </Router>
+      </ModalProvider>
     </AuthProvider>
   );
 }

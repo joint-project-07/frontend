@@ -1,0 +1,73 @@
+.volunteer-schedule-form {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #fff; 
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+
+.h1 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 20px;
+  }
+  
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    width: 100%; / 전체 너비 100%로 설정 /
+  }
+  
+  
+  .label {
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+
+
+ .input,
+ .textarea {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    width: 100%; / 입력 필드와 텍스트 영역을 가득 채움 /
+  }
+  
+
+.input[type="number"] {
+    -moz-appearance: textfield;
+  }
+  
+
+.textarea {
+    resize: vertical;
+    height: 100px;
+  }
+  
+
+.button {
+    padding: 10px 20px;
+    background-color: #d99fa9; / 버튼 배경색 /
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    width: 100%; / 버튼도 100% 너비로 설정 /
+    max-width: 200px; / 최대 버튼 너비를 제한 /
+  }
+  
+
+.button:focus {
+    outline: none;
+  }

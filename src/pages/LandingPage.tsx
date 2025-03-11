@@ -2,7 +2,8 @@ import React, { useEffect, useState } from "react";
 import Card from "../components/common/Card";
 import "../style/LandingPage.css";
 import SearchBar from "../components/feature/SearchBar";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useModalContext } from '../contexts/ModalContext';
 
 interface CardData {
   id: number;
@@ -13,10 +14,28 @@ interface CardData {
   volunteerwork: string;
 }
 
+interface LocationState {
+  activeTab: string;
+  openLoginModal?: boolean;
+  from?: string;
+}
+
 const LandingPage: React.FC = () => {
   const [cards, setCards] = useState<CardData[]>([]);
   const navigate = useNavigate();
+  const location = useLocation();
+  const { openLoginModal, setActiveTab } = useModalContext();
 
+  useEffect(() => {
+    const state = location.state as LocationState | null;
+    if (state && state.from === 'signup' && state.openLoginModal === true) {
+      openLoginModal();
+      if (state.activeTab === 'organization') {
+        setActiveTab('organization');
+      }
+    }
+  }, [location.state, openLoginModal, setActiveTab]);
+  
   useEffect(() => {
     // Array.from을 사용하여 15개 데이터 생성
     const data = Array.from({ length: 15 }, (_, index) => ({
@@ -40,10 +59,7 @@ const LandingPage: React.FC = () => {
 
   return (
     <div className="landing-container">
-      {/* <div className="search-bar-container"> */}
       <SearchBar />
-      {/* </div> */}
-
       {/* 카드 그리드 */}
       <div className="card-grid">
         {cards.map((card) => (
