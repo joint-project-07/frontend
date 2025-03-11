@@ -1,5 +1,5 @@
 import dogImage from "../../assets/dog-image.png";
-import useModalStore from "../../store/modalStore";
+import useModalStore from "../../store/ModalStore";
 import "../../style/DetailModal.css";
 
 const DetailModal: React.FC = () => {
