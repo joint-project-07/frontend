@@ -95,7 +95,8 @@ class AuthClient {
       localStorage.setItem('accessToken', newAccessToken);
       
       return newAccessToken;
-    } catch (_) {
+    } catch (error) {
+      console.error('토큰 갱신 실패:', error);
       this.logout();
       return null;
     }
