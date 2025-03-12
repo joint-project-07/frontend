@@ -95,7 +95,7 @@ class AuthClient {
       localStorage.setItem('accessToken', newAccessToken);
       
       return newAccessToken;
-    } catch (error) {
+    } catch (_) {
       this.logout();
       return null;
     }

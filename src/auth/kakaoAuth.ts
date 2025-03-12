@@ -63,13 +63,13 @@ class KakaoAuthProvider {
       });
     }
 
-      const authObj = await new Promise<any>((resolve, reject) => {
-        window.Kakao.Auth.login({
-          success: (authObj: any) => resolve(authObj),
-          fail: (error: any) => reject(error)
-        });
+    const authObj = await new Promise<KakaoAuthResponse>((resolve, reject) => {
+      window.Kakao.Auth.login({
+        success: (response: KakaoAuthResponse) => resolve(response),
+        fail: (error: KakaoApiError) => reject(error)
       });
-      return await this.authenticateWithBackend(authObj.access_token);
+    });
+    return await this.authenticateWithBackend(authObj.access_token);
   }
 
   private async authenticateWithBackend(kakaoToken: string): Promise<AuthUser> {
@@ -108,7 +108,7 @@ class KakaoAuthProvider {
         window.Kakao.API.request({
           url: '/v1/user/unlink',
           success: () => resolve(),
-          fail: (error: any) => reject(error)
+          fail: (error: KakaoApiError) => reject(error)
         });
       });
       
