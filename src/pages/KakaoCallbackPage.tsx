@@ -1,14 +1,12 @@
 import React, { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-// import { processKakaoLogin } from '../service/auth/kakaoAuth';
-import { mockProcessKakaoLogin } from '../service/mock/kakaoAuth';
-import { useAuthStore } from '../store/authStore';
+import useAuthStore from '../store/auth/authStore';
 
 const KakaoCallbackPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   
-  const { login, setLoading, setError, isLoading, error } = useAuthStore();
+  const { processKakaoAuth, setLoading, setError, isLoading, error, resetError } = useAuthStore();
 
   useEffect(() => {
     const handleKakaoCallback = async () => {
@@ -24,30 +22,15 @@ const KakaoCallbackPage: React.FC = () => {
       }
       
       try {
-        // 실제 카카오 API 연동
-        // const user = await processKakaoLogin(code);
-        
-        const user = await mockProcessKakaoLogin(code);
-        login(user);
-        
-        console.log('카카오 로그인 성공:', user);
-        
+        await processKakaoAuth(code);
         navigate('/');
       } catch (err) {
         console.error('카카오 로그인 처리 중 오류:', err);
-        let errorMessage = '로그인 처리 중 오류가 발생했습니다.';
-        
-        if (err instanceof Error) {
-          errorMessage = err.message;
-        }
-        
-        setError(errorMessage);
-        setLoading(false);
       }
     };
 
     handleKakaoCallback();
-  }, [location, navigate, login, setLoading, setError]);
+  }, [location, navigate, processKakaoAuth, setLoading, setError]);
 
   if (isLoading) {
     return (
@@ -63,7 +46,14 @@ const KakaoCallbackPage: React.FC = () => {
       <div className="kakao-callback-error">
         <h2>로그인 오류</h2>
         <p>{error}</p>
-        <button onClick={() => navigate('/')}>홈으로 돌아가기</button>
+        <button 
+          onClick={() => {
+            resetError();
+            navigate('/');
+          }}
+        >
+          홈으로 돌아가기
+        </button>
       </div>
     );
   }
@@ -71,4 +61,4 @@ const KakaoCallbackPage: React.FC = () => {
   return null;
 };
 
-export default KakaoCallbackPage
+export default KakaoCallbackPage;

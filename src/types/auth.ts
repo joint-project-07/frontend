@@ -1,42 +1,41 @@
-export interface KakaoTokenResponse {
-    access_token: string;
-    token_type: string;
-    refresh_token: string;
-    expires_in: number;
-    scope?: string;
-    refresh_token_expires_in: number;
-  }
-  
-  export interface KakaoUserInfo {
-    id: number;
-    connected_at: string;
-    properties: {
-      nickname: string;
-      profile_image?: string;
-      thumbnail_image?: string;
-    };
-    kakao_account: {
-      profile_nickname_needs_agreement?: boolean;
-      profile_image_needs_agreement?: boolean;
-      profile?: {
-        nickname?: string;
-        thumbnail_image_url?: string;
-        profile_image_url?: string;
-      };
-      has_email?: boolean;
-      email_needs_agreement?: boolean;
-      is_email_valid?: boolean;
-      is_email_verified?: boolean;
-      email?: string;
-    };
-  }
-  
-  export interface User {
-    id: string;
-    name: string;
-    email?: string;
-    profileImage?: string;
-    provider: 'kakao' | 'google' | 'apple' | 'email';
-    accessToken: string;
-    refreshToken?: string;
-  }
+import { AuthUser, UserRole, SocialAuthProvider } from '../auth/types';
+
+export interface AuthState {
+  user: AuthUser | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  error: string | null;
+}
+
+export interface JwtPayload {
+  sub: string; 
+  email: string;
+  role: UserRole;
+  iat: number; 
+  exp: number; 
+}
+
+export interface SocialAuthConfig {
+  provider: SocialAuthProvider;
+  clientId: string;
+  redirectUri: string;
+  scope: string[];
+  authUrl: string;
+}
+
+export enum AuthErrorType {
+  INVALID_CREDENTIALS = 'INVALID_CREDENTIALS',
+  ACCOUNT_LOCKED = 'ACCOUNT_LOCKED',
+  EMAIL_NOT_VERIFIED = 'EMAIL_NOT_VERIFIED',
+  TOKEN_EXPIRED = 'TOKEN_EXPIRED',
+  REFRESH_TOKEN_EXPIRED = 'REFRESH_TOKEN_EXPIRED',
+  UNAUTHORIZED = 'UNAUTHORIZED',
+  REGISTRATION_FAILED = 'REGISTRATION_FAILED',
+  SOCIAL_AUTH_FAILED = 'SOCIAL_AUTH_FAILED',
+}
+
+export interface PermissionCheck {
+  hasPermission: boolean;
+  requiredRole: UserRole;
+  currentRole: UserRole | null;
+}

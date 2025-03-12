@@ -1,73 +1,195 @@
-.detail-content {
+.detail-container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 20px;
+  padding: 40px 20px;
+  background: white;
+  min-height: 100vh;
+}
+
+.detail-image-container {
+  width: 100%;
+  max-width: 400px;
+  margin-bottom: 30px;
 }
 
 .detail-image {
   width: 100%;
-  max-width: 800px;
-  border-radius: 10px;
-  margin-bottom: 20px;
+  border-radius: 16px;
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+  &:hover {
+    transform: scale(1.01);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  }
 }
 
-.volunteer-info {
-  background: #fffaf0;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-  width: 80%;
-  margin-bottom: 20px;
+.detail-content {
+  display: flex;
+  width: 100%;
+  max-width: 1200px;
+  gap: 30px;
+}
+
+.shelter-info {
+  flex: 1;
+  background: white;
+  padding: 30px;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  border-left: 6px solid #f8c1cc;
+
+  h2 {
+    color: #333;
+    margin-bottom: 20px;
+    font-size: 1.3em;
+  }
+
+  .shelter-location {
+    ul {
+      list-style-type: none;
+      padding: 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 15px;
+
+      li {
+        background-color: #f0f4f8;
+        padding: 8px 15px;
+        border-radius: 20px;
+        font-size: 0.9em;
+        color: #555;
+      }
+    }
+
+    p {
+      color: #666;
+      line-height: 1.6;
+      margin: 30px 0;
+    }
+  }
 }
 
 .volunteer-time {
-  background: #fffaf0;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-  width: 80%;
-  text-align: center;
+  flex: 1;
+  background: white;
+  padding: 30px;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  border-left: 6px solid #f8c1cc;
+  
+  .date-selection {
+    text-align: center;
+
+    h3 {
+      color: #333;
+      margin-bottom: 15px;
+    }
+  }
 }
 
-.time-buttons button {
-  padding: 10px 20px;
-  margin: 5px;
-  border: 2px solid #ddd;
-  background-color: white;
-  cursor: pointer;
+.time-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-bottom: 20px;
+
+  button {
+    padding: 12px 25px;
+    border: 2px solid #e0e0e0;
+    background-color: white;
+    cursor: pointer;
+    font-size: 16px;
+    border-radius: 30px;
+    transition: all 0.3s ease;
+    color: #666;
+
+    &:hover {
+      background-color: #f8c1cc;
+      color: white;
+      border-color: #f8c1cc;
+    }
+
+    &.selected {
+      background-color: #f8c1cc;
+      color: white;
+      border-color: #f8c1cc;
+      box-shadow: 0 5px 15px rgba(248, 193, 204, 0.4);
+    }
+  }
+}
+
+.date-picker {
+  padding: 12px;
   font-size: 16px;
-  border-radius: 5px;
-}
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  margin: 15px 0;
+  width: 250px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
 
-.time-buttons button.selected {
-  background-color: #f8b400;
-  color: white;
-  border-color: #f8b400;
+  &:focus {
+    outline: none;
+    border-color: #f8c1cc;
+    box-shadow: 0 0 0 3px rgba(248, 193, 204, 0.2);
+  }
 }
 
 .apply-btn {
-  padding: 10px 20px;
+  padding: 15px 30px;
   font-size: 18px;
   background-color: #f8c1cc;
   color: white;
   border: none;
   cursor: pointer;
-  border-radius: 5px;
-  margin-top: 10px;
+  border-radius: 30px;
+  margin-top: 20px;
+  transition: all 0.3s ease;
+  box-shadow: 0 10px 20px rgba(248, 193, 204, 0.3);
+
+  &:hover {
+    background-color: #ff9fb0;
+    transform: translateY(-3px);
+    box-shadow: 0 15px 25px rgba(248, 193, 204, 0.4);
+  }
+
+  &:disabled {
+    background-color: #e0e0e0;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
 }
 
-.apply-btn:disabled {
-  background-color: #ccc;
-  cursor: not-allowed;
+// 반응형 디자인
+@media (max-width: 1024px) {
+  .detail-content {
+    flex-direction: column;
+    gap: 20px;
+  }
 }
-.date-picker {
-  padding: 10px;
-  font-size: 16px;
-  border: 2px solid #ddd;
-  border-radius: 5px;
-  margin: 10px 0;
-  width: 200px;
-  text-align: center;
-  cursor: pointer;
+
+@media (max-width: 768px) {
+  .detail-container {
+    padding: 20px 10px;
+  }
+
+  .shelter-info,
+  .volunteer-time {
+    padding: 20px;
+  }
+
+  .time-buttons {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .time-buttons button {
+    width: 100%;
+    max-width: 300px;
+  }
 }
