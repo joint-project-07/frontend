@@ -2,6 +2,21 @@ import  authService  from '../api/services/authService';
 import { AuthUser, SocialAuthProvider } from './types';
 import authClient from './AuthClient';
 
+interface KakaoAuthResponse {
+  access_token: string;
+  token_type: string;
+  refresh_token: string;
+  expires_in: number;
+  scope: string;
+}
+
+interface KakaoApiError {
+  error: string;
+  error_description?: string;
+  code?: number;
+  msg?: string;
+}
+
 class KakaoAuthProvider {
   private readonly KAKAO_SDK_URL = 'https://developers.kakao.com/sdk/js/kakao.js';
   private readonly KAKAO_CLIENT_ID = process.env.REACT_APP_KAKAO_CLIENT_ID || '';
@@ -48,23 +63,16 @@ class KakaoAuthProvider {
       });
     }
 
-    try {
       const authObj = await new Promise<any>((resolve, reject) => {
         window.Kakao.Auth.login({
           success: (authObj: any) => resolve(authObj),
           fail: (error: any) => reject(error)
         });
       });
-
       return await this.authenticateWithBackend(authObj.access_token);
-    } catch (error) {
-      console.error('카카오 로그인 실패:', error);
-      throw error;
-    }
   }
 
   private async authenticateWithBackend(kakaoToken: string): Promise<AuthUser> {
-    try {
       const response = await authService.socialLogin({
         accessToken: kakaoToken,
         provider: SocialAuthProvider.KAKAO
@@ -77,9 +85,6 @@ class KakaoAuthProvider {
       localStorage.setItem('user', JSON.stringify(user));
       
       return user;
-    } catch (error) {
-      throw error;
-    }
   }
 
   async logout(): Promise<void> {
@@ -99,7 +104,6 @@ class KakaoAuthProvider {
       return;
     }
 
-    try {
       await new Promise<void>((resolve, reject) => {
         window.Kakao.API.request({
           url: '/v1/user/unlink',
@@ -111,10 +115,6 @@ class KakaoAuthProvider {
       await authService.unlinkSocialAccount(SocialAuthProvider.KAKAO as string);
       
       await authClient.logout();
-    } catch (error) {
-      console.error('카카오 연결 끊기 실패:', error);
-      throw error;
-    }
   }
 }
 
@@ -128,15 +128,18 @@ declare global {
       init: (appKey: string) => void;
       isInitialized: () => boolean;
       Auth: {
-        login: (options: { success: (authObj: any) => void; fail: (error: any) => void }) => void;
+        login: (options: { 
+          success: (authObj: KakaoAuthResponse) => void; 
+          fail: (error: KakaoApiError) => void 
+        }) => void;
         logout: (callback: () => void) => void;
         getAccessToken: () => string | null;
       };
       API: {
         request: (options: { 
           url: string; 
-          success: (response: any) => void; 
-          fail: (error: any) => void 
+          success: (response: Record<string, unknown>) => void; 
+          fail: (error: KakaoApiError) => void 
         }) => void;
       };
     };

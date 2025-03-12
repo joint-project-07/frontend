@@ -31,13 +31,17 @@ export interface UserNotificationSettings {
   sms?: boolean;
 }
 
+export interface ActivityMetadata {
+  [key: string]: string | number | boolean | null | undefined;
+}
+
 export interface UserActivity {
   id: string;
   userId: string;
   type: 'LOGIN' | 'PROFILE_UPDATE' | 'PASSWORD_CHANGE' | 'SOCIAL_CONNECT' | 'SOCIAL_DISCONNECT' | string;
   ipAddress?: string;
   userAgent?: string;
-  metadata?: Record<string, any>;
+  metadata?: ActivityMetadata; 
   createdAt: string;
 }
 

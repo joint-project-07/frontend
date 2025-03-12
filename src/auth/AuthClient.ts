@@ -25,24 +25,16 @@ class AuthClient {
   }
 
   async login(credentials: LoginCredentials): Promise<AuthUser> {
-    try {
       const response = await authService.login(credentials);
       return this.handleAuthResponse(response);
-    } catch (error) {
-      throw error;
-    }
   }
 
   async register(userData: RegisterCredentials): Promise<AuthUser> {
-    try {
       const response = await authService.register(userData);
       return this.handleAuthResponse(response);
-    } catch (error) {
-      throw error;
-    }
   }
 
-  handleAuthResponse(response: AuthResponse): AuthUser {
+  public handleAuthResponse(response: AuthResponse): AuthUser {
     const { accessToken, refreshToken, user } = response;
     
     localStorage.setItem('accessToken', accessToken);
