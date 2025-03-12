@@ -5,7 +5,9 @@ import { useAuth } from "../../contexts/AuthContext";
 import styles from "../../style/LoginModal.module.scss";
 import { useNavigate } from "react-router-dom";
 import { useModalContext } from '../../contexts/ModalContext';
+import { UserRole } from "../../contexts/AuthContext"; // UserRole 타입 임포트
 
+// TabType을 UserRole과 동일하게 정의
 type TabType = "volunteer" | "organization";
 
 const LoginModal: React.FC = () => {
@@ -15,7 +17,8 @@ const LoginModal: React.FC = () => {
 
   const handleLogin = async () => {
     try {
-      login();
+      // activeTab을 UserRole 타입으로 명시적 형변환
+      login(activeTab as UserRole);
       closeLoginModal();
 
       if (activeTab === "organization") {

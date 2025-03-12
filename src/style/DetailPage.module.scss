@@ -7,6 +7,27 @@
   min-height: 100vh;
 }
 
+.back-button-container {
+  width: 100%;
+  max-width: 1200px;
+  margin-bottom: 15px;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.back-btn {
+  padding: 8px 15px;
+  background-color: #f5f5f5;
+  border: none;
+  border-radius: 5px;
+  font-size: 14px;
+  cursor: pointer;
+  
+  &:hover {
+    background-color: #e5e5e5;
+  }
+}
+
 .detail-image-container {
   width: 100%;
   max-width: 400px;
@@ -82,17 +103,39 @@
   
   .date-selection {
     text-align: center;
-
-    h3 {
-      color: #333;
-      margin-bottom: 15px;
-    }
   }
+}
+
+.date-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.date-label {
+  color: #333;
+  font-weight: 600;
+  margin-right: 15px;
+  min-width: 80px;
+}
+
+.date-value {
+  font-size: 16px;
+  color: #333;
+}
+
+.time-label {
+  color: #333;
+  font-weight: 600;
+  margin-bottom: 15px;
+  text-align: left;
+  display: block;
 }
 
 .time-buttons {
   display: flex;
-  justify-content: center;
+  justify-content: flex-start; // 왼쪽 정렬로 변경
   gap: 15px;
   margin-bottom: 20px;
 
@@ -107,36 +150,29 @@
     color: #666;
 
     &:hover {
-      background-color: #f8c1cc;
+      background-color: #ffba80;
       color: white;
-      border-color: #f8c1cc;
+      border-color: #ffba80;
     }
 
     &.selected {
-      background-color: #f8c1cc;
+      background-color: #ffba80; // 연한 주황색으로 변경
       color: white;
-      border-color: #f8c1cc;
-      box-shadow: 0 5px 15px rgba(248, 193, 204, 0.4);
+      border-color: #ffba80;
+      box-shadow: 0 5px 15px rgba(255, 186, 128, 0.4);
     }
   }
 }
 
-.date-picker {
-  padding: 12px;
-  font-size: 16px;
-  border: 2px solid #e0e0e0;
+.note-container {
+  background-color: #fff9e8;
+  border: 1px solid #ffe7a5;
+  padding: 12px 15px;
   border-radius: 8px;
-  margin: 15px 0;
-  width: 250px;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-
-  &:focus {
-    outline: none;
-    border-color: #f8c1cc;
-    box-shadow: 0 0 0 3px rgba(248, 193, 204, 0.2);
-  }
+  font-size: 14px;
+  color: #c0994c;
+  margin-bottom: 20px;
+  text-align: left;
 }
 
 .apply-btn {
@@ -150,6 +186,7 @@
   margin-top: 20px;
   transition: all 0.3s ease;
   box-shadow: 0 10px 20px rgba(248, 193, 204, 0.3);
+  width: 100%; // 너비 100%로 변경
 
   &:hover {
     background-color: #ff9fb0;

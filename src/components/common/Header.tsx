@@ -6,7 +6,7 @@ import LoginModal from "./LoginModal";
 import { useAuth } from "../../contexts/AuthContext";
 
 const Header: React.FC = () => {
-  const { isLoggedIn, logout } = useAuth();
+  const { isLoggedIn, logout, userRole } = useAuth();
 
   return (
     <header className={styles.header}>
@@ -22,15 +22,17 @@ const Header: React.FC = () => {
 
       <nav className={styles.nav}>
         {isLoggedIn ? (
-          // 로그인된 경우 표시할 메뉴
           <>
-            <Link to="/MyPage">마이페이지</Link>
+            {userRole === "volunteer" ? (
+              <Link to="/MyPage">마이페이지</Link>
+            ) : userRole === "organization" ? (
+              <Link to="/schedule-registration">봉사 일정 등록</Link>
+            ) : null}
             <button className={styles.logoutBtn} onClick={logout}>
               로그아웃
             </button>
           </>
         ) : (
-          // 로그인되지 않은 경우 표시할 메뉴
           <LoginModal />
         )}
       </nav>

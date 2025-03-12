@@ -1,0 +1,273 @@
+.scheduleRegistration {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: 'Noto Sans KR', sans-serif;
+    
+    h1 {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 30px;
+      text-align: center;
+      color: #333;
+    }
+    
+    .section {
+      margin-bottom: 30px;
+      padding: 20px;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      
+      h2 {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 15px;
+        color: #333;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 10px;
+      }
+    }
+    
+    .shelterInfo {
+      background-color: #f8f9fa;
+      padding: 15px;
+      border-radius: 5px;
+      
+      p {
+        margin: 5px 0;
+      }
+      
+      strong {
+        color: #555;
+      }
+    }
+    
+    .dateSelection {
+      position: relative;
+      
+      .dateButton {
+        width: 100%;
+        padding: 10px 15px;
+        background-color: #f8f9fa;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        text-align: left;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        
+        &:hover {
+          background-color: #eef1f5;
+        }
+        
+        &:after {
+          content: '▼';
+          font-size: 12px;
+          color: #888;
+        }
+      }
+      
+      .datePickerContainer {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        z-index: 10;
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        margin-top: 5px;
+      }
+    }
+    
+    .timeSlots {
+      .timeSlot {
+        margin-bottom: 15px;
+        
+        .timeSlotDisplay {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 10px 15px;
+          background-color: #f8f9fa;
+          border-radius: 5px;
+          border: 1px solid #e9ecef;
+          
+          .timeSlotInfo {
+            display: flex;
+            align-items: center;
+            
+            .slotNumber {
+              font-weight: 600;
+              margin-right: 10px;
+              color: #495057;
+            }
+            
+            .timeRange {
+              font-size: 15px;
+            }
+          }
+          
+          .timeSlotActions {
+            display: flex;
+            gap: 10px;
+            
+            .editButton {
+              padding: 5px 10px;
+              background-color: #e2e3e5;
+              color: #383d41;
+              border: 1px solid #d6d8db;
+              border-radius: 4px;
+              cursor: pointer;
+              
+              &:hover {
+                background-color: #d6d8db;
+              }
+            }
+            
+            .removeButton {
+              padding: 5px 10px;
+              background-color: #f8d7da;
+              color: #721c24;
+              border: 1px solid #f5c6cb;
+              border-radius: 4px;
+              cursor: pointer;
+              
+              &:hover {
+                background-color: #f5c6cb;
+              }
+              
+              &:disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+              }
+            }
+          }
+        }
+        
+        .timeRangePickerContainer {
+          margin-top: 10px;
+          padding: 15px;
+          background-color: #fff;
+          border-radius: 5px;
+          border: 1px solid #e9ecef;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+      }
+      
+      .addButton {
+        margin-top: 10px;
+        padding: 8px 15px;
+        background-color: #e2e3e5;
+        color: #383d41;
+        border: 1px solid #d6d8db;
+        border-radius: 4px;
+        cursor: pointer;
+        
+        &:hover {
+          background-color: #d6d8db;
+        }
+        
+        &:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+      }
+    }
+    
+    .optionsContainer {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      
+      .optionItem {
+        flex: 1 0 calc(50% - 10px);
+        
+        label {
+          display: flex;
+          align-items: center;
+          padding: 10px;
+          background-color: #f8f9fa;
+          border-radius: 4px;
+          cursor: pointer;
+          transition: background-color 0.2s;
+          
+          &:hover {
+            background-color: #e9ecef;
+          }
+          
+          input[type="checkbox"] {
+            margin-right: 10px;
+          }
+        }
+      }
+    }
+    
+    .numberInput {
+      width: 70px;
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      text-align: center;
+      margin-right: 10px;
+    }
+    
+    .textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      resize: vertical;
+    }
+    
+    .submitContainer {
+      text-align: center;
+      margin-top: 30px;
+      
+      .submitButton {
+        padding: 12px 30px;
+        background-color: #457B9D;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        
+        &:hover {
+          background-color: #1D3557;
+        }
+      }
+    }
+  }
+  
+  @media screen and (max-width: 768px) {
+    .scheduleRegistration {
+      padding: 15px;
+      
+      .section {
+        padding: 15px;
+      }
+      
+      .optionsContainer {
+        .optionItem {
+          flex: 1 0 100%;
+        }
+      }
+      
+      .timeSlots {
+        .timeSlot {
+          .timeSlotDisplay {
+            flex-direction: column;
+            align-items: flex-start;
+            
+            .timeSlotInfo {
+              margin-bottom: 10px;
+            }
+          }
+        }
+      }
+    }
+  }
