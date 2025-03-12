@@ -11,6 +11,7 @@ import MainLayout from "./components/layout/MainLayout";
 import { ModalProvider } from "./contexts/ModalContext";
 import InstitutionScheduleList from "./pages/InstitutionScheduleList";
 import InstitutionDetailPage from "./pages/InstitutionDetailPage";
+import VolunteerScheduleRegistration from "./pages/VolunteerScheduleForm";
 
 function App() {
   return (
@@ -25,6 +26,9 @@ function App() {
           <Route path="/searchnotfound"element={<SearchNotFound />}/>
           <Route path="/institution-schedule" element={<InstitutionScheduleList/>} />
           <Route path="/institution-detail/:institutionId" element={<InstitutionDetailPage />} />
+          <Route path="/schedule-registration" element={<VolunteerScheduleRegistration />} />
+
+
           </Route>
           <Route path="/UsersSignup" element={<UsersSignupForm />} />
           <Route path="/ShelterSignup" element={<ShelterSignupForm />} />

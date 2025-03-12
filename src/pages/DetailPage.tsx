@@ -1,13 +1,14 @@
 import React from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import styles from "../style/DetailPage.module.scss"; 
 import useStore from "../store/Detail";
 import useModalStore from "../store/ModalStore";
 import DetailModal from "../components/common/DetailModal";
-import dangimg from "../assets/dangimg.png";
+import ShelterImageSwiper from "../components/common/ShelterImageSwiper";
 
 const DetailPage: React.FC = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const selectedDate = useStore((state) => state.selectedDate);
   const selectedTime = useStore((state) => state.selectedTime);
   const setSelectedTime = useStore((state) => state.setSelectedTime);
@@ -17,17 +18,25 @@ const DetailPage: React.FC = () => {
     setSelectedTime(time);
   };
 
+  const handleGoBack = () => {
+    navigate(-1);
+  };
+
+  // 임시 날짜 (서버에서 받아온 데이터라고 가정)
+  const formattedDate = "2025년 3월 12일 (수요일)";
+
   return (
     <div className={styles["detail-container"]}>
-      <div className={styles["detail-image-container"]}>
-        <img
-          src={dangimg}
-          alt="메인 이미지"
-          className={styles["detail-image"]}
-        />
+      <div className={styles["back-button-container"]}>
+        <button onClick={handleGoBack} className={styles["back-btn"]}>
+          돌아가기
+        </button>
       </div>
+      
+      <ShelterImageSwiper shelterId={id} />
 
       <div className={styles["detail-content"]}>
+        {/* 왼쪽 - 보호소 정보 */}
         <div className={styles["shelter-info"]}>
           <h2>📌 상세 페이지 - {id}번 보호소</h2>
           <div className={styles["shelter-location"]}>
@@ -44,17 +53,15 @@ const DetailPage: React.FC = () => {
           </div>
         </div>
 
+        {/* 오른쪽 - 봉사 시간 선택 */}
         <div className={styles["volunteer-time"]}>
           <div className={styles["date-selection"]}>
-            <h3>선택 날짜:</h3>
-            <input
-              type="date"
-              value={selectedDate}
-              readOnly
-              className={styles["date-picker"]}
-            />
-
-            <h3>봉사시간:</h3>
+            <div className={styles["date-row"]}>
+              <div className={styles["date-label"]}>선택 날짜:</div>
+              <div className={styles["date-value"]}>{formattedDate}</div>
+            </div>
+            
+            <div className={styles["time-label"]}>봉사시간:</div>
             <div className={styles["time-buttons"]}>
               <button
                 className={selectedTime === "16:00 ~ 18:00" ? styles.selected : ""}
@@ -70,6 +77,10 @@ const DetailPage: React.FC = () => {
               </button>
             </div>
 
+            <div className={styles["note-container"]}>
+              봉사 시간은 선택 후 변경이 어려우니 신중하게 선택해주세요.
+            </div>
+            
             <button
               className={styles["apply-btn"]}
               disabled={!selectedDate || !selectedTime}
