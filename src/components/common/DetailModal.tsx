@@ -1,5 +1,5 @@
 import dogImage from "../../assets/dog-image.png";
-import useModalStore from "../../store/ModalStore";
+import useModalStore from "../../store/modalStore";
 import styles from "../../style/DetailModal.module.scss";
 
 const DetailModal: React.FC = () => {
@@ -20,10 +20,15 @@ const DetailModal: React.FC = () => {
           <br />• 승인 완료 후 변경/취소는 보호소 정책에 따라 진행됩니다.
         </p>
         <div className={styles.modalButtons}>
-          <button className={`${styles.modalButton} ${styles.cancel}`} onClick={closeModal}>
+          <button
+            className={`${styles.modalButton} ${styles.cancel}`}
+            onClick={closeModal}
+          >
             돌아가기
           </button>
-          <button className={`${styles.modalButton} ${styles.apply}`}>신청하기</button>
+          <button className={`${styles.modalButton} ${styles.apply}`}>
+            신청하기
+          </button>
         </div>
       </div>
     </div>
