@@ -1,9 +1,10 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useUsersStore } from "../store/UsersStore";
 import styles from "../style/UsersSignupForm.module.scss";
-import { useState } from "react";
 import logoImage from "../assets/logo.png";
 import TermsAgreement from "../components/common/TermsAgreement";
+import React, { useState } from "react";
+import axios from "axios";
 
 interface LocationState {
   openLoginModal: boolean;
@@ -17,8 +18,11 @@ const UsersSignupForm: React.FC = () => {
   );
   const [passwordMatch, setPasswordMatch] = useState(true);
   const [emailChecked, setEmailChecked] = useState(false);
-  const [emailValid, setEmailValid] = useState<boolean | null>(null); // true: 사용 가능, false: 중복
+  const [emailValid, setEmailValid] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(false);
+  const [verificationCode, setVerificationCode] = useState(""); // 사용자가 입력할 인증 코드
+  const [codeSent, setCodeSent] = useState(false);
+  const [codeVerified, setCodeVerified] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -26,8 +30,10 @@ const UsersSignupForm: React.FC = () => {
     setForm({ [name]: value });
 
     if (name === "email") {
-      setEmailChecked(false); // 이메일 변경 시 중복 확인 초기화
+      setEmailChecked(false);
       setEmailValid(null);
+      setCodeSent(false);
+      setCodeVerified(false);
     }
 
     // 비밀번호가 변경되었을 때 확인 비밀번호와 일치 여부 업데이트
@@ -45,24 +51,69 @@ const UsersSignupForm: React.FC = () => {
     setLoading(true);
 
     try {
-      // TODO: 실제 API 엔드포인트로 변경 필요
-      const response = await fetch(
-        `https://yourapi.com/check-email?email=${form.email}`
-      );
-      const data = await response.json();
+      const response = await axios.get(`https://yourapi.com/check-email`, {
+        params: { email: form.email },
+      });
 
-      if (data.exists) {
-        setEmailValid(false);
-      } else {
-        setEmailValid(true);
-      }
-
+      setEmailValid(!response.data.exists);
       setEmailChecked(true);
     } catch (error) {
       console.error("이메일 중복 확인 오류:", error);
       alert("이메일 중복 확인 중 오류가 발생했습니다.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleRequestVerificationCode = async () => {
+    if (!form.email || !emailValid) {
+      alert("사용 가능한 이메일을 입력한 후 다시 시도하세요.");
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        `https://yourapi.com/send-verification-code`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: form.email }),
+        }
+      );
+
+      if (response.data.success) {
+        alert("인증 코드가 이메일로 전송되었습니다.");
+      } else {
+        alert("인증 코드 요청에 실패했습니다.");
+      }
+    } catch (error) {
+      console.error("인증 코드 요청 오류:", error);
+      alert("인증 코드 요청 중 오류가 발생했습니다.");
+    }
+  };
+
+  const handleVerifyCode = async () => {
+    if (!verificationCode) {
+      alert("인증 코드를 입력하세요.");
+      return;
+    }
+
+    try {
+      const response = await axios.post(`https://yourapi.com/verify-code`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: form.email, code: verificationCode }),
+      });
+
+      if (response.data.success) {
+        setCodeVerified(true);
+        alert("이메일 인증이 완료되었습니다.");
+      } else {
+        alert("인증 코드가 올바르지 않습니다.");
+      }
+    } catch (error) {
+      console.error("인증 코드 검증 오류:", error);
+      alert("인증 코드 검증 중 오류가 발생했습니다.");
     }
   };
 
@@ -80,6 +131,11 @@ const UsersSignupForm: React.FC = () => {
 
     if (!emailChecked || emailValid === false) {
       alert("이메일 중복 확인을 완료해주세요.");
+      return;
+    }
+
+    if (!codeVerified) {
+      alert("이메일 인증을 완료해주세요.");
       return;
     }
 
@@ -122,7 +178,6 @@ const UsersSignupForm: React.FC = () => {
             />
             <button
               type="button"
-              className={styles.checkButton}
               onClick={handleCheckDuplicateEmail}
               disabled={loading}
             >
@@ -140,6 +195,39 @@ const UsersSignupForm: React.FC = () => {
               </p>
             )}
           </div>
+
+          <div className={styles.formGroup}>
+            <button type="button" onClick={handleRequestVerificationCode}>
+              인증 코드 요청
+            </button>
+          </div>
+
+          {codeSent && (
+            <div className={styles.formGroup}>
+              <label>인증 코드 입력</label>
+              <input
+                type="text"
+                value={verificationCode}
+                onChange={(e) => setVerificationCode(e.target.value)}
+                placeholder="인증 코드를 입력하세요"
+              />
+              <button
+                type="button"
+                onClick={handleVerifyCode}
+                disabled={codeVerified || verificationCode.length < 4}
+              >
+                {codeVerified ? "인증 완료" : "인증 확인"}
+              </button>
+            </div>
+          )}
+
+          {codeVerified && (
+            <div className={styles.formGroup}>
+              <button type="button" disabled className={styles.verifiedButton}>
+                이메일 인증 완료
+              </button>
+            </div>
+          )}
 
           <div className={`${styles.formGroup} ${styles.passwordGroup}`}>
             <label>
