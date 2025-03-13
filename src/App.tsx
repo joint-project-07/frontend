@@ -12,6 +12,8 @@ import { ModalProvider } from "./contexts/ModalContext";
 import InstitutionScheduleList from "./pages/InstitutionScheduleList";
 import InstitutionDetailPage from "./pages/InstitutionDetailPage";
 import VolunteerScheduleRegistration from "./pages/VolunteerScheduleForm";
+import FindId from "./pages/FindId";
+import FindPassword from "./pages/FindPassward";
 
 function App() {
   return (
@@ -27,8 +29,8 @@ function App() {
           <Route path="/institution-schedule" element={<InstitutionScheduleList/>} />
           <Route path="/institution-detail/:institutionId" element={<InstitutionDetailPage />} />
           <Route path="/schedule-registration" element={<VolunteerScheduleRegistration />} />
-
-
+          <Route path="/find-id" element={<FindId />} />
+          <Route path="/find-password" element={<FindPassword />} />
           </Route>
           <Route path="/UsersSignup" element={<UsersSignupForm />} />
           <Route path="/ShelterSignup" element={<ShelterSignupForm />} />

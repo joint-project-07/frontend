@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import Searchdate from '../components/feature/Searchdate';
 import SearchRange from '../components/feature/SearchRange';
@@ -27,6 +27,12 @@ interface TimeSlot {
   id: number;
 }
 
+interface ImageFile {
+  id: number;
+  file: File;
+  preview: string;
+}
+
 const VolunteerScheduleRegistration: React.FC = () => {
   const { userRole } = useAuth();
   const [shelterInfo] = useState({
@@ -41,7 +47,12 @@ const VolunteerScheduleRegistration: React.FC = () => {
   const [selectedSupplies, setSelectedSupplies] = useState<string[]>([]);
   const [maxParticipants, setMaxParticipants] = useState<number>(5);
   const [description, setDescription] = useState<string>('');
-  const [showTimeRangePicker, setShowTimeRangePicker] = useState<number | null>(null); // 수정된 부분
+  const [showTimeRangePicker, setShowTimeRangePicker] = useState<number | null>(null);
+  
+  // 이미지 관련 상태
+  const [images, setImages] = useState<ImageFile[]>([]);
+  const [imageError, setImageError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     // 로그인한 기관 정보를 가져오는 API 호출을 여기에 추가
@@ -60,6 +71,14 @@ const VolunteerScheduleRegistration: React.FC = () => {
       // fetchShelterInfo();
     }
   }, [userRole]);
+
+  // 이미지 미리보기 URL 정리를 위한 cleanup 함수
+  useEffect(() => {
+    return () => {
+      // 컴포넌트가 언마운트될 때 생성된 URL 객체 해제
+      images.forEach(image => URL.revokeObjectURL(image.preview));
+    };
+  }, [images]);
 
   const handleDateSelect = (range: { startDate: dayjs.Dayjs; endDate: dayjs.Dayjs }) => {
     setSelectedDate(range);
@@ -126,6 +145,52 @@ const VolunteerScheduleRegistration: React.FC = () => {
     return false; 
   };
 
+  // 이미지 파일 처리 함수
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    setImageError(null);
+    
+    if (!files || files.length === 0) return;
+    
+    // 최대 개수 검사
+    if (images.length + files.length > 10) {
+      setImageError('이미지는 최대 10장까지 업로드할 수 있습니다.');
+      return;
+    }
+    
+    const newImages: ImageFile[] = [];
+    
+    Array.from(files).forEach(file => {
+      // 이미지 파일 검증 (형식 검사 등)
+      if (!file.type.match('image.*')) {
+        setImageError('이미지 파일만 업로드 가능합니다.');
+        return;
+      }
+      
+      newImages.push({
+        id: Date.now() + Math.random(),
+        file: file,
+        preview: URL.createObjectURL(file)
+      });
+    });
+    
+    setImages(prev => [...prev, ...newImages]);
+    
+    // 파일 입력 초기화 (동일 파일 재선택 가능하도록)
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+  
+  const removeImage = (id: number) => {
+    const imageToRemove = images.find(img => img.id === id);
+    if (imageToRemove) {
+      URL.revokeObjectURL(imageToRemove.preview);
+    }
+    
+    setImages(images.filter(image => image.id !== id));
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -144,6 +209,12 @@ const VolunteerScheduleRegistration: React.FC = () => {
       alert('봉사활동 내용을 최소 하나 이상 선택해주세요.');
       return;
     }
+    
+    // 이미지 최소 개수 검사
+    if (images.length < 3) {
+      setImageError('이미지를 최소 3장 이상 업로드해주세요.');
+      return;
+    }
 
     const scheduleData = {
       shelterInfo,
@@ -155,7 +226,8 @@ const VolunteerScheduleRegistration: React.FC = () => {
       activities: selectedActivities,
       supplies: selectedSupplies,
       maxParticipants,
-      description
+      description,
+      imageCount: images.length
     };
 
     console.log('제출된 일정 데이터:', scheduleData);
@@ -171,6 +243,11 @@ const VolunteerScheduleRegistration: React.FC = () => {
     setSelectedSupplies([]);
     setMaxParticipants(5);
     setDescription('');
+    
+    // 이미지 미리보기 URL 정리
+    images.forEach(image => URL.revokeObjectURL(image.preview));
+    setImages([]);
+    setImageError(null);
   };
 
   return (
@@ -260,6 +337,48 @@ const VolunteerScheduleRegistration: React.FC = () => {
             >
               시간대 추가 (최대 5개)
             </button>
+          </div>
+        </section>
+        
+        {/* 이미지 업로드 섹션 추가 */}
+        <section className={styles.section}>
+          <h2>보호소 이미지</h2>
+          <div className={styles.imageUploadSection}>
+            <div className={styles.imageUploadInfo}>
+              <p>보호소 환경 및 활동 이미지를 업로드해주세요. (최소 3장, 최대 10장)</p>
+              <p>현재 {images.length}개의 이미지가 업로드되었습니다.</p>
+              {imageError && <p className={styles.errorMessage}>{imageError}</p>}
+            </div>
+            
+            <div className={styles.imageUploadControls}>
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={handleImageUpload}
+                ref={fileInputRef}
+                className={styles.fileInput}
+                id="image-upload"
+              />
+              <label htmlFor="image-upload" className={styles.uploadButton} tabIndex={0}>
+                이미지 선택
+              </label>
+            </div>
+            
+            <div className={styles.imagePreviewContainer}>
+              {images.map(image => (
+                <div key={image.id} className={styles.imagePreviewItem}>
+                  <img src={image.preview} alt="미리보기" className={styles.imagePreview} />
+                  <button
+                    type="button"
+                    onClick={() => removeImage(image.id)}
+                    className={styles.removeImageButton}
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
         

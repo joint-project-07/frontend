@@ -46,6 +46,18 @@ const LoginModal: React.FC = () => {
     navigate("/ShelterSignup", { state: { fromLoginModal: true } });
   };
 
+  // 아이디 찾기 페이지로 이동
+  const goToFindId = () => {
+    closeLoginModal();
+    navigate("/find-id");
+  };
+
+  // 비밀번호 찾기 페이지로 이동
+  const goToFindPassword = () => {
+    closeLoginModal();
+    navigate("/find-password");
+  };
+
   return (
     <>
       <button className={styles.openModalBtn} onClick={openLoginModal}>
@@ -128,9 +140,9 @@ const LoginModal: React.FC = () => {
           <div className={styles.extraLinks}>
             <span>잊으셨나요?</span>
             <span>|</span>
-            <span>아이디 찾기</span>
+            <span onClick={goToFindId} className={styles.linkText}>아이디 찾기</span>
             <span>|</span>
-            <span>비밀번호 재설정</span>
+            <span onClick={goToFindPassword} className={styles.linkText}>비밀번호 재설정</span>
           </div>
         </div>
       </Modal>
