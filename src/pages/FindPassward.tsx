@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import styles from '../style/FindPassward.module.scss';
-import logo from "../assets/logo.png";
 
 interface LocationState {
     openLoginModal: boolean;
@@ -161,11 +160,7 @@ const FindPassword = () => {
   };
 
   return (
-    <div className={styles.findAccountContainer}>
-      <div className={styles.logoContainer}>
-        <img src={logo} alt="로고" className={styles.logoImage} />
-      </div>
-      
+    <div className={styles.findAccountContainer}>    
       <div className={styles.formContainer}>
         <h2>비밀번호 찾기</h2>
         

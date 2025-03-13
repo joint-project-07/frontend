@@ -5,7 +5,7 @@ import styles from "../style/Mypage.module.scss";
 import { usePaginationStore } from "../store/CurrentStore";
 import "../style/Button.css";
 import Modal from "../components/common/Modal";
-import useModalStore from "../store/modalStore";
+import useModalStore from "../store/ModalStore";
 import StarRating from "../components/common/StarRating";
 
 interface ShelterItem {
@@ -72,12 +72,6 @@ const ShelterList: React.FC = () => {
 
   return (
     <div className={styles.shelterListContainer}>
-      <img
-        src="/images/logo.png"
-        alt="로고 이미지"
-        className={styles.shelterLogo}
-      />
-
       <PaginatedList
         list={shelterList}
         renderItem={(item) => (
@@ -125,12 +119,6 @@ const VolunteerHistory: React.FC = () => {
 
   return (
     <div className={styles.volunteerListContainer}>
-      <img
-        src="/images/logo.png"
-        alt="로고 이미지"
-        className={styles.shelterLogo}
-      />
-
       <PaginatedList
         list={shelterList}
         renderItem={(item) => (
@@ -179,7 +167,6 @@ const TabContent: React.FC = () => {
             </section>
             <section className={styles.infoSection}>
               <button className={styles.infoButton}>사용자명</button>
-              <button className={styles.infoButton}>역할</button>
               <button className={styles.infoButton}>
                 펫모어핸즈와 함께해용💜
               </button>
