@@ -11,7 +11,7 @@ const Header: React.FC = () => {
   return (
     <header className={styles.header}>
       <div className={styles.logoContainer}>
-        <Link to="/">
+        <Link to={userRole === "organization" ? "/institution-schedule" : "/"}>
           <img
             src={Logo}
             style={{ width: "150px", height: "75px" }}

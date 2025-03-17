@@ -1,21 +1,25 @@
 .footer {
+  position: fixed; /* 화면 하단에 고정 */
+  bottom: 0;
+  left: 0;
   display: flex;
   justify-content: space-between;
-  padding: 20px 20px;
+  align-items: center;
+  padding: 20px;
   background-color: #f8f8f8;
   width: 100%;
-  margin: 0 auto; /* 화면 중앙 정렬 */
   box-sizing: border-box;
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+}
 
-  &Content {
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
+.footerContent {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
 
-    > div {
-      width: 30%; /* 각 구역의 너비를 30%로 설정 */
-      margin: 10px 0;
-    }
+  > div {
+    width: 30%;
+    margin: 10px 0;
   }
 }
 
@@ -28,17 +32,16 @@
   font-size: 14px;
 }
 
-.privacyPolicy {
-  a {
-    text-decoration: none;
-    color: #0073e6;
-
-    &:hover {
-      text-decoration: underline;
-    }
-  }
+.privacyPolicy a {
+  text-decoration: none;
+  color: #0073e6;
 }
 
+.privacyPolicy a:hover {
+  text-decoration: underline;
+}
+
+/* 반응형 - 화면이 작아지면 세로 배치 */
 @media (max-width: 1200px) {
   .footerContent {
     flex-direction: column;
