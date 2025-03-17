@@ -5,6 +5,7 @@
   padding: 40px 20px;
   background: white;
   min-height: 100vh;
+  padding-bottom: 120px; /* 푸터 높이만큼 여백 추가 */
 }
 
 .back-button-container {
@@ -22,7 +23,7 @@
   border-radius: 5px;
   font-size: 14px;
   cursor: pointer;
-  
+
   &:hover {
     background-color: #e5e5e5;
   }
@@ -100,7 +101,7 @@
   border-radius: 16px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
   border-left: 6px solid #f8c1cc;
-  
+
   .date-selection {
     text-align: center;
   }

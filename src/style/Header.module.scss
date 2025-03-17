@@ -1,10 +1,16 @@
 .header {
+  position: fixed; /* 화면 상단에 고정 */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 90px;
   display: flex;
-  justify-content: space-between; /* 로고와 네비게이션 사이 공간 최대화 */
+  justify-content: space-between;
   align-items: center;
   padding: 0 20px;
-  height: 120px;
   background-color: #fff;
+  //box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
 }
 
 .logoContainer {
@@ -15,17 +21,17 @@
 .nav {
   display: flex;
   align-items: center;
-  gap: 20px; /* 네비게이션 항목 간 간격 */
-  margin-left: auto; /* 이 속성이 네비게이션을 오른쪽으로 밀어냅니다 */
-  
+  gap: 20px;
+  margin-left: auto;
+
   a {
     text-decoration: none;
     color: #333;
     font-weight: 500;
     transition: color 0.2s;
-    
+
     &:hover {
-      color: #ff9fb0; /* 호버 시 색상 변경 */
+      color: #ff9fb0;
     }
   }
 }
@@ -39,8 +45,12 @@
   cursor: pointer;
   font-weight: 500;
   transition: background-color 0.2s;
-  
+
   &:hover {
     background-color: #ff8da0;
   }
+}
+
+main {
+  margin-top: 110px; /* 헤더 높이만큼 여백 추가 */
 }
