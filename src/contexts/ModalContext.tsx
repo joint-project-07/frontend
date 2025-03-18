@@ -7,6 +7,10 @@ interface ModalContextType {
   toggleLoginModal: () => void;
   activeTab: string;
   setActiveTab: (tab: string) => void;
+
+  isPasswordModalOpen: boolean;
+  openPasswordModal: () => void;
+  closePasswordModal: () => void;
 }
 
 const ModalContext = createContext<ModalContextType | undefined>(undefined);
@@ -14,7 +18,8 @@ const ModalContext = createContext<ModalContextType | undefined>(undefined);
 export const ModalProvider: React.FC<{children: React.ReactNode}> = ({ children }) => {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<string>('volunteer'); // 기본값은 volunteer
-  
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+
   const openLoginModal = useCallback(() => {
     setIsLoginModalOpen(true);
   }, []);
@@ -31,6 +36,14 @@ export const ModalProvider: React.FC<{children: React.ReactNode}> = ({ children 
     setActiveTab(tab);
   }, []);
   
+  const openPasswordModal = useCallback(() => {
+    setIsPasswordModalOpen(true);
+  }, []);
+  
+  const closePasswordModal = useCallback(() => {
+    setIsPasswordModalOpen(false);
+  }, []);
+
   return (
     <ModalContext.Provider value={{ 
       isLoginModalOpen, 
@@ -38,7 +51,11 @@ export const ModalProvider: React.FC<{children: React.ReactNode}> = ({ children 
       closeLoginModal, 
       toggleLoginModal,
       activeTab,
-      setActiveTab: handleSetActiveTab
+      setActiveTab: handleSetActiveTab,
+
+      isPasswordModalOpen,
+      openPasswordModal,
+      closePasswordModal
     }}>
       {children}
     </ModalContext.Provider>

@@ -7,6 +7,8 @@ import "../style/Button.css";
 import Modal from "../components/common/Modal";
 import useModalStore from "../store/modalStore";
 import StarRating from "../components/common/StarRating";
+import PasswordChangeModal from "../components/common/PasswordChangeModal";
+import { useModalContext } from "../contexts/ModalContext";
 
 interface ShelterItem {
   application_id: number;
@@ -167,6 +169,7 @@ const VolunteerHistory: React.FC = () => {
 
 const TabContent: React.FC = () => {
   const { activeTab } = useTabStore();
+  const { openPasswordModal } = useModalContext();
 
   switch (activeTab) {
     case "info":
@@ -182,7 +185,12 @@ const TabContent: React.FC = () => {
               <button className={styles.infoButton}>
                 펫모어핸즈와 함께해용💜
               </button>
-              <button className={styles.infoButton}>추가 버튼</button>
+              <button 
+              className={styles.infoButton}
+              onClick={openPasswordModal}
+              >
+                비밀번호 변경</button>
+              <PasswordChangeModal />
             </section>
           </main>
         </div>
