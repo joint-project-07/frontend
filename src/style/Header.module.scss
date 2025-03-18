@@ -9,7 +9,6 @@
   align-items: center;
   padding: 0 20px;
   background-color: #fff;
-  //box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   z-index: 1000;
 }
 
@@ -49,8 +48,4 @@
   &:hover {
     background-color: #ff8da0;
   }
-}
-
-main {
-  margin-top: 110px; /* 헤더 높이만큼 여백 추가 */
 }
