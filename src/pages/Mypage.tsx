@@ -2,10 +2,10 @@ import React from "react";
 import { useTabStore } from "../store/TabStore";
 import { useShelterStore } from "../store/ShelterStore";
 import styles from "../style/Mypage.module.scss";
-import { usePaginationStore } from "../store/CurrentStore";
+import { TabType, usePaginationStore } from "../store/CurrentStore";
 import "../style/Button.css";
 import Modal from "../components/common/Modal";
-import useModalStore from "../store/ModalStore";
+import useModalStore from "../store/modalStore";
 import StarRating from "../components/common/StarRating";
 
 interface ShelterItem {
@@ -17,18 +17,28 @@ interface ShelterItem {
 }
 
 interface ListProps {
+  tabType: TabType; 
   list: ShelterItem[];
   renderItem: (item: ShelterItem) => React.ReactNode;
   emptyMessage: string;
 }
 
 const PaginatedList: React.FC<ListProps> = ({
+  tabType,
   list,
   renderItem,
   emptyMessage,
 }) => {
-  const { currentPage, itemsPerPage, totalPages, nextPage, prevPage, setPage } =
+  const { itemsPerPage, getPage, getTotalPages, nextPage, prevPage, setPage, setTotalPages } =
     usePaginationStore();
+  
+  React.useEffect(() => {
+    const total = Math.ceil(list.length / itemsPerPage);
+    setTotalPages(tabType, total);
+  }, [list, itemsPerPage, tabType, setTotalPages]);
+
+  const currentPage = getPage(tabType);
+  const totalPages = getTotalPages(tabType);
 
   const slicedList = list.slice(
     (currentPage - 1) * itemsPerPage,
@@ -41,21 +51,21 @@ const PaginatedList: React.FC<ListProps> = ({
         <>
           {slicedList.map(renderItem)}
           <div className={styles.pagination}>
-            <button onClick={prevPage} disabled={currentPage === 1}>
+            <button onClick={() => prevPage(tabType)} disabled={currentPage === 1}>
               이전
             </button>
             {Array.from({ length: totalPages }, (_, i) => i + 1).map(
               (number) => (
                 <button
                   key={number}
-                  onClick={() => setPage(number)}
+                  onClick={() => setPage(tabType, number)}
                   className={currentPage === number ? styles.activePage : ""}
                 >
                   {number}
                 </button>
               )
             )}
-            <button onClick={nextPage} disabled={currentPage === totalPages}>
+            <button onClick={() => nextPage(tabType)} disabled={currentPage === totalPages}>
               다음
             </button>
           </div>
@@ -73,6 +83,7 @@ const ShelterList: React.FC = () => {
   return (
     <div className={styles.shelterListContainer}>
       <PaginatedList
+        tabType="shelter" 
         list={shelterList}
         renderItem={(item) => (
           <div key={item.application_id} className={styles.shelterCard}>
@@ -120,6 +131,7 @@ const VolunteerHistory: React.FC = () => {
   return (
     <div className={styles.volunteerListContainer}>
       <PaginatedList
+        tabType="volunteer"
         list={shelterList}
         renderItem={(item) => (
           <div key={item.application_id} className={styles.volunteerCard}>
