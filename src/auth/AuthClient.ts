@@ -4,8 +4,12 @@ import {
   RegisterCredentials, 
   AuthResponse,
   SocialAuthProvider,
-  UserRole
+  UserRole,
+  SocialAuthRequest,
+  TokenRefreshResponse
 } from './types';
+
+import authServiceReal from '../api/services/authService';
 
 const isDevelopment = true; 
 
@@ -34,7 +38,19 @@ const mockUsers: AuthUser[] = [
   }
 ];
 
-const mockAuthService = {
+// Define a proper interface for auth service
+interface IAuthService {
+  login: (credentials: LoginCredentials) => Promise<AuthResponse>;
+  register: (userData: RegisterCredentials) => Promise<AuthResponse>;
+  logout: () => Promise<void>;
+  getCurrentUser: () => Promise<AuthUser>;
+  refreshToken: (refreshToken: string) => Promise<TokenRefreshResponse>;
+  socialLogin: (socialAuthData: SocialAuthRequest) => Promise<AuthResponse>;
+  unlinkSocialAccount: (provider: string) => Promise<{ message: string }>;
+  requestPasswordReset: (email: string) => Promise<{ message: string }>;
+}
+
+const mockAuthService: IAuthService = {
   login: async (credentials: LoginCredentials): Promise<AuthResponse> => {
     console.log(`[Mock] 로그인 요청 - Email: ${credentials.email}`);
     
@@ -90,7 +106,7 @@ const mockAuthService = {
     return mockUsers[0];
   },
   
-  refreshToken: async (refreshToken: string): Promise<{ accessToken: string }> => {
+  refreshToken: async (refreshToken: string): Promise<TokenRefreshResponse> => {
     console.log('[Mock] 토큰 갱신 요청');
     
     if (refreshToken) {
@@ -100,8 +116,8 @@ const mockAuthService = {
     throw new Error('유효하지 않은 리프레시 토큰입니다.');
   },
   
-  socialLogin: async ({ provider}: { provider: SocialAuthProvider, accessToken: string }): Promise<AuthResponse> => {
-    console.log(`[Mock] 소셜 로그인 요청 - Provider: ${provider}`);
+  socialLogin: async (socialAuthData: SocialAuthRequest): Promise<AuthResponse> => {
+    console.log(`[Mock] 소셜 로그인 요청 - Provider: ${socialAuthData.provider}`);
     
     return {
       accessToken: 'mock_jwt_access_token',
@@ -110,12 +126,12 @@ const mockAuthService = {
     };
   },
   
-  unlinkSocialAccount: async (provider: SocialAuthProvider): Promise<{ success: boolean }> => {
+  unlinkSocialAccount: async (provider: string): Promise<{ message: string }> => {
     console.log(`[Mock] 소셜 계정 연결 해제 요청 - Provider: ${provider}`);
-    return { success: true };
+    return { message: '소셜 계정 연결이 해제되었습니다.' };
   },
   
-  requestPasswordReset: async (email: string): Promise<{ success: boolean }> => {
+  requestPasswordReset: async (email: string): Promise<{ message: string }> => {
     console.log(`[Mock] 비밀번호 재설정 요청 - Email: ${email}`);
     
     const user = mockUsers.find(user => user.email === email);
@@ -123,11 +139,12 @@ const mockAuthService = {
       throw new Error('등록되지 않은 이메일입니다.');
     }
     
-    return { success: true };
+    return { message: '비밀번호 재설정 이메일이 발송되었습니다.' };
   }
 };
 
-const authService = isDevelopment ? mockAuthService : {} as any; // 실제 환경에서는 import한 authService 사용
+// Replace any with a proper interface
+const authService: IAuthService = isDevelopment ? mockAuthService : authServiceReal;
 
 class AuthClient {
   private user: AuthUser | null = null;
