@@ -2,9 +2,11 @@ import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import styles from "../style/DetailPage.module.scss"; 
 import useStore from "../store/Detail";
-import useModalStore from "../store/ModalStore";
+import useModalStore from "../store/modalStore";
 import DetailModal from "../components/common/DetailModal";
 import ShelterImageSwiper from "../components/common/ShelterImageSwiper";
+import { useModalContext } from "../contexts/ModalContext";
+import { useAuthStore } from "../store";
 
 const DetailPage: React.FC = () => {
   const { id } = useParams();
@@ -13,6 +15,9 @@ const DetailPage: React.FC = () => {
   const selectedTime = useStore((state) => state.selectedTime);
   const setSelectedTime = useStore((state) => state.setSelectedTime);
   const { openModal } = useModalStore();
+  const { openLoginModal } = useModalContext();
+  
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
   const handleTimeSelect = (time: string) => {
     setSelectedTime(time);
@@ -20,6 +25,17 @@ const DetailPage: React.FC = () => {
 
   const handleGoBack = () => {
     navigate(-1);
+  };
+
+  const handleApplyClick = () => {
+    if (isAuthenticated) {
+      openModal({
+        shelter_name: `${id}번 보호소`, 
+        description: "견사 청소, 미용, 목욕, 산책, 밥주기 등" 
+      });
+    } else {
+      openLoginModal();
+    }
   };
 
   // 임시 날짜 (서버에서 받아온 데이터라고 가정)
@@ -84,10 +100,7 @@ const DetailPage: React.FC = () => {
             <button
               className={styles["apply-btn"]}
               disabled={!selectedDate || !selectedTime}
-              onClick={() => openModal({
-                shelter_name: `${id}번 보호소`, 
-                description: "견사 청소, 미용, 목욕, 산책, 밥주기 등" 
-              })}
+              onClick={handleApplyClick}
             >
               신청하기
             </button>

@@ -1,6 +1,6 @@
 import React from 'react';
 // import { redirectToKakaoLogin } from '../../service/auth/kakaoAuth';
-import { mockGenerateKakaoCode } from '../../service/mock/kakaoAuth';
+import { mockGenerateKakaoCode } from '../../auth/kakaoAuthProvider';
 
 interface KakaoLoginButtonProps {
   className?: string;
