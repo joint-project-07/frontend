@@ -8,6 +8,7 @@ type Volunteer = {
   name: string;
   phone: string;
   status: "승인" | "반려" | "대기";
+  attendance?: "참석" | "불참석";
 };
 
 type InstitutionData = {
@@ -66,6 +67,12 @@ const InstitutionDetailPage = () => {
   const handleStatusChange = (id: number, status: "승인" | "반려") => {
     setVolunteers((prev) =>
       prev.map((v) => (v.id === id ? { ...v, status } : v))
+    );
+  };
+
+  const handleAttendanceChange = (id: number, attendance: "참석" | "불참석") => {
+    setVolunteers((prev) =>
+      prev.map((v) => (v.id === id ? { ...v, attendance } : v))
     );
   };
 
@@ -208,6 +215,22 @@ const InstitutionDetailPage = () => {
                             onClick={() => handleStatusChange(volunteer.id, "반려")}
                           >
                             반려
+                          </button>
+                        </div>
+                      )}
+                       {volunteer.status === "승인" && (
+                        <div className={styles.buttons}>
+                          <button
+                            className={`${styles.attend} ${volunteer.attendance === "참석" ? styles.active : ""}`}
+                            onClick={() => handleAttendanceChange(volunteer.id, "참석")}
+                          >
+                            참석
+                          </button>
+                          <button
+                            className={`${styles.absent} ${volunteer.attendance === "불참석" ? styles.active : ""}`}
+                            onClick={() => handleAttendanceChange(volunteer.id, "불참석")}
+                          >
+                            불참석
                           </button>
                         </div>
                       )}
