@@ -1,4 +1,4 @@
-import { UserRole, SocialAuthProvider } from '../auth/types';
+import { UserRole, SocialAuthProvider } from '../types/auth-types';
 
 export interface UserProfile {
   id: string;

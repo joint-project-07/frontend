@@ -6,7 +6,7 @@ import {
   SocialAuthRequest, 
   TokenRefreshResponse,
   AuthUser
-} from '../../auth/types';
+} from '../../types/auth-types';
 
 const authService = {
   login: async (credentials: LoginCredentials): Promise<AuthResponse> => {

@@ -6,7 +6,7 @@ import {
     LoginCredentials,
     RegisterCredentials,
     AuthUser
-  } from '../../auth/types';
+  } from '../../types/auth-types';
   
   const currentDate = new Date().toISOString();
   

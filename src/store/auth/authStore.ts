@@ -6,8 +6,9 @@ import {
   AuthUser, 
   LoginCredentials, 
   RegisterCredentials, 
-  SocialAuthProvider 
-} from '../../auth/types';
+  SocialAuthProvider,
+  UserRole
+} from '../../types/auth-types'; 
 
 interface AuthState {
   user: AuthUser | null;
@@ -28,6 +29,9 @@ interface AuthState {
   setError: (error: string | null) => void;
   resetError: () => void;
   processKakaoAuth: (code: string) => Promise<AuthUser>;
+  
+  // 목업 환경용 함수 추가
+  loginAs: (role: UserRole) => Promise<AuthUser>;
 }
 
 const useAuthStore = create<AuthState>((set, get) => ({
@@ -47,6 +51,38 @@ const useAuthStore = create<AuthState>((set, get) => ({
       const user = await authClient.login(credentials);
       set({ user, isAuthenticated: true, isLoading: false });
       return user;
+    } catch (error) {
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : '로그인 중 오류가 발생했습니다.';
+      
+      set({ isLoading: false, error: errorMessage });
+      throw error;
+    }
+  },
+  
+  // 목업 환경용 함수 추가
+  loginAs: async (role) => {
+    set({ isLoading: true, error: null });
+    
+    try {
+      // 목업 로그인 처리
+      const mockUser: AuthUser = {
+        id: `mock_${Math.random().toString(36).substring(2, 9)}`,
+        email: `${role.toLowerCase()}@example.com`,
+        username: role === UserRole.VOLUNTEER ? '봉사자' : '봉사기관',
+        name: role === UserRole.VOLUNTEER ? '봉사자' : '봉사기관',
+        role: role,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      
+      // localStorage 저장 로직은 authClient로 위임
+      await authClient.setMockUser(mockUser);
+      
+      set({ user: mockUser, isAuthenticated: true, isLoading: false });
+      console.log(`[목업] ${role} 역할로 로그인되었습니다.`, mockUser);
+      return mockUser;
     } catch (error) {
       const errorMessage = error instanceof Error 
         ? error.message 
@@ -136,7 +172,8 @@ const useAuthStore = create<AuthState>((set, get) => ({
     } catch (error) {
       console.error('사용자 정보 갱신 중 오류가 발생했습니다:', error);
       
-      if (error instanceof Error && error.message.includes('401')) {
+      const err = error as Error;
+      if (err.message.includes('401')) {
         await get().logout();
       } else {
         set({ isLoading: false });
@@ -151,9 +188,10 @@ const useAuthStore = create<AuthState>((set, get) => ({
       if (provider === SocialAuthProvider.KAKAO) {
         await kakaoAuthProvider.unlink();
       } else {
-        await authService.unlinkSocialAccount(provider as string);
+        await authService.unlinkSocialAccount(provider);
       }
       await get().refreshUserInfo();
+      set({ isLoading: false });
     } catch (error) {
       const errorMessage = error instanceof Error 
         ? error.message 
