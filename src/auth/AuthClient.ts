@@ -2,16 +2,20 @@ import {
   AuthUser, 
   LoginCredentials, 
   RegisterCredentials, 
+  SocialAuthProvider, 
+  UserRole, 
   AuthResponse,
-  SocialAuthProvider,
-  UserRole,
-  SocialAuthRequest,
-  TokenRefreshResponse
-} from './types';
+  TokenRefreshResponse,
+  SocialAuthRequest
+} from '../types/auth-types';
 
 import authServiceReal from '../api/services/authService';
 
-const isDevelopment = true; 
+const isDevelopment = process.env.NODE_ENV === 'development';
+
+const MOCK_AUTH_TOKEN = 'mock_auth_token';
+const MOCK_USER_KEY = 'mock_current_user';
+const MOCK_AUTH_STATE = 'mock_auth_state';
 
 const currentDate = new Date().toISOString();
 
@@ -20,7 +24,7 @@ const mockUsers: AuthUser[] = [
     id: '123456',
     name: '테스트 사용자',
     email: 'test_user@example.com',
-    role: UserRole.USER,
+    role: UserRole.USER, 
     profileImage: 'https://via.placeholder.com/150',
     createdAt: currentDate,
     updatedAt: currentDate
@@ -29,7 +33,7 @@ const mockUsers: AuthUser[] = [
     id: '789012',
     name: '카카오 테스트 사용자',
     email: 'kakao_user@example.com',
-    role: UserRole.USER,
+    role: UserRole.USER, 
     profileImage: 'https://via.placeholder.com/150',
     socialProvider: SocialAuthProvider.KAKAO, 
     socialId: 'kakao_1234567890',
@@ -38,7 +42,6 @@ const mockUsers: AuthUser[] = [
   }
 ];
 
-// Define a proper interface for auth service
 interface IAuthService {
   login: (credentials: LoginCredentials) => Promise<AuthResponse>;
   register: (userData: RegisterCredentials) => Promise<AuthResponse>;
@@ -79,9 +82,10 @@ const mockAuthService: IAuthService = {
     
     const newUser: AuthUser = {
       id: 'user_' + Math.random().toString(36).substring(2, 10),
-      name: userData.name,
       email: userData.email,
-      role: UserRole.USER,
+      name: userData.name, 
+      username: userData.username, 
+      role: userData.role || UserRole.USER, 
       profileImage: 'https://via.placeholder.com/150',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
@@ -143,9 +147,6 @@ const mockAuthService: IAuthService = {
   }
 };
 
-// Replace any with a proper interface
-const authService: IAuthService = isDevelopment ? mockAuthService : authServiceReal;
-
 class AuthClient {
   private user: AuthUser | null = null;
   private isAuthenticated = false;
@@ -165,7 +166,6 @@ class AuthClient {
         if (
           parsedUser &&
           typeof parsedUser.id === 'string' &&
-          typeof parsedUser.name === 'string' &&
           typeof parsedUser.email === 'string' &&
           typeof parsedUser.role === 'string' &&
           typeof parsedUser.createdAt === 'string' &&
@@ -193,13 +193,13 @@ class AuthClient {
 
   async login(credentials: LoginCredentials): Promise<AuthUser> {
     console.log('로그인 시도:', credentials.email);
-    const response = await authService.login(credentials);
+    const response = await (isDevelopment ? mockAuthService : authServiceReal).login(credentials);
     return this.handleAuthResponse(response);
   }
 
   async register(userData: RegisterCredentials): Promise<AuthUser> {
     console.log('회원가입 시도:', userData.email);
-    const response = await authService.register(userData);
+    const response = await (isDevelopment ? mockAuthService : authServiceReal).register(userData);
     return this.handleAuthResponse(response);
   }
 
@@ -218,7 +218,7 @@ class AuthClient {
 
   async logout(): Promise<void> {
     try {
-      await authService.logout();
+      await (isDevelopment ? mockAuthService : authServiceReal).logout();
     } catch (error) {
       console.error('로그아웃 요청 실패:', error);
     } finally {
@@ -240,14 +240,16 @@ class AuthClient {
     }
 
     try {
-      const user = await authService.getCurrentUser();
+      const user = await (isDevelopment ? mockAuthService : authServiceReal).getCurrentUser();
       this.user = user;
       localStorage.setItem('user', JSON.stringify(user));
       return user;
     } catch (error) {
       console.error('사용자 정보 새로고침 실패:', error);
       
-      if (error instanceof Error && error.message.includes('401')) {
+      // Fixed error check
+      const err = error as Error;
+      if (err.message.includes('401')) {
         await this.logout();
       }
       
@@ -263,7 +265,7 @@ class AuthClient {
         return null;
       }
       
-      const response = await authService.refreshToken(refreshToken);
+      const response = await (isDevelopment ? mockAuthService : authServiceReal).refreshToken(refreshToken);
       const newAccessToken = response.accessToken;
       localStorage.setItem('accessToken', newAccessToken);
       
@@ -272,6 +274,19 @@ class AuthClient {
       console.error('토큰 갱신 실패:', error);
       await this.logout();
       return null;
+    }
+  }
+
+  async setMockUser(mockUser: AuthUser): Promise<void> {
+    if (isDevelopment) {
+      localStorage.setItem(MOCK_AUTH_TOKEN, 'mock_token_' + Date.now());
+      localStorage.setItem(MOCK_USER_KEY, JSON.stringify(mockUser));
+      localStorage.setItem(MOCK_AUTH_STATE, 'true');
+      
+      this.isAuthenticated = true;
+      this.user = mockUser;
+    } else {
+      throw new Error('이 함수는 개발 환경에서만 사용할 수 있습니다.');
     }
   }
 }
