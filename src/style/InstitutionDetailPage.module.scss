@@ -265,7 +265,8 @@
   margin-left: 1rem;
 }
 
-.approve, .reject {
+/* 모든 버튼의 기본 스타일 통일 */
+.approve, .reject, .attend, .absent {
   padding: 6px 12px;
   border: none;
   border-radius: 8px; 
@@ -273,8 +274,10 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
+  min-width: 60px; /* 버튼 크기 일관성 유지 */
 }
 
+/* 승인 버튼 - 기존 스타일 유지 */
 .approve {
   background-color: #ff9fb0; 
   color: white;
@@ -285,6 +288,7 @@
   }
 }
 
+/* 반려 버튼 - 기존 스타일 유지 */
 .reject {
   background-color: transparent;
   color: #333;
@@ -292,6 +296,39 @@
 
   &:hover {
     background-color: #f5f5f5;
+  }
+}
+
+/* 참석 버튼 - 승인 버튼과 유사하게 스타일 적용 */
+.attend {
+  background-color: #ff9fb0; 
+  color: white;
+  opacity: 0.8; /* 약간 더 연하게 */
+  
+  &:hover {
+    background-color: #ff8da0;
+    opacity: 0.9;
+  }
+  
+  &.active {
+    opacity: 1;
+    font-weight: bold;
+  }
+}
+
+/* 불참석 버튼 - 반려 버튼과 유사하게 스타일 적용 */
+.absent {
+  background-color: transparent;
+  color: #333;
+  border: 1px solid #e0e0e0;
+  
+  &:hover {
+    background-color: #f5f5f5;
+  }
+  
+  &.active {
+    background-color: #f0f0f0;
+    font-weight: bold;
   }
 }
 
