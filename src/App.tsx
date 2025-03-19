@@ -19,24 +19,33 @@ function App() {
   return (
     <AuthProvider>
       <ModalProvider>
-      <Router>
+        <Router>
           <Routes>
             <Route element={<MainLayout />}>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/detail/:id" element={<DetailPage /> } />
-          <Route path="/MyPage" element={<MyPage />}/>
-          <Route path="/searchnotfound"element={<SearchNotFound />}/>
-          <Route path="/institution-schedule" element={<InstitutionScheduleList/>} />
-          <Route path="/institution-detail/:institutionId" element={<InstitutionDetailPage />} />
-          <Route path="/schedule-registration" element={<VolunteerScheduleRegistration />} />
-          <Route path="/find-id" element={<FindId />} />
-          <Route path="/find-password" element={<FindPassword />} />
-          </Route>
-          <Route path="/UsersSignup" element={<UsersSignupForm />} />
-          <Route path="/ShelterSignup" element={<ShelterSignupForm />} />
-          {import.meta.env.DEV ? <Route path="test" element/> : null}
-        </Routes>
-      </Router>
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/detail/:id" element={<DetailPage />} />
+              <Route path="/MyPage" element={<MyPage />} />
+              <Route path="/searchnotfound" element={<SearchNotFound />} />
+              <Route
+                path="/institution-schedule"
+                element={<InstitutionScheduleList />}
+              />
+              <Route
+                path="/institution-detail/:institutionId"
+                element={<InstitutionDetailPage />}
+              />
+              <Route
+                path="/schedule-registration"
+                element={<VolunteerScheduleRegistration />}
+              />
+              <Route path="/find-id" element={<FindId />} />
+              <Route path="/find-password" element={<FindPassword />} />
+            </Route>
+            <Route path="/UsersSignup" element={<UsersSignupForm />} />
+            <Route path="/ShelterSignup" element={<ShelterSignupForm />} />
+            {import.meta.env.DEV ? <Route path="test" element /> : null}
+          </Routes>
+        </Router>
       </ModalProvider>
     </AuthProvider>
   );
