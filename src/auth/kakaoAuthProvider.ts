@@ -5,14 +5,14 @@ import {
   SocialAuthRequest, 
   AuthResponse,
   UserRole
-} from './types';
+} from '../types/auth-types';
 import authClient from '../auth/AuthClient';
 
 const isDevelopment = process.env.NODE_ENV === 'development';
 
 const KAKAO_CONFIG = {
-  CLIENT_ID: import.meta.env.KAKAO_REST_API_KEY || 'mock_kakao_client_id',
-  REDIRECT_URI: import.meta.env.KAKAO_REDIRECT_URI || 'http://localhost:3000/oauth/callback/kakao',
+  CLIENT_ID: import.meta.env.VITE_KAKAO_REST_API_KEY || 'mock_kakao_client_id',
+  REDIRECT_URI: import.meta.env.VITE_KAKAO_REDIRECT_URI || 'http://localhost:3000/oauth/callback/kakao',
   AUTH_URL: 'https://kauth.kakao.com/oauth/authorize',
   TOKEN_URL: 'https://kauth.kakao.com/oauth/token',
 };
@@ -29,14 +29,31 @@ class KakaoAuthProvider {
     return `${KAKAO_CONFIG.AUTH_URL}?${params.toString()}`;
   }
 
-  // 로그인 리디렉션
-  login(): void {
+  // 로그인 리디렉션 - 개발 환경에서 AuthUser 반환, 프로덕션 환경에서 리디렉션
+  login(): Promise<AuthUser> {
     if (isDevelopment) {
       console.log('[Mock] 카카오 로그인 리디렉션 (개발 환경)');
-      return;
+      
+      // 개발 환경용 목업 사용자 반환
+      const mockUser: AuthUser = {
+        id: 'kakao_dev_' + Math.random().toString(36).substring(2, 10),
+        name: '카카오 개발 사용자',
+        email: 'kakao_dev@example.com',
+        role: UserRole.USER, // 'user' (소문자)
+        socialProvider: SocialAuthProvider.KAKAO, // 'kakao' (소문자)
+        profileImage: 'https://via.placeholder.com/150',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      
+      return Promise.resolve(mockUser);
     }
     
+    // 프로덕션 환경에서는 리디렉션
     window.location.href = this.getAuthUrl();
+    return new Promise<AuthUser>(() => {
+      // 이 Promise는 의도적으로 해결되지 않음 (페이지 이동)
+    });
   }
 
   // 토큰 교환
@@ -69,11 +86,15 @@ class KakaoAuthProvider {
 
   // 백엔드 인증
   async processCode(code: string): Promise<AuthUser> {
-    const accessToken = await this.exchangeCodeForToken(code);
+    const kakaoToken = await this.exchangeCodeForToken(code);
     
+    // SocialAuthRequest 인터페이스에 맞게 수정
+    // token, code, redirectUri가 모두 선택적 필드임
     const authData: SocialAuthRequest = {
-      accessToken,
-      provider: SocialAuthProvider.KAKAO
+      provider: SocialAuthProvider.KAKAO,
+      token: kakaoToken, // accessToken 대신 token 사용
+      code: code,
+      redirectUri: KAKAO_CONFIG.REDIRECT_URI
     };
     
     const response = await this.socialLogin(authData);
@@ -92,11 +113,11 @@ class KakaoAuthProvider {
           id: 'kakao_user_' + Math.random().toString(36).substring(2, 10),
           name: '카카오 사용자',
           email: 'kakao_user@example.com',
-          role: UserRole.USER,
-          socialProvider: SocialAuthProvider.KAKAO,
+          role: UserRole.USER, // 'user' (소문자)
+          socialProvider: SocialAuthProvider.KAKAO, // 'kakao' (소문자)
           profileImage: 'https://via.placeholder.com/150',
-          createdAt: '',
-          updatedAt: ''
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
         }
       };
     }
@@ -159,7 +180,7 @@ class KakaoAuthProvider {
 
     try {
       await axios.post('/api/auth/unlink-social', {
-        provider: SocialAuthProvider.KAKAO
+        provider: SocialAuthProvider.KAKAO // 'kakao' (소문자)
       });
     } catch (error) {
       if (error instanceof AxiosError) {

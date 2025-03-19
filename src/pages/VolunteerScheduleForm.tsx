@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth, UserRole } from '../contexts/AuthContext';
 import Searchdate from '../components/feature/Searchdate';
 import SearchRange from '../components/feature/SearchRange';
 import styles from '../style/VolunteerScheduleRegistration.module.scss';
@@ -34,7 +34,10 @@ interface ImageFile {
 }
 
 const VolunteerScheduleRegistration: React.FC = () => {
-  const { userRole } = useAuth();
+  // useAuth에서 user 객체를 가져와서 role 속성 접근
+  const { user } = useAuth();
+  const userRole = user?.role || null;
+
   const [shelterInfo] = useState({
     name: '샘플 보호소',
     address: '서울시 강남구 테헤란로 123',
@@ -57,7 +60,9 @@ const VolunteerScheduleRegistration: React.FC = () => {
   useEffect(() => {
     // 로그인한 기관 정보를 가져오는 API 호출을 여기에 추가
     // API 연결 전이므로 샘플 데이터 사용
-    if (userRole === 'organization') {
+    if (userRole === UserRole.ORGANIZATION) {
+      // 디버깅 정보 추가
+      console.log('기관으로 로그인되어 있음:', userRole);
       // API 호출 예시
       // const fetchShelterInfo = async () => {
       //   try {
@@ -69,6 +74,8 @@ const VolunteerScheduleRegistration: React.FC = () => {
       //   }
       // };
       // fetchShelterInfo();
+    } else {
+      console.log('현재 사용자 역할:', userRole);
     }
   }, [userRole]);
 

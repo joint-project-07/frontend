@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import { userService } from '../api/services';
-import useAuth from './useAuth';
+import { useAuth } from '../contexts/AuthContext'; // import 방식 수정
 import { 
   UserProfile, 
   PasswordChangeRequest 
