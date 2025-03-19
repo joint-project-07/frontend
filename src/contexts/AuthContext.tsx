@@ -269,9 +269,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       if (isDevelopment) {
         await new Promise(resolve => setTimeout(resolve, 300));
-      } else {
       }
-      
       localStorage.removeItem(MOCK_USER_KEY);
       localStorage.removeItem(MOCK_AUTH_STATE);
       localStorage.removeItem(MOCK_AUTH_TOKEN);
@@ -302,7 +300,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           localStorage.setItem(MOCK_USER_KEY, JSON.stringify(currentUser));
           setUser(currentUser);
         }
-      } else {
       }
     } catch (error) {
       console.error('사용자 정보 갱신 중 오류가 발생했습니다:', error);
