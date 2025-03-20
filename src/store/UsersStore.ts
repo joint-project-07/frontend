@@ -19,10 +19,22 @@ interface FormData {
   passwordMatch: boolean;
 }
 
+interface User {
+  id: number;
+  name: string;
+  email: string;
+}
+
 interface UsersState {
   form: FormData;
   setForm: (newForm: Partial<FormData>) => void;
   resetForm: () => void;
+}
+
+interface UserStore {
+  user: User | null;
+  setUser: (user: User) => void;
+  clearUser: () => void;
 }
 
 export const useUsersStore = create<UsersState>((set) => ({
@@ -44,7 +56,8 @@ export const useUsersStore = create<UsersState>((set) => ({
     codeVerified: false,
     passwordMatch: true,
   },
-  setForm: (newForm) => set((state) => ({ form: { ...state.form, ...newForm } })),
+  setForm: (newForm) =>
+    set((state) => ({ form: { ...state.form, ...newForm } })),
   resetForm: () =>
     set({
       form: {
@@ -66,4 +79,10 @@ export const useUsersStore = create<UsersState>((set) => ({
         passwordMatch: true,
       },
     }),
+}));
+
+export const useUserStore = create<UserStore>((set) => ({
+  user: null,
+  setUser: (user: User) => set({ user }),
+  clearUser: () => set({ user: null }),
 }));
