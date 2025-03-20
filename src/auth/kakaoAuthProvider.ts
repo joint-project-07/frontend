@@ -18,7 +18,6 @@ const KAKAO_CONFIG = {
 };
 
 class KakaoAuthProvider {
-  // 인증 URL 생성
   getAuthUrl(): string {
     const params = new URLSearchParams({
       client_id: KAKAO_CONFIG.CLIENT_ID,
@@ -29,18 +28,16 @@ class KakaoAuthProvider {
     return `${KAKAO_CONFIG.AUTH_URL}?${params.toString()}`;
   }
 
-  // 로그인 리디렉션 - 개발 환경에서 AuthUser 반환, 프로덕션 환경에서 리디렉션
   login(): Promise<AuthUser> {
     if (isDevelopment) {
       console.log('[Mock] 카카오 로그인 리디렉션 (개발 환경)');
       
-      // 개발 환경용 목업 사용자 반환
       const mockUser: AuthUser = {
         id: 'kakao_dev_' + Math.random().toString(36).substring(2, 10),
         name: '카카오 개발 사용자',
         email: 'kakao_dev@example.com',
-        role: UserRole.USER, // 'user' (소문자)
-        socialProvider: SocialAuthProvider.KAKAO, // 'kakao' (소문자)
+        role: UserRole.USER, 
+        socialProvider: SocialAuthProvider.KAKAO,
         profileImage: 'https://via.placeholder.com/150',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
@@ -49,14 +46,11 @@ class KakaoAuthProvider {
       return Promise.resolve(mockUser);
     }
     
-    // 프로덕션 환경에서는 리디렉션
     window.location.href = this.getAuthUrl();
     return new Promise<AuthUser>(() => {
-      // 이 Promise는 의도적으로 해결되지 않음 (페이지 이동)
     });
   }
 
-  // 토큰 교환
   async exchangeCodeForToken(code: string): Promise<string> {
     if (isDevelopment) {
       console.log(`[Mock] 토큰 교환 (개발 환경) - 코드: ${code}`);
@@ -84,15 +78,13 @@ class KakaoAuthProvider {
     }
   }
 
-  // 백엔드 인증
   async processCode(code: string): Promise<AuthUser> {
     const kakaoToken = await this.exchangeCodeForToken(code);
     
-    // SocialAuthRequest 인터페이스에 맞게 수정
-    // token, code, redirectUri가 모두 선택적 필드임
+ 
     const authData: SocialAuthRequest = {
       provider: SocialAuthProvider.KAKAO,
-      token: kakaoToken, // accessToken 대신 token 사용
+      token: kakaoToken, 
       code: code,
       redirectUri: KAKAO_CONFIG.REDIRECT_URI
     };
@@ -101,7 +93,6 @@ class KakaoAuthProvider {
     return authClient.handleAuthResponse(response);
   }
 
-  // 소셜 로그인 (백엔드 API)
   async socialLogin(authData: SocialAuthRequest): Promise<AuthResponse> {
     if (isDevelopment) {
       console.log('[Mock] 소셜 로그인 요청:', authData);
@@ -113,8 +104,8 @@ class KakaoAuthProvider {
           id: 'kakao_user_' + Math.random().toString(36).substring(2, 10),
           name: '카카오 사용자',
           email: 'kakao_user@example.com',
-          role: UserRole.USER, // 'user' (소문자)
-          socialProvider: SocialAuthProvider.KAKAO, // 'kakao' (소문자)
+          role: UserRole.USER, 
+          socialProvider: SocialAuthProvider.KAKAO, 
           profileImage: 'https://via.placeholder.com/150',
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString()
@@ -133,7 +124,6 @@ class KakaoAuthProvider {
     }
   }
 
-  // 로그아웃
   async logout(): Promise<void> {
     if (isDevelopment) {
       console.log('[Mock] 카카오 로그아웃');
@@ -152,7 +142,6 @@ class KakaoAuthProvider {
     }
   }
 
-  // 연결 해제
   async unlink(): Promise<void> {
     if (isDevelopment) {
       console.log('[Mock] 카카오 계정 연결 해제');
@@ -171,7 +160,6 @@ class KakaoAuthProvider {
     }
   }
 
-  // 소셜 계정 연결 해제 (백엔드 API)
   private async unlinkSocialAccount(): Promise<void> {
     if (isDevelopment) {
       console.log('[Mock] 백엔드 소셜 계정 연결 해제');
@@ -180,7 +168,7 @@ class KakaoAuthProvider {
 
     try {
       await axios.post('/api/auth/unlink-social', {
-        provider: SocialAuthProvider.KAKAO // 'kakao' (소문자)
+        provider: SocialAuthProvider.KAKAO 
       });
     } catch (error) {
       if (error instanceof AxiosError) {
