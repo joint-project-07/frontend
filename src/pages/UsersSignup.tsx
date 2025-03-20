@@ -4,11 +4,16 @@ import styles from "../style/UsersSignupForm.module.scss";
 import logoImage from "../assets/logo.png";
 import TermsAgreement from "../components/common/TermsAgreement";
 import React, { useState } from "react";
-import axios from "axios";
+import { checkEmailExists, requestVerificationCode, verifyEmailCode, signupUser } from "../api/userApi";
 
 interface LocationState {
   openLoginModal: boolean;
   from: string;
+}
+
+interface SignupError {
+  message?: string;
+  password?: string;
 }
 
 const UsersSignupForm: React.FC = () => {
@@ -20,9 +25,10 @@ const UsersSignupForm: React.FC = () => {
   const [emailChecked, setEmailChecked] = useState(false);
   const [emailValid, setEmailValid] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(false);
-  const [verificationCode, setVerificationCode] = useState(""); // 사용자가 입력할 인증 코드
+  const [verificationCode, setVerificationCode] = useState(""); 
   const [codeSent, setCodeSent] = useState(false);
   const [codeVerified, setCodeVerified] = useState(false);
+  const [signupError, setSignupError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -36,7 +42,6 @@ const UsersSignupForm: React.FC = () => {
       setCodeVerified(false);
     }
 
-    // 비밀번호가 변경되었을 때 확인 비밀번호와 일치 여부 업데이트
     if (name === "password") {
       setPasswordMatch(passwordConfirm === "" || passwordConfirm === value);
     }
@@ -51,15 +56,19 @@ const UsersSignupForm: React.FC = () => {
     setLoading(true);
 
     try {
-      const response = await axios.get(`https://yourapi.com/check-email`, {
-        params: { email: form.email },
-      });
-
+      const response = await checkEmailExists(form.email);
+      
       setEmailValid(!response.data.exists);
       setEmailChecked(true);
     } catch (error) {
-      console.error("이메일 중복 확인 오류:", error);
-      alert("이메일 중복 확인 중 오류가 발생했습니다.");
+      const err = error as { response?: { status?: number } };
+      
+      if (err.response && err.response.status === 400) {
+        setEmailValid(false);
+        setEmailChecked(true);
+      } else {
+        alert("이메일 중복 확인 중 오류가 발생했습니다.");
+      }
     } finally {
       setLoading(false);
     }
@@ -71,24 +80,16 @@ const UsersSignupForm: React.FC = () => {
       return;
     }
 
-    try {
-      const response = await axios.post(
-        `https://yourapi.com/send-verification-code`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: form.email }),
-        }
-      );
+    setLoading(true);
 
-      if (response.data.success) {
-        alert("인증 코드가 이메일로 전송되었습니다.");
-      } else {
-        alert("인증 코드 요청에 실패했습니다.");
-      }
+    try {
+      await requestVerificationCode(form.email);
+      setCodeSent(true);
+      alert("인증 코드가 이메일로 전송되었습니다.");
     } catch (error) {
-      console.error("인증 코드 요청 오류:", error);
       alert("인증 코드 요청 중 오류가 발생했습니다.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -98,22 +99,21 @@ const UsersSignupForm: React.FC = () => {
       return;
     }
 
-    try {
-      const response = await axios.post(`https://yourapi.com/verify-code`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: form.email, code: verificationCode }),
-      });
+    setLoading(true);
 
-      if (response.data.success) {
+    try {
+      const response = await verifyEmailCode(verificationCode);
+
+      if (response.status === 200) {
         setCodeVerified(true);
         alert("이메일 인증이 완료되었습니다.");
       } else {
-        alert("인증 코드가 올바르지 않습니다.");
+        alert("인증에 실패했습니다. 인증 코드를 다시 확인해주세요.");
       }
     } catch (error) {
-      console.error("인증 코드 검증 오류:", error);
-      alert("인증 코드 검증 중 오류가 발생했습니다.");
+      alert("인증 코드가 유효하지 않거나 만료되었습니다. 다시 시도해주세요.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -126,8 +126,9 @@ const UsersSignupForm: React.FC = () => {
     setPasswordMatch(value === form.password);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSignupError(null);
 
     if (!emailChecked || emailValid === false) {
       alert("이메일 중복 확인을 완료해주세요.");
@@ -139,7 +140,7 @@ const UsersSignupForm: React.FC = () => {
       return;
     }
 
-    if (form.password !== form.password_confirm) {
+    if (form.password !== passwordConfirm) {
       alert("비밀번호가 일치하지 않습니다.");
       return;
     }
@@ -149,7 +150,50 @@ const UsersSignupForm: React.FC = () => {
       return;
     }
 
-    alert("회원가입 완료!");
+    setLoading(true);
+
+    try {
+      const signupData = {
+        email: form.email,
+        password: form.password,
+        password_confirm: passwordConfirm,
+        name: form.name,
+        contact_number: form.phone_number,
+        marketing_consent: form.agree_marketing || false
+      };
+      
+      const response = await signupUser(signupData);
+
+      if (response.status === 201) {
+        alert("회원가입이 완료되었습니다!");
+        navigate("/", {
+          state: {
+            openLoginModal: true,
+            from: "signup",
+          } as LocationState,
+        });
+      } else {
+        alert("회원가입이 완료되었습니다!");
+      }
+    } catch (error) {
+      const err = error as { response?: { data?: string | SignupError } };
+      
+      if (err.response && err.response.data) {
+        if (typeof err.response.data === 'string') {
+          setSignupError(err.response.data);
+        } else if (err.response.data.message) {
+          setSignupError(err.response.data.message);
+        } else if (err.response.data.password) {
+          setSignupError(`비밀번호 오류: ${err.response.data.password}`);
+        } else {
+          setSignupError("회원가입 처리 중 오류가 발생했습니다.");
+        }
+      } else {
+        setSignupError("서버와 통신 중 오류가 발생했습니다. 나중에 다시 시도해주세요.");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -163,26 +207,32 @@ const UsersSignupForm: React.FC = () => {
           <img src={logoImage} alt="로고" className={styles.logoImage} />
         </div>
         <h2>회원가입</h2>
+        {signupError && (
+          <div className={styles.errorBanner}>{signupError}</div>
+        )}
         <form className={styles.signupForm} onSubmit={handleSubmit}>
           <div className={styles.formGroup}>
             <label>
               이메일 <span className={styles.required}>*</span>
             </label>
-            <input
-              type="email"
-              name="email"
-              placeholder="이메일을 입력하세요"
-              value={form.email || ""}
-              onChange={handleChange}
-              required
-            />
-            <button
-              type="button"
-              onClick={handleCheckDuplicateEmail}
-              disabled={loading}
-            >
-              {loading ? "확인 중..." : "중복 확인"}
-            </button>
+            <div className={styles.inputWithButton}>
+              <input
+                type="email"
+                name="email"
+                placeholder="이메일을 입력하세요"
+                value={form.email || ""}
+                onChange={handleChange}
+                required
+              />
+              <button
+                type="button"
+                onClick={handleCheckDuplicateEmail}
+                disabled={loading || !form.email}
+                className={styles.checkButton}
+              >
+                {loading ? "확인 중..." : "중복 확인"}
+              </button>
+            </div>
             {emailChecked && (
               <p
                 className={
@@ -197,35 +247,41 @@ const UsersSignupForm: React.FC = () => {
           </div>
 
           <div className={styles.formGroup}>
-            <button type="button" onClick={handleRequestVerificationCode}>
-              인증 코드 요청
+            <button 
+              type="button" 
+              onClick={handleRequestVerificationCode}
+              disabled={loading || !emailValid}
+              className={styles.verificationButton}
+            >
+              {loading ? "처리 중..." : "인증 코드 요청"}
             </button>
           </div>
 
           {codeSent && (
             <div className={styles.formGroup}>
               <label>인증 코드 입력</label>
-              <input
-                type="text"
-                value={verificationCode}
-                onChange={(e) => setVerificationCode(e.target.value)}
-                placeholder="인증 코드를 입력하세요"
-              />
-              <button
-                type="button"
-                onClick={handleVerifyCode}
-                disabled={codeVerified || verificationCode.length < 4}
-              >
-                {codeVerified ? "인증 완료" : "인증 확인"}
-              </button>
+              <div className={styles.inputWithButton}>
+                <input
+                  type="text"
+                  value={verificationCode}
+                  onChange={(e) => setVerificationCode(e.target.value)}
+                  placeholder="인증 코드를 입력하세요"
+                />
+                <button
+                  type="button"
+                  onClick={handleVerifyCode}
+                  disabled={loading || codeVerified || verificationCode.length < 4}
+                  className={styles.verifyButton}
+                >
+                  {loading ? "확인 중..." : codeVerified ? "인증 완료" : "인증 확인"}
+                </button>
+              </div>
             </div>
           )}
 
           {codeVerified && (
-            <div className={styles.formGroup}>
-              <button type="button" disabled className={styles.verifiedButton}>
-                이메일 인증 완료
-              </button>
+            <div className={styles.verificationSuccess}>
+              <span className={styles.checkmark}>✓</span> 이메일 인증 완료
             </div>
           )}
 
@@ -284,7 +340,7 @@ const UsersSignupForm: React.FC = () => {
           </div>
 
           <div className={styles.formGroup}>
-            <label>전화번호 </label>
+            <label>전화번호 <span className={styles.required}>*</span></label>
             <input
               type="tel"
               name="phone_number"
@@ -332,7 +388,13 @@ const UsersSignupForm: React.FC = () => {
             />
           </div>
 
-          <button type="submit">회원가입 완료</button>
+          <button 
+            type="submit" 
+            disabled={loading}
+            className={styles.submitButton}
+          >
+            {loading ? "처리 중..." : "회원가입 완료"}
+          </button>
         </form>
         <div className={styles.organizationLink}>
           <Link to="/ShelterSignup" className={styles.orgSignupLink}>

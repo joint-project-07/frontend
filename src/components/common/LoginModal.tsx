@@ -1,21 +1,17 @@
 import React, { useState } from "react";
 import Modal from "./Modal";
 import logo from "../../assets/logo.png";
-import { useAuth, UserRole } from "../../contexts/AuthContext";
+import { useAuth } from "../../contexts/AuthContext";
 import styles from "../../style/LoginModal.module.scss";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useModalContext } from '../../contexts/ModalContext';
+import kakaoAuthProvider from "../../auth/kakaoAuthProvider";
 
 // 탭 타입 정의
 type TabType = "volunteer" | "organization";
 
-// 탭 타입을 UserRole로 변환하는 함수
-const tabTypeToUserRole = (tabType: TabType): UserRole => {
-  return tabType === "volunteer" ? UserRole.VOLUNTEER : UserRole.ORGANIZATION;
-};
-
 const LoginModal: React.FC = () => {
-  const { login, loginAs, isLoading, error, loginWithKakao } = useAuth();
+  const { isLoading, error, login, loginWithKakao } = useAuth();
   const { isLoginModalOpen, closeLoginModal, openLoginModal, activeTab, setActiveTab, previousPath, setPreviousPath } = useModalContext();
   const navigate = useNavigate();
   const location = useLocation();
@@ -38,30 +34,27 @@ const LoginModal: React.FC = () => {
     try {
       setFormError("");
       
-      // 개발 환경에서는 loginAs 함수를 사용하여 간편하게 로그인
-      if (process.env.NODE_ENV === 'development') {
-        // 탭 타입을 UserRole로 변환
-        const userRole = tabTypeToUserRole(activeTab as TabType);
-        await loginAs(userRole);
-        console.log(`[목업] ${activeTab} 역할로 로그인`);
-      } else {
-        // 실제 환경에서는 이메일/비밀번호로 로그인
-        if (activeTab === "volunteer") {
-          if (!email || !password) {
-            setFormError("이메일과 비밀번호를 모두 입력해주세요.");
-            return;
-          }
-          await login({ email, password });
-        } else {
-          if (!organizationId || !organizationPassword) {
-            setFormError("기관 아이디와 비밀번호를 모두 입력해주세요.");
-            return;
-          }
-          await login({ 
-            email: organizationId.includes('@') ? organizationId : `${organizationId}@organization.com`, 
-            password: organizationPassword 
-          });
+      // 현재 선택된 탭에 따라 로그인 처리
+      if (activeTab === "volunteer") {
+        if (!email || !password) {
+          setFormError("이메일과 비밀번호를 모두 입력해주세요.");
+          return;
         }
+        
+        // 봉사자 로그인 (email/password)
+        await login({ email, password });
+      } else {
+        if (!organizationId || !organizationPassword) {
+          setFormError("기관 아이디와 비밀번호를 모두 입력해주세요.");
+          return;
+        }
+        
+        // 기관 로그인 (email/password)
+        const orgEmail = organizationId.includes('@') 
+          ? organizationId 
+          : `${organizationId}@organization.com`;
+          
+        await login({ email: orgEmail, password: organizationPassword });
       }
       
       closeLoginModal();
@@ -69,15 +62,14 @@ const LoginModal: React.FC = () => {
       // 이전 경로가 /detail로 시작하면 그 페이지에 머무름
       if (previousPath && previousPath.startsWith('/detail')) {
         // 단순히 모달을 닫고 현재 페이지에 머무름
-        console.log("상세 페이지에 머무름");
       } else if (activeTab === "organization") {
         navigate("/institution-schedule");
       } else {
         navigate("/");
       }
     } catch (error) {
-      console.error("로그인 중 오류 발생:", error);
-      setFormError(error instanceof Error ? error.message : "로그인 중 오류가 발생했습니다.");
+      const err = error as Error;
+      setFormError(err.message || "로그인 중 오류가 발생했습니다.");
     }
   };
 
@@ -118,20 +110,25 @@ const LoginModal: React.FC = () => {
     try {
       setFormError("");
       
+      // AuthContext의 loginWithKakao 사용
       if (process.env.NODE_ENV === 'development') {
-        // 개발 환경에서는 loginAs 사용
-        await loginAs(UserRole.VOLUNTEER);
-        console.log("[목업] 카카오 로그인으로 봉사자 역할 로그인");
-      } else {
-        // 실제 환경에서는 loginWithKakao 사용
         await loginWithKakao();
+        closeLoginModal();
+        
+        // 이전 경로가 /detail로 시작하면 그 페이지에 머무름
+        if (previousPath && previousPath.startsWith('/detail')) {
+          // 단순히 모달을 닫고 현재 페이지에 머무름
+        } else {
+          navigate("/");
+        }
+      } else {
+        // 프로덕션 환경에서는 kakaoAuthProvider 사용
+        kakaoAuthProvider.login();
+        // 리디렉션이 발생하므로 아래 코드는 실행되지 않음
       }
-      
-      closeLoginModal();
-      navigate("/");
     } catch (error) {
-      console.error("카카오 로그인 중 오류 발생:", error);
-      setFormError(error instanceof Error ? error.message : "카카오 로그인 중 오류가 발생했습니다.");
+      const err = error as Error;
+      setFormError(err.message || "카카오 로그인 중 오류가 발생했습니다.");
     }
   };
 
@@ -167,12 +164,6 @@ const LoginModal: React.FC = () => {
 
           {activeTab === "volunteer" ? (
             <div className={styles.tabContent}>
-              {process.env.NODE_ENV === 'development' && (
-                <div className={styles.devModeNotice}>
-                  <p>개발 모드: 간편 로그인 활성화됨</p>
-                </div>
-              )}
-              
               <label>이메일 입력</label>
               <input
                 type="email"
@@ -180,7 +171,7 @@ const LoginModal: React.FC = () => {
                 placeholder="이메일 입력"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                disabled={process.env.NODE_ENV === 'development'}
+                disabled={false}
               />
 
               <label>비밀번호 입력</label>
@@ -190,7 +181,7 @@ const LoginModal: React.FC = () => {
                 placeholder="비밀번호 입력"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                disabled={process.env.NODE_ENV === 'development'}
+                disabled={false}
               />
 
               <div className={styles.buttonGroup}>
@@ -199,7 +190,7 @@ const LoginModal: React.FC = () => {
                   onClick={handleLogin}
                   disabled={isLoading}
                 >
-                  {isLoading ? "로그인 중..." : process.env.NODE_ENV === 'development' ? "봉사자로 로그인" : "로그인"}
+                  {isLoading ? "로그인 중..." : "로그인"}
                 </button>
                 <button className={styles.signupBtn} onClick={goToVolunteerSignup}>회원가입 하기</button>
               </div>
@@ -214,12 +205,6 @@ const LoginModal: React.FC = () => {
             </div>
           ) : (
             <div className={styles.tabContent}>
-              {process.env.NODE_ENV === 'development' && (
-                <div className={styles.devModeNotice}>
-                  <p>개발 모드: 간편 로그인 활성화됨</p>
-                </div>
-              )}
-              
               <label>기관 아이디</label>
               <input
                 type="text"
@@ -227,7 +212,7 @@ const LoginModal: React.FC = () => {
                 placeholder="기관 아이디 입력"
                 value={organizationId}
                 onChange={(e) => setOrganizationId(e.target.value)}
-                disabled={process.env.NODE_ENV === 'development'}
+                disabled={false}
               />
 
               <label>비밀번호 입력</label>
@@ -237,7 +222,7 @@ const LoginModal: React.FC = () => {
                 placeholder="비밀번호 입력"
                 value={organizationPassword}
                 onChange={(e) => setOrganizationPassword(e.target.value)}
-                disabled={process.env.NODE_ENV === 'development'}
+                disabled={false}
               />
 
               <div className={styles.buttonGroup}>
@@ -246,7 +231,7 @@ const LoginModal: React.FC = () => {
                   onClick={handleLogin}
                   disabled={isLoading}
                 >
-                  {isLoading ? "로그인 중..." : process.env.NODE_ENV === 'development' ? "기관으로 로그인" : "로그인"}
+                  {isLoading ? "로그인 중..." : "로그인"}
                 </button>
                 <button className={styles.signupBtn} onClick={goToShelterSignup}>기관 회원가입</button>
               </div>
