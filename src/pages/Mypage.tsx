@@ -9,6 +9,9 @@ import useModalStore from "../store/modalStore";
 import StarRating from "../components/common/StarRating";
 import PasswordChangeModal from "../components/common/PasswordChangeModal";
 import { useModalContext } from "../contexts/ModalContext";
+import { useUserStore } from "../store/UsersStore";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 interface ShelterItem {
   application_id: number;
@@ -203,6 +206,28 @@ const VolunteerHistory: React.FC = () => {
 const TabContent: React.FC = () => {
   const { activeTab } = useTabStore();
   const { openPasswordModal } = useModalContext();
+  const { user, clearUser } = useUserStore(); // 사용자 상태 및 초기화
+  const navigate = useNavigate();
+
+  const handleDeleteAccount = async () => {
+    if (!user) {
+      alert("로그인 상태가 아닙니다.");
+      return;
+    }
+  
+    const confirmDelete = window.confirm("정말 회원 탈퇴하시겠습니까?");
+    if (!confirmDelete) return;
+  
+    try {
+      await axios.delete(`/api/users/${user.id}`); // 이제 안전하게 사용 가능
+      alert("회원 탈퇴가 완료되었습니다.");
+      clearUser();
+      navigate("/");
+    } catch (error) {
+      console.error("회원 탈퇴 실패:", error);
+      alert("탈퇴 중 오류가 발생했습니다. 다시 시도해주세요.");
+    }
+  };  
 
   switch (activeTab) {
     case "info":
@@ -220,6 +245,9 @@ const TabContent: React.FC = () => {
               </button>
               <button className={styles.infoButton} onClick={openPasswordModal}>
                 비밀번호 변경
+              </button>
+              <button className={styles.infoButton} onClick={handleDeleteAccount}>
+                회원 탈퇴
               </button>
               <PasswordChangeModal />
             </section>
