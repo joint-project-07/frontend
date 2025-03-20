@@ -86,7 +86,7 @@ const UsersSignupForm: React.FC = () => {
       await requestVerificationCode(form.email);
       setCodeSent(true);
       alert("인증 코드가 이메일로 전송되었습니다.");
-    } catch (_) {
+    } catch {
       alert("인증 코드 요청 중 오류가 발생했습니다.");
     } finally {
       setLoading(false);
@@ -110,7 +110,7 @@ const UsersSignupForm: React.FC = () => {
       } else {
         alert("인증에 실패했습니다. 인증 코드를 다시 확인해주세요.");
       }
-    } catch (_) {
+    } catch {
       alert("인증 코드가 유효하지 않거나 만료되었습니다. 다시 시도해주세요.");
     } finally {
       setLoading(false);
