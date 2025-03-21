@@ -4,6 +4,18 @@ import styles from "../../style/PasswordChangeModal.module.scss";
 import { useModalContext } from "../../contexts/ModalContext";
 import { changePassword } from "../../api/userApi";
 
+interface ErrorResponse {
+  response?: {
+    status?: number;
+    data?: {
+      current_password?: string;
+      new_password?: string;
+      message?: string;
+      [key: string]: unknown;
+    };
+  };
+}
+
 const PasswordChangeModal: React.FC = () => {
   const { isPasswordModalOpen, closePasswordModal } = useModalContext();
   const [currentPassword, setCurrentPassword] = useState("");
@@ -53,7 +65,7 @@ const PasswordChangeModal: React.FC = () => {
         }, 3000);
       }
     } catch (error) {
-      const err = error as { response?: { status?: number, data?: any } };
+      const err = error as ErrorResponse;
       
       if (err.response?.status === 401) {
         setError("현재 비밀번호가 일치하지 않습니다.");

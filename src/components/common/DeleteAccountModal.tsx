@@ -10,6 +10,17 @@ interface DeleteAccountModalProps {
   onClose: () => void;
 }
 
+interface ErrorResponse {
+  response?: {
+    status?: number;
+    data?: {
+      password?: string;
+      message?: string;
+      [key: string]: unknown;
+    };
+  };
+}
+
 const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({
   isOpen,
   onClose,
@@ -45,7 +56,7 @@ const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({
         navigate("/");
       }
     } catch (error) {
-      const err = error as { response?: { status?: number; data?: any } };
+      const err = error as ErrorResponse;
       
       if (err.response?.status === 400) {
         if (err.response?.data?.password) {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useTabStore } from "../store/TabStore";
 import { useShelterStore } from "../store/ShelterStore";
 import styles from "../style/Mypage.module.scss";
@@ -242,52 +242,55 @@ const TabContent: React.FC = React.memo(() => {
   const [loading, setLoading] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { user, updateUserData } = useAuth();
-
   const hasLoadedRef = useRef<boolean>(false);
 
-
-  useEffect(() => {
-    const loadUserInfo = async () => {
-      if (activeTab === "info" && !hasLoadedRef.current) {
-        setLoading(true);
-        hasLoadedRef.current = true; 
-        
-        try {
-          if (user && user.name) {
-            setUserName(user.name);
-          } else {
-            const storedUser = localStorage.getItem('user');
-            if (storedUser) {
-              try {
-                const localData = JSON.parse(storedUser);
-                const localUserData = localData.user || localData;
-                if (localUserData.name) {
-                  setUserName(localUserData.name);
-                }
-              } catch (error) {
-                console.error('Local storage parsing error:', error);
+  // loadUserInfo 함수를 useCallback으로 메모이제이션
+  const loadUserInfo = useCallback(async () => {
+    if (activeTab === "info" && !hasLoadedRef.current) {
+      setLoading(true);
+      hasLoadedRef.current = true;
+      
+      try {
+        // 로컬 스토리지나 context에서 기본 정보 먼저 사용
+        if (user && user.name) {
+          setUserName(user.name);
+        } else {
+          const storedUser = localStorage.getItem('user');
+          if (storedUser) {
+            try {
+              const localData = JSON.parse(storedUser);
+              const localUserData = localData.user || localData;
+              if (localUserData.name) {
+                setUserName(localUserData.name);
               }
+            } catch (error) {
+              console.error('Local storage parsing error:', error);
             }
           }
-          
-          const userDetails = await fetchUserDetails();
-          if (userDetails) {
-            setUserName(userDetails.name || "");
-            
-            if (userDetails && updateUserData) {
-              updateUserData({
-                ...userDetails
-              });
-            }
-          }
-        } catch (error) {
-          console.error('User info fetch error:', error);
-        } finally {
-          setLoading(false);
         }
+        
+        // 마이페이지에서 최신 사용자 상세 정보 요청
+        const userDetails = await fetchUserDetails();
+        if (userDetails) {
+          setUserName(userDetails.name || "");
+          
+          // Context의 사용자 정보 업데이트
+          if (userDetails && updateUserData) {
+            updateUserData({
+              ...userDetails
+            });
+          }
+        }
+      } catch (error) {
+        console.error('User info fetch error:', error);
+      } finally {
+        setLoading(false);
       }
-    };
-  
+    }
+  }, [activeTab, user, updateUserData]);
+
+  // 메모이제이션된 loadUserInfo 함수를 useEffect에서 호출
+  useEffect(() => {
     loadUserInfo();
     
     return () => {
@@ -295,33 +298,37 @@ const TabContent: React.FC = React.memo(() => {
         hasLoadedRef.current = false;
       }
     };
-  }, [activeTab]);
+  }, [activeTab, loadUserInfo]);
 
-  const handleProfileClick = () => {
+  const handleProfileClick = useCallback(() => {
     if (fileInputRef.current) {
       fileInputRef.current.click();
     }
-  };
+  }, []);
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-  
+
     try {
       setLoading(true);
       
       const formData = new FormData();
       formData.append('name', userName);
       formData.append('profile_image', file);
-  
+
       await updateProfile(formData);
       
+      // 프로필 업데이트 후 최신 정보 가져오기
       const userDetails = await fetchUserDetails();
       if (userDetails) {
         setUserName(userDetails.name || "");
         
+        // Context의 사용자 정보 업데이트
         if (userDetails && updateUserData) {
-          updateUserData(userDetails);
+          updateUserData({
+            ...userDetails
+          });
         }
       }
       
@@ -332,15 +339,15 @@ const TabContent: React.FC = React.memo(() => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [userName, updateUserData]);
 
-  const openDeleteModal = () => {
+  const openDeleteModal = useCallback(() => {
     setIsDeleteModalOpen(true);
-  };
+  }, []);
 
-  const closeDeleteModal = () => {
+  const closeDeleteModal = useCallback(() => {
     setIsDeleteModalOpen(false);
-  };
+  }, []);
 
   switch (activeTab) {
     case "info":
