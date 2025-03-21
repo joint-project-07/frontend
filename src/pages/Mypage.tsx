@@ -11,7 +11,7 @@ import PasswordChangeModal from "../components/common/PasswordChangeModal";
 import DeleteAccountModal from "../components/common/DeleteAccountModal";
 import { useModalContext } from "../contexts/ModalContext";
 import { useAuth } from "../contexts/AuthContext";
-import { axiosInstance } from "../api/axios/axiosInstance";
+import { updateProfile, getUserInfo } from "../api/userApi";
 
 interface ShelterItem {
   application_id: number;
@@ -27,29 +27,6 @@ interface ListProps {
   renderItem: (item: ShelterItem) => React.ReactNode;
   emptyMessage: string;
 }
-
-export const updateProfile = async (data: FormData) => {
-  try {
-    const response = await axiosInstance.put('/api/users/me', data, {
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      }
-    });
-    return response.data;
-  } catch (error) {
-    throw error;
-  }
-};
-
-export const fetchUserDetails = async () => {
-  try {
-    const response = await axiosInstance.get('/api/users/me/');
-    return response.data.user || response.data;
-  } catch (error) {
-    console.error('사용자 정보 가져오기 오류:', error);
-    throw error;
-  }
-};
 
 const PaginatedList: React.FC<ListProps> = ({
   tabType,
@@ -244,14 +221,12 @@ const TabContent: React.FC = React.memo(() => {
   const { user, updateUserData } = useAuth();
   const hasLoadedRef = useRef<boolean>(false);
 
-  // loadUserInfo 함수를 useCallback으로 메모이제이션
   const loadUserInfo = useCallback(async () => {
     if (activeTab === "info" && !hasLoadedRef.current) {
       setLoading(true);
       hasLoadedRef.current = true;
       
       try {
-        // 로컬 스토리지나 context에서 기본 정보 먼저 사용
         if (user && user.name) {
           setUserName(user.name);
         } else {
@@ -269,12 +244,10 @@ const TabContent: React.FC = React.memo(() => {
           }
         }
         
-        // 마이페이지에서 최신 사용자 상세 정보 요청
-        const userDetails = await fetchUserDetails();
+        const userDetails = await getUserInfo();
         if (userDetails) {
           setUserName(userDetails.name || "");
           
-          // Context의 사용자 정보 업데이트
           if (userDetails && updateUserData) {
             updateUserData({
               ...userDetails
@@ -289,7 +262,6 @@ const TabContent: React.FC = React.memo(() => {
     }
   }, [activeTab, user, updateUserData]);
 
-  // 메모이제이션된 loadUserInfo 함수를 useEffect에서 호출
   useEffect(() => {
     loadUserInfo();
     
@@ -317,14 +289,15 @@ const TabContent: React.FC = React.memo(() => {
       formData.append('name', userName);
       formData.append('profile_image', file);
 
-      await updateProfile(formData);
+      await updateProfile({
+        name: userName,
+        profile_image: file
+      });
       
-      // 프로필 업데이트 후 최신 정보 가져오기
-      const userDetails = await fetchUserDetails();
+      const userDetails = await getUserInfo();
       if (userDetails) {
         setUserName(userDetails.name || "");
         
-        // Context의 사용자 정보 업데이트
         if (userDetails && updateUserData) {
           updateUserData({
             ...userDetails

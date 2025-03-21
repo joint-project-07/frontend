@@ -68,7 +68,13 @@ export const logout = async (data: LogoutRequest) => {
 };
 
 export const getUserInfo = async () => {
-  return await axiosInstance.get<UserInfo>('/api/users/me/');
+  try {
+    const response = await axiosInstance.get<UserInfo>('/api/users/me/');
+    return response.data;
+  } catch (error) {
+    console.error('사용자 정보 가져오기 오류:', error);
+    throw error;
+  }
 };
 
 export const updateProfile = async (data: ProfileUpdateRequest) => {
