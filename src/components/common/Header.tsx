@@ -1,37 +1,49 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import styles from "../../style/Header.module.scss";
 import Logo from "../../assets/logo.png";
-import LoginModal from "./LoginModal";
-import { useAuth, UserRole } from "../../contexts/AuthContext";
+import { useAuth } from "../../contexts/AuthContext";
+import { useModalContext } from "../../contexts/ModalContext";
 
 const Header: React.FC = () => {
-  // useAuth 훅에서 필요한 값들 가져오기
-  const { isAuthenticated, logout, user } = useAuth();
+  const { isAuthenticated, logout } = useAuth();
+  const { openLoginModal } = useModalContext();
   const navigate = useNavigate();
-
-  // 디버깅을 위한 로그 추가
-  React.useEffect(() => {
-    console.log('Header 컴포넌트 - 인증 상태:', isAuthenticated);
-    console.log('Header 컴포넌트 - 현재 사용자:', user);
-  }, [isAuthenticated, user]);
+  const [loggingOut, setLoggingOut] = useState(false);
+  
+  // userType 상태 추가
+  const [userType, setUserType] = useState<string | null>(null);
+  
+  // 인증 상태가 변경되면 localStorage에서 userType 가져오기
+  useEffect(() => {
+    if (isAuthenticated) {
+      const storedUserType = localStorage.getItem('userType');
+      setUserType(storedUserType);
+      console.log("사용자 타입 로드됨:", storedUserType);
+    } else {
+      setUserType(null);
+    }
+  }, [isAuthenticated]);
 
   const handleLogout = async () => {
     try {
+      setLoggingOut(true);
+      // 로그아웃 시 userType 제거
+      localStorage.removeItem('userType');
       await logout();
       navigate('/');
     } catch (error) {
       console.error('로그아웃 중 오류 발생:', error);
+      alert('로그아웃 중 문제가 발생했습니다. 다시 시도해주세요.');
+    } finally {
+      setLoggingOut(false);
     }
   };
-
-  // user가 null일 수 있으므로 안전하게 역할 확인
-  const userRole = user?.role || null;
 
   return (
     <header className={styles.header}>
       <div className={styles.logoContainer}>
-        <Link to={userRole === UserRole.ORGANIZATION ? "/institution-schedule" : "/"}>
+        <Link to={userType === "organization" ? "/institution-schedule" : "/"}>
           <img
             src={Logo}
             style={{ width: "150px", height: "75px" }}
@@ -41,19 +53,28 @@ const Header: React.FC = () => {
       </div>
 
       <nav className={styles.nav}>
-        {isAuthenticated && user ? (
+        {isAuthenticated ? (
           <>
-            {userRole === UserRole.VOLUNTEER ? (
-              <Link to="/MyPage">마이페이지</Link>
-            ) : userRole === UserRole.ORGANIZATION ? (
-              <Link to="/schedule-registration">봉사 일정 등록</Link>
-            ) : null}
-            <button className={styles.logoutBtn} onClick={handleLogout}>
-              로그아웃
+            {/* userType에 따라 다른 링크 표시 */}
+            {userType === "volunteer" && (
+              <Link to="/MyPage" className={styles.navLink}>마이페이지</Link>
+            )}
+            {userType === "organization" && (
+              <Link to="/schedule-registration" className={styles.navLink}>봉사 일정 등록</Link>
+            )}
+            <button 
+              className={styles.logoutBtn} 
+              onClick={handleLogout}
+              disabled={loggingOut}
+            >
+              {loggingOut ? '로그아웃 중...' : '로그아웃'}
             </button>
           </>
         ) : (
-          <LoginModal />
+          // 로그인되지 않은 경우 로그인 모달 버튼 표시
+          <button className={styles.loginBtn} onClick={openLoginModal}>
+            로그인 / 회원가입
+          </button>
         )}
       </nav>
     </header>
