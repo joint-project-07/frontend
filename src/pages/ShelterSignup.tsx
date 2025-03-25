@@ -62,8 +62,8 @@ const ShelterSignupForm: React.FC = () => {
       );
       setEmailValid(!response.exists);
       setEmailChecked(true);
-    } catch (error) {
-      console.error("이메일 중복 확인 에러:", error);
+    } catch (err) {
+      console.error("이메일 중복 확인 에러:", err);
       alert("이메일 중복 확인 중 오류가 발생했습니다.");
     } finally {
       setLoading(false);
@@ -110,7 +110,7 @@ const ShelterSignupForm: React.FC = () => {
       } else {
         alert("인증 코드가 올바르지 않습니다.");
       }
-    } catch (error) {
+    } catch (err) {
       alert("인증 코드 검증 중 오류가 발생했습니다.");
     }
   };
@@ -156,10 +156,11 @@ const ShelterSignupForm: React.FC = () => {
       await shelterSignup(signupData);
       alert("보호소 회원가입 완료!");
       navigate("/login");
-    } catch (error: any) {
-      console.error("회원가입 에러:", error.response?.data || error);
+    } catch (err) {
+      const errorResponse = err as { response?: { data?: { email?: string[] } } };
+      console.error("회원가입 에러:", errorResponse?.response?.data || err);
       alert(
-        error.response?.data?.email?.[0] || "회원가입 중 오류가 발생했습니다."
+        errorResponse?.response?.data?.email?.[0] || "회원가입 중 오류가 발생했습니다."
       );
     }
   };
