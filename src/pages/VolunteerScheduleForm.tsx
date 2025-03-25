@@ -4,6 +4,7 @@ import Searchdate from '../components/feature/Searchdate';
 import SearchRange from '../components/feature/SearchRange';
 import styles from '../style/VolunteerScheduleRegistration.module.scss';
 import dayjs from 'dayjs';
+import { createRecruitment, uploadRecruitmentImages } from '../api/VolunteerApi';
 
 const activityOptions = [
   '봉사활동 1: 시설 청소',
@@ -34,15 +35,9 @@ interface ImageFile {
 }
 
 const VolunteerScheduleRegistration: React.FC = () => {
-  // useAuth에서 user 객체를 가져와서 role 속성 접근
   const { user } = useAuth();
   const userRole = user?.role || null;
 
-  const [shelterInfo] = useState({
-    name: '샘플 보호소',
-    address: '서울시 강남구 테헤란로 123',
-    phoneNumber: '02-123-4567'
-  });
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedDate, setSelectedDate] = useState<{ startDate: dayjs.Dayjs; endDate: dayjs.Dayjs } | null>(null);
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([{ startTime: '09:00', endTime: '12:00', id: 1 }]);
@@ -52,37 +47,23 @@ const VolunteerScheduleRegistration: React.FC = () => {
   const [description, setDescription] = useState<string>('');
   const [showTimeRangePicker, setShowTimeRangePicker] = useState<number | null>(null);
   
-  // 이미지 관련 상태
   const [images, setImages] = useState<ImageFile[]>([]);
   const [imageError, setImageError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   useEffect(() => {
-    // 로그인한 기관 정보를 가져오는 API 호출을 여기에 추가
-    // API 연결 전이므로 샘플 데이터 사용
     if (userRole === UserRole.ORGANIZATION) {
-      // 디버깅 정보 추가
       console.log('기관으로 로그인되어 있음:', userRole);
-      // API 호출 예시
-      // const fetchShelterInfo = async () => {
-      //   try {
-      //     const response = await fetch('/api/shelter/info');
-      //     const data = await response.json();
-      //     setShelterInfo(data);
-      //   } catch (error) {
-      //     console.error('보호소 정보를 불러오는 중 오류 발생:', error);
-      //   }
-      // };
-      // fetchShelterInfo();
     } else {
       console.log('현재 사용자 역할:', userRole);
     }
   }, [userRole]);
 
-  // 이미지 미리보기 URL 정리를 위한 cleanup 함수
   useEffect(() => {
     return () => {
-      // 컴포넌트가 언마운트될 때 생성된 URL 객체 해제
       images.forEach(image => URL.revokeObjectURL(image.preview));
     };
   }, [images]);
@@ -152,14 +133,12 @@ const VolunteerScheduleRegistration: React.FC = () => {
     return false; 
   };
 
-  // 이미지 파일 처리 함수
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     setImageError(null);
     
     if (!files || files.length === 0) return;
     
-    // 최대 개수 검사
     if (images.length + files.length > 10) {
       setImageError('이미지는 최대 10장까지 업로드할 수 있습니다.');
       return;
@@ -168,7 +147,6 @@ const VolunteerScheduleRegistration: React.FC = () => {
     const newImages: ImageFile[] = [];
     
     Array.from(files).forEach(file => {
-      // 이미지 파일 검증 (형식 검사 등)
       if (!file.type.match('image.*')) {
         setImageError('이미지 파일만 업로드 가능합니다.');
         return;
@@ -183,7 +161,6 @@ const VolunteerScheduleRegistration: React.FC = () => {
     
     setImages(prev => [...prev, ...newImages]);
     
-    // 파일 입력 초기화 (동일 파일 재선택 가능하도록)
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -198,49 +175,75 @@ const VolunteerScheduleRegistration: React.FC = () => {
     setImages(images.filter(image => image.id !== id));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitError(null);
     
     const hasOverlap = checkTimeOverlap();
     if (hasOverlap) {
-      alert('시간대가 중복됩니다. 다시 확인해주세요.');
+      setSubmitError('시간대가 중복됩니다. 다시 확인해주세요.');
       return;
     }
 
     if (!selectedDate) {
-      alert('봉사 날짜를 선택해주세요.');
+      setSubmitError('봉사 날짜를 선택해주세요.');
       return;
     }
 
     if (selectedActivities.length === 0) {
-      alert('봉사활동 내용을 최소 하나 이상 선택해주세요.');
+      setSubmitError('봉사활동 내용을 최소 하나 이상 선택해주세요.');
       return;
     }
     
-    // 이미지 최소 개수 검사
     if (images.length < 3) {
       setImageError('이미지를 최소 3장 이상 업로드해주세요.');
       return;
     }
 
-    const scheduleData = {
-      shelterInfo,
-      date: {
-        startDate: selectedDate.startDate.format('YYYY-MM-DD'),
-        endDate: selectedDate.endDate.format('YYYY-MM-DD')
-      },
-      timeSlots,
-      activities: selectedActivities,
-      supplies: selectedSupplies,
-      maxParticipants,
-      description,
-      imageCount: images.length
-    };
+    try {
+      setIsLoading(true);
+      
+      const recruitmentData = {
+        date: selectedDate.startDate.format('YYYY-MM-DD'),
+        end_date: selectedDate.endDate.format('YYYY-MM-DD'),
+        timeSlots: timeSlots.map(slot => ({
+          start_time: slot.startTime,
+          end_time: slot.endTime
+        })),
+        activities: selectedActivities,
+        supplies: selectedSupplies,
+        maxParticipants,
+        description
+      };
 
-    console.log('제출된 일정 데이터:', scheduleData);
-    alert('봉사 일정이 등록되었습니다.');
-    
-    resetForm();
+      const recruitmentResponse = await createRecruitment(recruitmentData);
+      const recruitmentId = recruitmentResponse.recruitment.id;
+      
+      await uploadRecruitmentImages(
+        recruitmentId, 
+        images.map(img => img.file)
+      );
+      
+      alert('봉사 일정이 성공적으로 등록되었습니다.');
+      resetForm();
+      
+    } catch (error) {
+      console.error('봉사 일정 등록 오류:', error);
+      if (error instanceof Error) {
+        setSubmitError(error.message);
+      } else if (typeof error === 'object' && error !== null && 'response' in error) {
+        const axiosError = error as any;
+        if (axiosError.response?.data?.error) {
+          setSubmitError(axiosError.response.data.error);
+        } else {
+          setSubmitError('봉사 일정 등록 중 오류가 발생했습니다.');
+        }
+      } else {
+        setSubmitError('봉사 일정 등록 중 오류가 발생했습니다.');
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const resetForm = () => {
@@ -251,26 +254,23 @@ const VolunteerScheduleRegistration: React.FC = () => {
     setMaxParticipants(5);
     setDescription('');
     
-    // 이미지 미리보기 URL 정리
     images.forEach(image => URL.revokeObjectURL(image.preview));
     setImages([]);
     setImageError(null);
+    setSubmitError(null);
   };
 
   return (
     <div className={styles.scheduleRegistration}>
       <h1>봉사 일정 등록</h1>
       
+      {submitError && (
+        <div className={styles.errorNotification}>
+          <p>{submitError}</p>
+        </div>
+      )}
+      
       <form onSubmit={handleSubmit}>
-        <section className={styles.section}>
-          <h2>보호소 정보</h2>
-          <div className={styles.shelterInfo}>
-            <p><strong>보호소명:</strong> {shelterInfo.name}</p>
-            <p><strong>주소:</strong> {shelterInfo.address}</p>
-            <p><strong>연락처:</strong> {shelterInfo.phoneNumber}</p>
-          </div>
-        </section>
-        
         <section className={styles.section}>
           <h2>봉사 날짜</h2>
           <div className={styles.dateSelection}>
@@ -347,7 +347,6 @@ const VolunteerScheduleRegistration: React.FC = () => {
           </div>
         </section>
         
-        {/* 이미지 업로드 섹션 추가 */}
         <section className={styles.section}>
           <h2>보호소 이미지</h2>
           <div className={styles.imageUploadSection}>
@@ -425,9 +424,41 @@ const VolunteerScheduleRegistration: React.FC = () => {
           </div>
         </section>
         
+        <section className={styles.section}>
+          <h2>활동 설명</h2>
+          <div className={styles.textareaContainer}>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="봉사활동에 대한 상세 설명을 입력해주세요."
+              className={styles.descriptionTextarea}
+              rows={5}
+            />
+          </div>
+        </section>
+        
+        <section className={styles.section}>
+          <h2>최대 참가 인원</h2>
+          <div className={styles.numberInputContainer}>
+            <input
+              type="number"
+              min="1"
+              max="100"
+              value={maxParticipants}
+              onChange={(e) => setMaxParticipants(parseInt(e.target.value))}
+              className={styles.numberInput}
+            />
+            <span className={styles.numberLabel}>명</span>
+          </div>
+        </section>
+        
         <div className={styles.submitContainer}>
-          <button type="submit" className={styles.submitButton}>
-            봉사 일정 등록하기
+          <button 
+            type="submit" 
+            className={styles.submitButton}
+            disabled={isLoading}
+          >
+            {isLoading ? '등록 중...' : '봉사 일정 등록하기'}
           </button>
         </div>
       </form>

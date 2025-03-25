@@ -8,6 +8,8 @@ import {
   checkDuplicateEmail,
   requestVerificationCode,
   shelterSignup,
+  uploadBusinessLicense,
+  verifyCode,
 } from "../api/services/shelterApi";
 
 interface LocationState {
@@ -29,21 +31,95 @@ const ShelterSignupForm: React.FC = () => {
   const [codeVerified, setCodeVerified] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  
+  // 사업자등록증 파일 상태 추가
+  const [businessLicenseFile, setBusinessLicenseFile] = useState<File | null>(null);
+  const [fileUploading, setFileUploading] = useState(false);
+  const [fileUploaded, setFileUploaded] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setForm({ [name]: value });
 
     if (name === "business_registration_email") {
-      setEmailChecked(false); // 이메일 변경 시 중복 확인 초기화
+      setEmailChecked(false); 
       setEmailValid(null);
       setCodeSent(false);
       setCodeVerified(false);
     }
 
-    // 비밀번호가 변경되었을 때 확인 비밀번호와 일치 여부 업데이트
     if (name === "password") {
       setPasswordMatch(passwordConfirm === "" || passwordConfirm === value);
+    }
+  };
+
+  // 파일 선택 핸들러
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setBusinessLicenseFile(e.target.files[0]);
+      setUploadError(null);
+    }
+  };
+  
+  // 파일 삭제 핸들러
+  const handleFileDelete = () => {
+    setBusinessLicenseFile(null);
+    setFileUploaded(false);
+    setUploadError(null);
+    
+    // 파일 입력 필드 리셋
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = '';
+      fileInput.disabled = false;
+    }
+    
+    // 스토어에서 ID 제거
+    if (form.business_license_id) {
+      setForm({ business_license_id: undefined });
+    }
+  };
+
+  // 파일 업로드 핸들러
+  const handleFileUpload = async () => {
+    if (!businessLicenseFile) {
+      setUploadError("파일을 선택해주세요.");
+      return;
+    }
+
+    // 파일 크기 체크 (예: 10MB 제한)
+    if (businessLicenseFile.size > 10 * 1024 * 1024) {
+      setUploadError("파일 크기는 10MB 이하여야 합니다.");
+      return;
+    }
+
+    // 파일 형식 체크
+    const validFileTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
+    if (!validFileTypes.includes(businessLicenseFile.type)) {
+      setUploadError("PDF, JPG, PNG 형식의 파일만 업로드 가능합니다.");
+      return;
+    }
+
+    setFileUploading(true);
+    setUploadError(null);
+
+    try {
+      const response = await uploadBusinessLicense(
+        businessLicenseFile,
+        form.business_registration_number,
+        form.name
+      );
+      
+      // 업로드 성공 시 폼 상태 업데이트
+      setForm({ business_license_id: response.id });
+      setFileUploaded(true);
+      alert("사업자등록증이 성공적으로 업로드되었습니다.");
+    } catch (err) {
+      console.error("파일 업로드 에러:", err);
+      setUploadError("파일 업로드 중 오류가 발생했습니다.");
+    } finally {
+      setFileUploading(false);
     }
   };
 
@@ -100,16 +176,21 @@ const ShelterSignupForm: React.FC = () => {
     setLoading(true);
 
     try {
-      const response = await requestVerificationCode(
-        form.business_registration_email
+      // 인증 코드 검증 함수 호출
+      const response = await verifyCode(
+        form.business_registration_email,
+        verificationCode
       );
-      console.log("인증 코드 요청 응답:", response);
-  
-      setCodeSent(true);
-      alert("인증 코드가 이메일로 전송되었습니다.");
+      
+      if (response.status === 200) {
+        setCodeVerified(true);
+        alert("이메일 인증이 완료되었습니다.");
+      } else {
+        alert("인증 코드가 올바르지 않습니다. 다시 시도해주세요.");
+      }
     } catch (err) {
-      console.error("인증 코드 요청 에러:", err);
-      alert("인증 코드 요청 중 오류가 발생했습니다.");
+      console.error("인증 코드 검증 에러:", err);
+      alert("인증 코드 검증 중 오류가 발생했습니다.");
     } finally {
       setLoading(false);
     }
@@ -139,6 +220,12 @@ const ShelterSignupForm: React.FC = () => {
 
     if (form.password !== form.password_confirm) {
       alert("비밀번호가 일치하지 않습니다.");
+      return;
+    }
+
+    // 사업자등록증 파일 업로드 확인
+    if (!fileUploaded) {
+      alert("사업자등록증 파일을 업로드해주세요.");
       return;
     }
 
@@ -227,7 +314,12 @@ const ShelterSignupForm: React.FC = () => {
           </div>
 
           <div className={styles.formGroup}>
-            <button type="button" onClick={handleRequestVerificationCode}>
+            <button 
+              type="button" 
+              onClick={handleRequestVerificationCode}
+              disabled={!emailValid || loading}
+              className={!emailValid ? styles.disabledButton : styles.button}
+            >
               인증 코드 요청
             </button>
           </div>
@@ -240,11 +332,13 @@ const ShelterSignupForm: React.FC = () => {
                 value={verificationCode}
                 onChange={(e) => setVerificationCode(e.target.value)}
                 placeholder="인증 코드를 입력하세요"
+                className={styles.input}
               />
               <button
                 type="button"
                 onClick={handleVerifyCode}
-                disabled={codeVerified || verificationCode.length < 4}
+                disabled={codeVerified || verificationCode.length < 4 || loading}
+                className={styles.button}
               >
                 {codeVerified ? "인증 완료" : "인증 확인"}
               </button>
@@ -327,6 +421,49 @@ const ShelterSignupForm: React.FC = () => {
               className={styles.input}
               required
             />
+          </div>
+
+          {/* 사업자등록증 파일 업로드 영역 - 수정된 부분 */}
+          <div className={styles.formGroup}>
+            <label>
+              사업자등록증 파일 <span className={styles.required}>*</span>
+            </label>
+            <div className={styles.fileUploadContainer}>
+              <input
+                type="file"
+                onChange={handleFileChange}
+                accept=".pdf,.jpg,.jpeg,.png"
+                className={styles.fileInput}
+                disabled={!!businessLicenseFile}
+              />
+              {businessLicenseFile && (
+                <button
+                  type="button"
+                  onClick={handleFileDelete}
+                  className={styles.deleteButton}
+                >
+                  삭제
+                </button>
+              )}
+            </div>
+            {uploadError && (
+              <p className={styles.errorMessage}>{uploadError}</p>
+            )}
+            {businessLicenseFile && !fileUploaded && (
+              <button
+                type="button"
+                onClick={handleFileUpload}
+                disabled={fileUploading}
+                className={styles.button}
+              >
+                {fileUploading ? "업로드 중..." : "파일 업로드"}
+              </button>
+            )}
+            {fileUploaded && (
+              <p className={styles.validMessage}>
+                사업자등록증이 성공적으로 업로드되었습니다.
+              </p>
+            )}
           </div>
 
           <div className={styles.formGroup}>

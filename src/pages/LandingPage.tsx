@@ -4,15 +4,7 @@ import styles from "../style/LandingPage.module.scss";
 import SearchBar from "../components/feature/SearchBar";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useModalContext } from '../contexts/ModalContext';
-
-interface CardData {
-  id: number;
-  image: string;
-  title: string;
-  region: string;
-  date: string;
-  volunteerwork: string;
-}
+import { fetchAllRecruitments, searchRecruitments, CardData, SearchParams } from '../api/recruitmentApi';
 
 interface LocationState {
   activeTab: string;
@@ -22,6 +14,7 @@ interface LocationState {
 
 const LandingPage: React.FC = () => {
   const [cards, setCards] = useState<CardData[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const navigate = useNavigate();
   const location = useLocation();
   const { openLoginModal, setActiveTab } = useModalContext();
@@ -36,40 +29,79 @@ const LandingPage: React.FC = () => {
     }
   }, [location.state, openLoginModal, setActiveTab]);
   
+  // 페이지 로드 시 전체 목록 가져오기
   useEffect(() => {
-    // Array.from을 사용하여 15개 데이터 생성
-    const data = Array.from({ length: 15 }, (_, index) => ({
-      id: index + 1,
-      image: "https://via.placeholder.com/300x200",
-      title: `펫모어핸즈 봉사센터 ${index + 1}`,
-      region:
-        index % 3 === 0
-          ? "서울특별시 종로구"
-          : index % 3 === 1
-          ? "서울특별시 강남구"
-          : "경기도 고양시",
-      date: `2025.${Math.floor(Math.random() * 12) + 1}.${
-        Math.floor(Math.random() * 28) + 1
-      }`,
-      volunteerwork: index % 2 === 0 ? "견사청소, 산책" : "급식 봉사, 놀이활동",
-    }));
-
-    setCards(data);
+    loadAllRecruitments();
   }, []);
+
+  // 전체 목록 가져오는 함수 (최대 15개)
+  const loadAllRecruitments = async () => {
+    setIsLoading(true);
+    try {
+      const data = await fetchAllRecruitments();
+      // 최대 15개만 표시
+      setCards(data.slice(0, 15));
+    } catch (error) {
+      console.error('Error loading recruitments:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 검색 핸들러
+  const handleSearch = async (searchParams: SearchParams) => {
+    // 검색 조건이 있는지 확인
+    const hasSearchConditions = (
+      (searchParams.locations?.length || 0) > 0 ||
+      searchParams.dateRange !== null ||
+      searchParams.timeRange !== null
+    );
+    
+    setIsLoading(true);
+    try {
+      // 검색 조건이 있으면 검색 API 호출, 없으면 전체 목록 API 호출
+      if (hasSearchConditions) {
+        console.log('검색 조건 적용:', searchParams);
+        const data = await searchRecruitments(searchParams);
+        setCards(data);
+      } else {
+        console.log('검색 조건 없음, 전체 목록 표시');
+        await loadAllRecruitments();
+      }
+    } catch (error) {
+      console.error('Error during search:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className={styles.landingContainer}>
-      <SearchBar />
-      {/* 카드 그리드 */}
-      <div className={styles.cardGrid}>
-        {cards.map((card) => (
-          <Card
-            key={card.id}
-            {...card}
-            onClick={() => navigate(`/detail/${card.id}`)} // ✅ 클릭 시 이동
-          />
-        ))}
-      </div>
+      <SearchBar onSearch={handleSearch} />
+      
+      {isLoading ? (
+        <div className={`${styles.loadingContainer} ${styles.contentSpacing}`}>
+          <p>데이터를 불러오는 중입니다...</p>
+        </div>
+      ) : (
+        <>
+          {cards.length > 0 ? (
+            <div className={styles.cardGrid}>
+              {cards.map((card) => (
+                <Card
+                  key={card.id}
+                  {...card}
+                  onClick={() => navigate(`/detail/${card.id}`)}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className={styles.noResultsContainer}>
+              <p>검색 결과가 없습니다.</p>
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 };

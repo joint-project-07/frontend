@@ -2,14 +2,15 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import styles from "../style/InstitutionDetailPage.module.scss";
 import dangimg from "../assets/dangimg.png";
-
-type Volunteer = {
-  id: number;
-  name: string;
-  phone: string;
-  status: "승인" | "반려" | "대기";
-  attendance?: "참석" | "불참석";
-};
+import { 
+  Volunteer, 
+  approveApplication, 
+  rejectApplication, 
+  markAsAttended, 
+  markAsAbsent,
+  getRecruitment,
+  getRecruitmentApplicants
+} from "../api/applicationApi";
 
 type InstitutionData = {
   id: number;
@@ -17,6 +18,7 @@ type InstitutionData = {
   region: string;
   mainActivities: string[];
   preparations: string[];
+  images?: string[];
 };
 
 const InstitutionDetailPage = () => {
@@ -26,37 +28,52 @@ const InstitutionDetailPage = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [institutionData, setInstitutionData] = useState<InstitutionData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [rejectionReason, setRejectionReason] = useState<string>("");
+  const [showRejectionModal, setShowRejectionModal] = useState<number | null>(null);
 
   useEffect(() => {
     if (!institutionId) return;
+    
     const fetchData = async () => {
       try {
         setLoading(true);
+        setError(null);
         
-        const volunteersData: Volunteer[] = [
-          { id: 1, name: "홍길동", phone: "010-1234-5678", status: "대기" },
-          { id: 2, name: "김철수", phone: "010-5678-1234", status: "대기" },
-          { id: 3, name: "이영희", phone: "010-9876-5432", status: "승인" },
-          { id: 4, name: "박지민", phone: "010-2468-1357", status: "반려" },
-          { id: 5, name: "최유진", phone: "010-1357-2468", status: "대기" },
-        ];
+        // 모집 정보 가져오기
+        const recruitmentData = await getRecruitment(parseInt(institutionId));
         
-        const institutionData: InstitutionData = {
-          id: parseInt(institutionId),
-          title: `펫모어핸즈 ${institutionId}호점`,
-          region: "서울특별시 동작구 상도로 369",
-          mainActivities: ["견사 청소", "미용", "목욕", "산책", "밥주기", "놀이 활동"],
-          preparations: ["물", "편안한 운동복", "여분의 옷", "마스크", "장갑"]
+        // 지원자 목록 가져오기
+        const applicantsData = await getRecruitmentApplicants(parseInt(institutionId));
+        
+        // 데이터 변환
+        const mappedVolunteers: Volunteer[] = applicantsData.map((applicant: any) => ({
+          id: applicant.id,
+          name: applicant.user.name,
+          phone: applicant.user.contact_number,
+          status: applicant.status === "approved" ? "승인" : 
+                 applicant.status === "rejected" ? "반려" : "대기",
+          attendance: applicant.attendance === "attended" ? "참석" : 
+                      applicant.attendance === "absent" ? "불참석" : undefined
+        }));
+        
+        // 기관 정보 가공
+        const institutionInfo: InstitutionData = {
+          id: recruitmentData.shelter.id,
+          title: recruitmentData.shelter.name,
+          region: recruitmentData.shelter.region,
+          mainActivities: recruitmentData.activities || [],
+          preparations: recruitmentData.supplies || [],
+          images: recruitmentData.images || []
         };
         
-        setTimeout(() => {
-          setVolunteers(volunteersData);
-          setInstitutionData(institutionData);
-          setLoading(false);
-        }, 800);
+        setVolunteers(mappedVolunteers);
+        setInstitutionData(institutionInfo);
         
       } catch (error) {
         console.error("데이터 로딩 중 오류 발생:", error);
+        setError("데이터를 불러오는 중 오류가 발생했습니다.");
+      } finally {
         setLoading(false);
       }
     };
@@ -64,23 +81,85 @@ const InstitutionDetailPage = () => {
     fetchData();
   }, [institutionId]);
 
-  const handleStatusChange = (id: number, status: "승인" | "반려") => {
-    setVolunteers((prev) =>
-      prev.map((v) => (v.id === id ? { ...v, status } : v))
-    );
+  const handleStatusChange = async (id: number, status: "승인" | "반려") => {
+    try {
+      setLoading(true);
+      
+      if (status === "승인") {
+        await approveApplication(id);
+      } else if (status === "반려") {
+        if (!rejectionReason) {
+          setShowRejectionModal(id);
+          return;
+        }
+        await rejectApplication(id, rejectionReason);
+        setShowRejectionModal(null);
+        setRejectionReason("");
+      }
+      
+      // 성공 후 데이터 업데이트
+      setVolunteers((prev) =>
+        prev.map((v) => (v.id === id ? { ...v, status } : v))
+      );
+      
+    } catch (error) {
+      console.error("상태 변경 중 오류 발생:", error);
+      alert("상태 변경 중 오류가 발생했습니다.");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleAttendanceChange = (id: number, attendance: "참석" | "불참석") => {
-    setVolunteers((prev) =>
-      prev.map((v) => (v.id === id ? { ...v, attendance } : v))
-    );
+  const handleAttendanceChange = async (id: number, attendance: "참석" | "불참석") => {
+    try {
+      setLoading(true);
+      
+      if (attendance === "참석") {
+        await markAsAttended(id);
+      } else {
+        await markAsAbsent(id);
+      }
+      
+      // 성공 후 데이터 업데이트
+      setVolunteers((prev) =>
+        prev.map((v) => (v.id === id ? { ...v, attendance } : v))
+      );
+      
+    } catch (error) {
+      console.error("출석 상태 변경 중 오류 발생:", error);
+      alert("출석 상태 변경 중 오류가 발생했습니다.");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const images = [
-    dangimg, 
-    dangimg, 
-    dangimg,
-  ];
+  const submitRejection = async () => {
+    if (!showRejectionModal) return;
+    
+    try {
+      setLoading(true);
+      await rejectApplication(showRejectionModal, rejectionReason);
+      
+      // 성공 후 데이터 업데이트
+      setVolunteers((prev) =>
+        prev.map((v) => (v.id === showRejectionModal ? { ...v, status: "반려" } : v))
+      );
+      
+      setShowRejectionModal(null);
+      setRejectionReason("");
+      
+    } catch (error) {
+      console.error("신청 거절 중 오류 발생:", error);
+      alert("신청 거절 중 오류가 발생했습니다.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 이미지 갤러리 관련 기능
+  const images = institutionData?.images && institutionData.images.length > 0 
+    ? institutionData.images 
+    : [dangimg, dangimg, dangimg]; // 기본 이미지
 
   const goToNextImage = () => {
     setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
@@ -101,6 +180,17 @@ const InstitutionDetailPage = () => {
       <div className={styles.loading}>
         <div className={styles.loadingSpinner}></div>
         <p>데이터를 불러오는 중...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className={styles.error}>
+        <p>{error}</p>
+        <button className={styles.backButton} onClick={handleBackClick}>
+          보호기관 목록으로 돌아가기
+        </button>
       </div>
     );
   }
@@ -131,7 +221,7 @@ const InstitutionDetailPage = () => {
               {"<"}
             </button>
             <img
-              src={images[currentIndex]}
+              src={typeof images[currentIndex] === 'string' ? images[currentIndex] : dangimg}
               alt={`기관 이미지 ${currentIndex + 1}`}
             />
             <button className={styles.nextBtn} onClick={goToNextImage}>
@@ -212,13 +302,13 @@ const InstitutionDetailPage = () => {
                           </button>
                           <button
                             className={styles.reject}
-                            onClick={() => handleStatusChange(volunteer.id, "반려")}
+                            onClick={() => setShowRejectionModal(volunteer.id)}
                           >
                             반려
                           </button>
                         </div>
                       )}
-                       {volunteer.status === "승인" && (
+                      {volunteer.status === "승인" && (
                         <div className={styles.buttons}>
                           <button
                             className={`${styles.attend} ${volunteer.attendance === "참석" ? styles.active : ""}`}
@@ -242,6 +332,30 @@ const InstitutionDetailPage = () => {
           </section>
         </div>
       </div>
+
+      {/* 반려 사유 입력 모달 */}
+      {showRejectionModal && (
+        <div className={styles.rejectionModal}>
+          <div className={styles.modalContent}>
+            <h3>반려 사유</h3>
+            <textarea
+              value={rejectionReason}
+              onChange={(e) => setRejectionReason(e.target.value)}
+              placeholder="반려 사유를 입력해주세요"
+              rows={4}
+            />
+            <div className={styles.modalButtons}>
+              <button onClick={() => setShowRejectionModal(null)}>취소</button>
+              <button 
+                onClick={submitRejection}
+                disabled={!rejectionReason.trim()}
+              >
+                확인
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 };
