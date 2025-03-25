@@ -1,219 +1,174 @@
 import { create } from 'zustand';
-import authClient from '../../auth/AuthClient';
-import { kakaoAuthProvider } from '../../auth/kakaoAuthProvider';
-import authService from '../../api/services/authService';
 import { 
-  AuthUser, 
+  login, 
+  logout, 
+  getUserInfo, 
+  UserInfo, 
   LoginCredentials, 
-  RegisterCredentials, 
-  SocialAuthProvider,
-  UserRole
-} from '../../types/auth-types'; 
+  processKakaoLogin
+} from '../../api/userApi'
+
+import { getKakaoToken } from '../../service/kakaoAuth';
 
 interface AuthState {
-  user: AuthUser | null;
+  user: UserInfo | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
-  
-  login: (credentials: LoginCredentials) => Promise<AuthUser>;
-  register: (userData: RegisterCredentials) => Promise<AuthUser>;
-  loginWithKakao: () => Promise<AuthUser>;
+}
+
+interface AuthActions {
+  login: (credentials: LoginCredentials) => Promise<UserInfo>;
   logout: () => Promise<void>;
-  refreshUserInfo: () => Promise<void>;
-  unlinkSocialAccount: (provider: SocialAuthProvider) => Promise<void>;
-  requestPasswordReset: (email: string) => Promise<void>;
-  
-  // 추가된 함수들
+  checkAuthStatus: () => Promise<boolean>;
   setLoading: (isLoading: boolean) => void;
   setError: (error: string | null) => void;
   resetError: () => void;
-  processKakaoAuth: (code: string) => Promise<AuthUser>;
-  
-  // 목업 환경용 함수 추가
-  loginAs: (role: UserRole) => Promise<AuthUser>;
+  clearAuth: () => void;
+  // 추가
+  processKakaoAuth: (code: string) => Promise<UserInfo>;
 }
 
-const useAuthStore = create<AuthState>((set, get) => ({
-  user: authClient.getCurrentUser(),
-  isAuthenticated: authClient.isUserAuthenticated(),
+// API 오류 인터페이스 정의
+interface ApiError {
+  response?: {
+    data?: {
+      message?: string;
+    };
+  };
+  message: string;
+}
+
+type AuthStore = AuthState & AuthActions;
+
+const useAuthStore = create<AuthStore>((set) => ({
+  user: null,
+  isAuthenticated: false,
   isLoading: false,
   error: null,
-  
+
+  login: async (credentials: LoginCredentials) => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await login(credentials);
+      const { access_token, refresh_token, user } = response.data;
+      
+      localStorage.setItem('access_token', access_token);
+      localStorage.setItem('refresh_token', refresh_token);
+      
+      set({
+        user,
+        isAuthenticated: true,
+        isLoading: false,
+        error: null
+      });
+      
+      return user;
+    } catch (error) {
+      const apiError = error as ApiError;
+      const errorMessage = apiError.response?.data?.message || '로그인에 실패했습니다.';
+      set({
+        isLoading: false,
+        error: errorMessage
+      });
+      throw error;
+    }
+  },
+
+  logout: async () => {
+    set({ isLoading: true, error: null });
+    
+    try {
+      const refresh_token = localStorage.getItem('refresh_token');
+      if (refresh_token) {
+        await logout({ refresh_token });
+      }
+    } catch (error) {
+      console.error('로그아웃 오류:', error);
+    } finally {
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('refresh_token');
+      
+      set({
+        user: null,
+        isAuthenticated: false,
+        isLoading: false,
+        error: null
+      });
+    }
+  },
+
+  checkAuthStatus: async () => {
+    const accessToken = localStorage.getItem('access_token');
+    if (!accessToken) {
+      set({ isAuthenticated: false });
+      return false;
+    }
+    
+    try {
+      const userInfo = await getUserInfo();
+      set({
+        user: userInfo,
+        isAuthenticated: true
+      });
+      return true;
+    } catch (error) {
+      console.error('인증 상태 확인 오류:', error);
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('refresh_token');
+      set({
+        user: null,
+        isAuthenticated: false
+      });
+      return false;
+    }
+  },
+
   setLoading: (isLoading) => set({ isLoading }),
   setError: (error) => set({ error }),
   resetError: () => set({ error: null }),
-  
-  login: async (credentials) => {
+  clearAuth: () => {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    set({
+      user: null,
+      isAuthenticated: false,
+      error: null
+    });
+  },
+
+  // 추가: 카카오 인증 처리 함수
+  processKakaoAuth: async (code: string) => {
     set({ isLoading: true, error: null });
-    
     try {
-      const user = await authClient.login(credentials);
-      set({ user, isAuthenticated: true, isLoading: false });
+      // 카카오 액세스 토큰 얻기
+      const kakaoAccessToken = await getKakaoToken(code);
+      
+      // API에 전달할 때는 액세스 토큰을 사용
+      const response = await processKakaoLogin({ access_token: kakaoAccessToken });
+      const { access_token, refresh_token, user } = response.data;
+      
+      // 토큰 저장
+      localStorage.setItem('access_token', access_token);
+      localStorage.setItem('refresh_token', refresh_token);
+      
+      // 사용자 정보 및 인증 상태 업데이트
+      set({
+        user,
+        isAuthenticated: true,
+        isLoading: false,
+        error: null
+      });
+      
       return user;
     } catch (error) {
-      const errorMessage = error instanceof Error 
-        ? error.message 
-        : '로그인 중 오류가 발생했습니다.';
-      
-      set({ isLoading: false, error: errorMessage });
-      throw error;
-    }
-  },
-  
-  // 목업 환경용 함수 추가
-  loginAs: async (role) => {
-    set({ isLoading: true, error: null });
-    
-    try {
-      // 목업 로그인 처리
-      const mockUser: AuthUser = {
-        id: `mock_${Math.random().toString(36).substring(2, 9)}`,
-        email: `${role.toLowerCase()}@example.com`,
-        username: role === UserRole.VOLUNTEER ? '봉사자' : '봉사기관',
-        name: role === UserRole.VOLUNTEER ? '봉사자' : '봉사기관',
-        role: role,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-      
-      // localStorage 저장 로직은 authClient로 위임
-      await authClient.setMockUser(mockUser);
-      
-      set({ user: mockUser, isAuthenticated: true, isLoading: false });
-      console.log(`[목업] ${role} 역할로 로그인되었습니다.`, mockUser);
-      return mockUser;
-    } catch (error) {
-      const errorMessage = error instanceof Error 
-        ? error.message 
-        : '로그인 중 오류가 발생했습니다.';
-      
-      set({ isLoading: false, error: errorMessage });
-      throw error;
-    }
-  },
-  
-  register: async (userData) => {
-    set({ isLoading: true, error: null });
-    
-    try {
-      const user = await authClient.register(userData);
-      set({ user, isAuthenticated: true, isLoading: false });
-      return user;
-    } catch (error) {
-      const errorMessage = error instanceof Error 
-        ? error.message 
-        : '회원가입 중 오류가 발생했습니다.';
-      
-      set({ isLoading: false, error: errorMessage });
-      throw error;
-    }
-  },
-  
-  loginWithKakao: async () => {
-    set({ isLoading: true, error: null });
-    
-    try {
-      const user = await kakaoAuthProvider.login();
-      set({ user, isAuthenticated: true, isLoading: false });
-      return user;
-    } catch (error) {
-      const errorMessage = error instanceof Error 
-        ? error.message 
-        : '카카오 로그인 중 오류가 발생했습니다.';
-      
-      set({ isLoading: false, error: errorMessage });
-      throw error;
-    }
-  },
-  
-  processKakaoAuth: async (code) => {
-    set({ isLoading: true, error: null });
-    
-    try {
-      const user = await kakaoAuthProvider.processCode(code);
-      set({ user, isAuthenticated: true, isLoading: false });
-      return user;
-    } catch (error) {
-      const errorMessage = error instanceof Error 
-        ? error.message 
-        : '카카오 인증 처리 중 오류가 발생했습니다.';
-      
-      set({ isLoading: false, error: errorMessage });
-      throw error;
-    }
-  },
-  
-  logout: async () => {
-    set({ isLoading: true });
-    
-    try {
-      await authClient.logout();
-      set({ user: null, isAuthenticated: false, isLoading: false });
-    } catch (error) {
-      console.error('로그아웃 중 오류가 발생했습니다:', error);
-      set({ isLoading: false });
-    }
-  },
-  
-  refreshUserInfo: async () => {
-    const { isAuthenticated } = get();
-    if (!isAuthenticated) return;
-    
-    set({ isLoading: true });
-    
-    try {
-      const userData = await authClient.refreshUserInfo();
-      if (userData) {
-        set({ user: userData, isLoading: false });
-      } else {
-        set({ isLoading: false });
-      }
-    } catch (error) {
-      console.error('사용자 정보 갱신 중 오류가 발생했습니다:', error);
-      
-      const err = error as Error;
-      if (err.message.includes('401')) {
-        await get().logout();
-      } else {
-        set({ isLoading: false });
-      }
-    }
-  },
-  
-  unlinkSocialAccount: async (provider) => {
-    set({ isLoading: true, error: null });
-    
-    try {
-      if (provider === SocialAuthProvider.KAKAO) {
-        await kakaoAuthProvider.unlink();
-      } else {
-        await authService.unlinkSocialAccount(provider);
-      }
-      await get().refreshUserInfo();
-      set({ isLoading: false });
-    } catch (error) {
-      const errorMessage = error instanceof Error 
-        ? error.message 
-        : '소셜 계정 연결 해제 중 오류가 발생했습니다.';
-      
-      set({ isLoading: false, error: errorMessage });
-      throw error;
-    }
-  },
-  
-  requestPasswordReset: async (email) => {
-    set({ isLoading: true, error: null });
-    
-    try {
-      await authService.requestPasswordReset(email);
-      set({ isLoading: false });
-    } catch (error) {
-      const errorMessage = error instanceof Error 
-        ? error.message 
-        : '비밀번호 재설정 요청 중 오류가 발생했습니다.';
-      
-      set({ isLoading: false, error: errorMessage });
+      console.error('카카오 로그인 오류:', error);
+      const apiError = error as ApiError;
+      const errorMessage = apiError.response?.data?.message || '카카오 로그인에 실패했습니다.';
+      set({
+        isLoading: false,
+        error: errorMessage
+      });
       throw error;
     }
   }

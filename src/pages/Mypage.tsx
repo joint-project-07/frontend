@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useTabStore } from "../store/TabStore";
 import { useShelterStore } from "../store/ShelterStore";
 import styles from "../style/Mypage.module.scss";
@@ -11,7 +11,8 @@ import PasswordChangeModal from "../components/common/PasswordChangeModal";
 import DeleteAccountModal from "../components/common/DeleteAccountModal";
 import { useModalContext } from "../contexts/ModalContext";
 import { useAuth } from "../contexts/AuthContext";
-import { updateProfile, getUserInfo } from "../api/userApi";
+import { uploadProfileImage, deleteProfileImage } from "../api/userApi";
+import defaultProfileImg from "../assets/profile.png";
 
 interface ShelterItem {
   application_id: number;
@@ -203,170 +204,144 @@ const VolunteerHistory: React.FC = () => {
   );
 };
 
-const UserNameDisplay = React.memo(({ userName, loading }: { userName: string, loading: boolean }) => {
-  return (
-    <div className={styles.infoText} style={{ fontWeight: 'bold', marginBottom: '15px' }}>
-      {loading ? "로딩중..." : (userName ? `${userName} 님` : "사용자명")}
-    </div>
-  );
-});
-
-const TabContent: React.FC = React.memo(() => {
-  const { activeTab } = useTabStore();
+const UserInfoTab: React.FC = () => {
   const { openPasswordModal } = useModalContext();
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [userName, setUserName] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { user, updateUserData } = useAuth();
-  const hasLoadedRef = useRef<boolean>(false);
-
-  const loadUserInfo = useCallback(async () => {
-    if (activeTab === "info" && !hasLoadedRef.current) {
-      setLoading(true);
-      hasLoadedRef.current = true;
-      
-      try {
-        if (user && user.name) {
-          setUserName(user.name);
-        } else {
-          const storedUser = localStorage.getItem('user');
-          if (storedUser) {
-            try {
-              const localData = JSON.parse(storedUser);
-              const localUserData = localData.user || localData;
-              if (localUserData.name) {
-                setUserName(localUserData.name);
-              }
-            } catch (error) {
-              console.error('Local storage parsing error:', error);
-            }
-          }
-        }
-        
-        const userDetails = await getUserInfo();
-        if (userDetails) {
-          setUserName(userDetails.name || "");
-          
-          if (userDetails && updateUserData) {
-            updateUserData({
-              ...userDetails
-            });
-          }
-        }
-      } catch (error) {
-        console.error('User info fetch error:', error);
-      } finally {
-        setLoading(false);
-      }
-    }
-  }, [activeTab, user, updateUserData]);
-
+  
+  // 전역 user 객체에서 name과 profile_image 가져오기
+  const { user } = useAuth();
+  const { name = "사용자명", profile_image } = user || {};
+  
+  // profile_image가 있는지 여부를 상태로 관리
+  const [hasProfileImage, setHasProfileImage] = useState<boolean>(!!profile_image);
+  
+  // 컴포넌트 마운트 시 프로필 이미지 상태 확인
   useEffect(() => {
-    loadUserInfo();
-    
-    return () => {
-      if (activeTab !== "info") {
-        hasLoadedRef.current = false;
-      }
-    };
-  }, [activeTab, loadUserInfo]);
-
-  const handleProfileClick = useCallback(() => {
+    setHasProfileImage(!!profile_image);
+  }, [profile_image]);
+  
+  const handleProfileClick = () => {
     if (fileInputRef.current) {
       fileInputRef.current.click();
     }
-  }, []);
+  };
 
-  const handleFileChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     try {
       setLoading(true);
-      
-      const formData = new FormData();
-      formData.append('name', userName);
-      formData.append('profile_image', file);
-
-      await updateProfile({
-        name: userName,
-        profile_image: file
-      });
-      
-      const userDetails = await getUserInfo();
-      if (userDetails) {
-        setUserName(userDetails.name || "");
-        
-        if (userDetails && updateUserData) {
-          updateUserData({
-            ...userDetails
-          });
-        }
-      }
-      
+      await uploadProfileImage(file);
+      setHasProfileImage(true);
       alert('프로필 이미지가 성공적으로 업데이트되었습니다.');
     } catch (error) {
-      console.error(error);
-      alert('프로필 이미지 업데이트 중 오류가 발생했습니다.');
+      console.error('프로필 이미지 업로드 오류:', error);
+      alert('프로필 이미지 업로드 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
     }
-  }, [userName, updateUserData]);
+  };
 
-  const openDeleteModal = useCallback(() => {
+  const handleDeleteProfileImage = async () => {
+    try {
+      setLoading(true);
+      await deleteProfileImage();
+      setHasProfileImage(false);
+      alert('프로필 이미지가 성공적으로 삭제되었습니다.');
+    } catch (error) {
+      console.error('프로필 이미지 삭제 오류:', error);
+      alert('프로필 이미지 삭제 중 오류가 발생했습니다.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const openDeleteModal = () => {
     setIsDeleteModalOpen(true);
-  }, []);
+  };
 
-  const closeDeleteModal = useCallback(() => {
+  const closeDeleteModal = () => {
     setIsDeleteModalOpen(false);
-  }, []);
+  };
 
-  switch (activeTab) {
-    case "info":
-      return (
-        <div className={styles.mypageContainer}>
-          <main className={styles.mypageContent}>
-            <section className={styles.profileSection}>
-              <div className={styles.profileImage} onClick={handleProfileClick}>
-                {loading && <div className={styles.loadingOverlay}>로딩중...</div>}
-              </div>
-              <input 
-                type="file" 
-                ref={fileInputRef} 
-                style={{ display: 'none' }} 
-                accept="image/*"
-                onChange={handleFileChange}
-              />
+  const getProfileImageUrl = () => {
+    if (hasProfileImage) {
+      return `/api/users/profile_image/`;
+    }
+    return defaultProfileImg;
+  };
+
+  return (
+    <div className={styles.mypageContainer}>
+      <main className={styles.mypageContent}>
+        <section className={styles.profileSection}>
+          <div 
+            className={styles.profileImage} 
+            onClick={handleProfileClick}
+            style={{ backgroundImage: `url(${getProfileImageUrl()})` }}
+          >
+            {loading && <div className={styles.loadingOverlay}>로딩중...</div>}
+          </div>
+          <input 
+            type="file" 
+            ref={fileInputRef} 
+            style={{ display: 'none' }} 
+            accept="image/*"
+            onChange={handleFileChange}
+          />
+          <div className={styles.profileButtonGroup}>
+            <button 
+              className={styles.profileEditBtn}
+              onClick={handleProfileClick}
+              disabled={loading}
+            >
+              프로필 변경
+            </button>
+            {hasProfileImage && (
               <button 
-                className={styles.profileEditBtn}
-                onClick={handleProfileClick}
+                className={styles.profileDeleteBtn}
+                onClick={handleDeleteProfileImage}
                 disabled={loading}
               >
-                프로필 변경
+                프로필 삭제
               </button>
-            </section>
-            <section className={styles.infoSection}>
-              <UserNameDisplay userName={userName} loading={loading} />
-              
-              <div className={styles.infoText}>
-                펫모어핸즈와 함께해용💜
-              </div>
-              <button className={styles.infoButton} onClick={openPasswordModal}>
-                비밀번호 변경
-              </button>
-              <button className={styles.infoButton} onClick={openDeleteModal}>
-                회원 탈퇴
-              </button>
-              <PasswordChangeModal />
-              <DeleteAccountModal 
-                isOpen={isDeleteModalOpen} 
-                onClose={closeDeleteModal} 
-              />
-            </section>
-          </main>
-        </div>
-      );
+            )}
+          </div>
+        </section>
+        <section className={styles.infoSection}>
+          <div className={styles.infoText} style={{ fontWeight: 'bold', marginBottom: '15px' }}>
+            {loading ? "로딩중..." : `${name} 님`}
+          </div>
+          
+          <div className={styles.infoText}>
+            펫모어핸즈와 함께해용💜
+          </div>
+          <button className={styles.infoButton} onClick={openPasswordModal}>
+            비밀번호 변경
+          </button>
+          <button className={styles.infoButton} onClick={openDeleteModal}>
+            회원 탈퇴
+          </button>
+          <PasswordChangeModal />
+          <DeleteAccountModal 
+            isOpen={isDeleteModalOpen} 
+            onClose={closeDeleteModal} 
+          />
+        </section>
+      </main>
+    </div>
+  );
+};
+
+const TabContent: React.FC = React.memo(() => {
+  const { activeTab } = useTabStore();
+  
+  switch (activeTab) {
+    case "info":
+      return <UserInfoTab />;
     case "shelter":
       return <ShelterList />;
     case "volunteer":

@@ -132,7 +132,7 @@
   margin-bottom: 16px;
 }
 
-.loginBtn, .signupBtn, .kakaoBtn {
+.loginBtn, .signupBtn {
   width: 100%;
   padding: 12px;
   border-radius: 8px;
@@ -163,15 +163,16 @@
   }
 }
 
-.kakaoBtn {
-  background-color: #FEE500;
-  color: #3C1E1E;
-  border: none;
-  margin-bottom: 16px;
-  
-  &:hover {
-    background-color: #FCDC00;
-  }
+.kakaoLoginContainer {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.kakaoLoginImg {
+  max-width: 100%;
+  height: auto;
 }
 
 .extraLinks {
