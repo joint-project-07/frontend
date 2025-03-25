@@ -1,0 +1,204 @@
+.openModalBtn {
+  background-color: transparent;
+  border: 1px solid #e0e0e0;
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.2s;
+  
+  &:hover {
+    background-color: #f5f5f5;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+}
+
+.loginModal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 400px;
+  padding: 24px;
+  text-align: center;
+  margin: 0 auto; /* 중앙 정렬을 위해 추가 */
+  
+  .logo {
+    width: 150px;
+    height: auto;
+    margin-bottom: 24px;
+  }
+  
+  h2 {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #333;
+    width: 100%; /* 너비 100%로 설정 */
+  }
+  
+  p {
+    font-size: 16px;
+    color: #666;
+    margin-bottom: 24px;
+    text-align: center;
+    width: 100%; /* 너비 100%로 설정 */
+  }
+}
+
+/* 입력 필드 레이블 */
+.fieldLabel {
+  align-self: flex-start;
+  font-size: 14px;
+  color: #333;
+  margin-bottom: 8px;
+  font-weight: 500;
+  text-align: left;
+  width: 100%;
+  padding: 0;
+}
+
+/* 탭 스타일 */
+.tabContainer {
+  display: flex;
+  width: 100%;
+  margin-bottom: 24px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.tab {
+  flex: 1;
+  padding: 12px 0;
+  background: none;
+  border: none;
+  font-size: 16px;
+  font-weight: 500;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.2s;
+  
+  &.active {
+    color: #ff9fb0;
+    border-bottom: 2px solid #ff9fb0;
+  }
+  
+  &:hover:not(.active) {
+    color: #333;
+  }
+}
+
+.tabContent {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  
+  label {
+    display: block;
+    text-align: left;
+    font-size: 14px;
+    color: #333;
+    margin-bottom: 8px;
+    font-weight: 500;
+    width: 100%;
+  }
+}
+
+.inputField {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 16px;
+  margin-bottom: 16px;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+  
+  &:focus {
+    border-color: #ff9fb0;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(255, 159, 176, 0.2);
+  }
+}
+
+.buttonGroup {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 12px;
+  margin-top: 8px;
+  margin-bottom: 16px;
+}
+
+.loginBtn, .signupBtn {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.loginBtn {
+  background-color: #ff9fb0;
+  color: white;
+  border: none;
+  
+  &:hover {
+    background-color: #ff8da0;
+  }
+}
+
+.signupBtn {
+  background-color: transparent;
+  color: #333;
+  border: 1px solid #e0e0e0;
+  
+  &:hover {
+    background-color: #f5f5f5;
+  }
+}
+
+.kakaoLoginContainer {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.kakaoLoginImg {
+  max-width: 100%;
+  height: auto;
+}
+
+.extraLinks {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  gap: 8px;
+  font-size: 14px;
+  color: #666;
+  
+  span {
+    cursor: pointer;
+    
+    &:not(:nth-child(even)):hover {
+      color: #333;
+      text-decoration: underline;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .loginModal {
+    padding: 24px 16px;
+  }
+  
+  .tab {
+    font-size: 14px;
+  }
+}

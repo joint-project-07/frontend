@@ -1,0 +1,176 @@
+.dateRangePicker {
+  width: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  /* 배경색, 그림자, 테두리, 마진 제거 */
+  background-color: transparent;
+  box-shadow: none;
+  margin: 0;
+  padding: 0;
+}
+
+.calendarHeader {
+  background-color: #ffc0cb;
+  margin: 0 0 20px 0;
+  padding: 16px 20px;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  
+  h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 500;
+    color: #333;
+  }
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #666;
+}
+
+.calendarsContainer {
+  display: flex;
+  gap: 10px; 
+}
+
+.calendar {
+  flex: 1;
+}
+
+.calendarNav {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.monthTitle {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+  margin-bottom: 4px;
+}
+
+.weekday {
+  font-size: 12px;
+  color: #666;
+  padding: 8px 0;
+}
+
+.days {
+  display: flex;
+  flex-direction: column;
+}
+
+.week {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+
+.day {
+  height: 32px; /* 약간 줄여서 더 컴팩트하게 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 14px;
+  position: relative;
+  color: #333;
+  
+  &.otherMonth {
+    color: #ccc;
+  }
+  
+  &.disabled {
+    color: #ddd;
+    cursor: default;
+  }
+  
+  &.start, &.end {
+    background-color: #ff9fb0; 
+    color: white;
+    font-weight: bold;
+    z-index: 2;
+  }
+  
+  &.inRange {
+    background-color: #ffebef; 
+    color: #333;
+  }
+}
+
+.calendarNavigation {
+  position: relative;
+  height: 0;
+}
+
+.navButton {
+  position: absolute;
+  top: -268px;
+  background: transparent;  
+  border: none;             
+  width: 32px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 25px;         
+  color:rgb(0, 0, 0);           
+  transition: color 0.2s;
+  
+  &.prev {
+    left: -10px;
+  }
+  
+  &.next {
+    right: -10px;
+  }
+}
+
+.actionButtons {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+  gap: 12px;
+}
+
+.resetButton, .confirmButton {
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.resetButton {
+  background-color: white;
+  border: 1px solid #ddd;
+  color: #666;
+}
+
+.confirmButton {
+  background-color: #ff9fb0; 
+  border: none;
+  color: white;
+}
+
+/* 반응형 스타일 추가 */
+@media (max-width: 576px) {
+  .calendarsContainer {
+    flex-direction: column;
+  }
+  
+  .navButton {
+    top: -350px; /* 모바일에서 버튼 위치 조정 */
+  }
+}

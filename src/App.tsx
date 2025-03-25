@@ -1,35 +1,56 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import "./App.css";
+import LandingPage from "./pages/LandingPage";
+import MyPage from "./pages/Mypage";
+import UsersSignupForm from "./pages/UsersSignup";
+import { AuthProvider } from "./contexts/AuthContext";
+import ShelterSignupForm from "./pages/ShelterSignup";
+import DetailPage from "./pages/DetailPage";
+import SearchNotFound from "./pages/SearchNotFound";
+import MainLayout from "./components/layout/MainLayout";
+import { ModalProvider } from "./contexts/ModalContext";
+import InstitutionScheduleList from "./pages/InstitutionScheduleList";
+import InstitutionDetailPage from "./pages/InstitutionDetailPage";
+import VolunteerScheduleRegistration from "./pages/VolunteerScheduleForm";
+import FindId from "./pages/FindId";
+import FindPassword from "./pages/FindPassward";
+import KakaoCallbackPage from "./pages/KakaoCallbackPage";
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <AuthProvider>
+      <ModalProvider>
+        <Router>
+          <Routes>
+            <Route element={<MainLayout />}>
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/detail/:id" element={<DetailPage />} />
+              <Route path="/MyPage" element={<MyPage />} />
+              <Route path="/searchnotfound" element={<SearchNotFound />} />
+              <Route
+                path="/institution-schedule"
+                element={<InstitutionScheduleList />}
+              />
+              <Route
+                path="/institution-detail/:institutionId"
+                element={<InstitutionDetailPage />}
+              />
+              <Route
+                path="/schedule-registration"
+                element={<VolunteerScheduleRegistration />}
+              />
+              <Route path="/find-id" element={<FindId />} />
+              <Route path="/find-password" element={<FindPassword />} />
+            </Route>
+            <Route path="/UsersSignup" element={<UsersSignupForm />} />
+            <Route path="/ShelterSignup" element={<ShelterSignupForm />} />
+            <Route path="/auth/kakao/callback" element={<KakaoCallbackPage />} />
+            {import.meta.env.DEV ? <Route path="test" element /> : null}
+          </Routes>
+        </Router>
+      </ModalProvider>
+    </AuthProvider>
+  );
 }
 
-export default App
+export default App;
