@@ -1,382 +1,234 @@
-import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { 
-  AuthUser, 
-  UserRole, 
-  LoginCredentials, 
-  RegisterCredentials, 
-  SocialAuthProvider 
-} from '../types/auth-types'; 
+  login as apiLogin, 
+  logout as apiLogout,
+  LoginCredentials,
+  UserInfo as ApiUserInfo
+} from '../api/userApi';
+import { axiosInstance } from '../api/axios/axiosInstance';
+
+export enum UserRole {
+  VOLUNTEER = 'volunteer',
+  ORGANIZATION = 'organization',
+}
+
+// 확장된 UserInfo 인터페이스
+interface UserInfo extends ApiUserInfo {
+  role: UserRole;
+}
 
 interface AuthContextType {
-  user: AuthUser | null;
   isAuthenticated: boolean;
-  isLoading: boolean;
-  error: string | null;
-  login: (credentials: LoginCredentials) => Promise<AuthUser>;
-  loginAs: (role: UserRole) => Promise<AuthUser>; 
-  register: (userData: RegisterCredentials) => Promise<AuthUser>;
-  loginWithKakao: () => Promise<AuthUser>;
+  user: UserInfo | null;
+  login: (credentials: LoginCredentials) => Promise<void>;
   logout: () => Promise<void>;
-  refreshUserInfo: () => Promise<void>;
-  requestPasswordReset: (email: string) => Promise<void>;
+  loading: boolean;
+  error: string | null;
+  isLoading: boolean;
+  loginWithKakao: () => Promise<void>;
+  updateUserData: (userData: UserInfo) => void; // 사용자 정보 업데이트 함수 추가
 }
 
-const MOCK_AUTH_TOKEN = 'mock_auth_token';
-const MOCK_USER_KEY = 'mock_current_user';
-const MOCK_AUTH_STATE = 'mock_auth_state';
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const AuthContext = createContext<AuthContextType>({
-  user: null,
-  isAuthenticated: false,
-  isLoading: false,
-  error: null,
-  login: async () => { throw new Error('AuthProvider가 설정되지 않았습니다.'); },
-  loginAs: async () => { throw new Error('AuthProvider가 설정되지 않았습니다.'); },
-  register: async () => { throw new Error('AuthProvider가 설정되지 않았습니다.'); },
-  loginWithKakao: async () => { throw new Error('AuthProvider가 설정되지 않았습니다.'); },
-  logout: async () => { throw new Error('AuthProvider가 설정되지 않았습니다.'); },
-  refreshUserInfo: async () => { throw new Error('AuthProvider가 설정되지 않았습니다.'); },
-  requestPasswordReset: async () => { throw new Error('AuthProvider가 설정되지 않았습니다.'); },
-});
-
-interface MockUserCredentials {
-  email?: string;
-  password?: string; 
-  username?: string;
-  name?: string;
-  role?: UserRole; 
-  [key: string]: string | UserRole | undefined;
-}
-
-const createMockUser = (credentials: MockUserCredentials, role: UserRole): AuthUser => {
-  return {
-    id: `mock_${Math.random().toString(36).substring(2, 9)}`,
-    email: credentials.email || 'mock@example.com',
-    username: credentials.username || '목업 사용자',
-    name: credentials.name || '목업 사용자',
-    role: role,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  };
-};
-
-interface AuthProviderProps {
-  children: React.ReactNode;
-}
-
-export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const isDevelopment = process.env.NODE_ENV === 'development';
-  
-  const [user, setUser] = useState<AuthUser | null>(() => {
-    try {
-      const userJson = localStorage.getItem(MOCK_USER_KEY);
-      return userJson ? JSON.parse(userJson) : null;
-    } catch (error) {
-      console.error('사용자 정보를 파싱하는 중 오류 발생:', error);
-      return null;
-    }
-  });
-  
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
-    return localStorage.getItem(MOCK_AUTH_STATE) === 'true';
-  });
-  
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [user, setUser] = useState<UserInfo | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  const login = useCallback(async (credentials: LoginCredentials): Promise<AuthUser> => {
-    setIsLoading(true);
-    setError(null);
-    
-    try {
-      if (isDevelopment) {
-        if (!credentials.email || !credentials.password) {
-          throw new Error('이메일과 비밀번호를 모두 입력해주세요.');
+  useEffect(() => {
+    const checkAuth = () => {
+      const storedUser = localStorage.getItem('user');
+      const accessToken = localStorage.getItem('accessToken');
+      const refreshToken = localStorage.getItem('refreshToken');
+
+      if (storedUser && accessToken && refreshToken) {
+        try {
+          setUser(JSON.parse(storedUser));
+          setIsAuthenticated(true);
+        } catch (error) {
+          console.error('Failed to parse user data:', error);
+          // 잘못된 데이터가 있을 경우 로컬 스토리지 초기화
+          localStorage.removeItem('user');
+          localStorage.removeItem('accessToken');
+          localStorage.removeItem('refreshToken');
         }
-        
-        const role = credentials.email.includes('organization') ? UserRole.ORGANIZATION : UserRole.VOLUNTEER;
-        
-        const mockCredentials: MockUserCredentials = {
-          email: credentials.email,
-          password: credentials.password
-        };
-        
-        const mockUser = createMockUser(mockCredentials, role);
-        
-        localStorage.setItem(MOCK_USER_KEY, JSON.stringify(mockUser));
-        localStorage.setItem(MOCK_AUTH_STATE, 'true');
-        localStorage.setItem(MOCK_AUTH_TOKEN, 'mock_token_' + Date.now());
-        
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        setUser(mockUser);
-        setIsAuthenticated(true);
-        
-        console.log('로그인 성공:', mockUser);
-        return mockUser;
-      } else {
-        throw new Error('실제 API 연동이 구현되지 않았습니다.');
       }
-    } catch (error) {
-      const errorMessage = error instanceof Error 
-        ? error.message 
-        : '로그인 중 오류가 발생했습니다.';
-      
-      setError(errorMessage);
-      throw error;
-    } finally {
-      setIsLoading(false);
-    }
-  }, [isDevelopment]);
+    };
 
-  const loginAs = useCallback(async (role: UserRole): Promise<AuthUser> => {
-    setIsLoading(true);
+    checkAuth();
+  }, []);
+
+  // 이메일로 사용자 역할 결정하는 헬퍼 함수 - undefined/null 체크 추가
+  const determineUserRole = (email: string | undefined): UserRole => {
+    // email이 undefined 또는 null인 경우 체크
+    if (!email) {
+      return UserRole.VOLUNTEER; // 기본값 반환
+    }
+    
+    return email.includes('@organization.com') 
+      ? UserRole.ORGANIZATION 
+      : UserRole.VOLUNTEER;
+  };
+
+  // 사용자 정보를 컴포넌트에서 업데이트할 수 있는 함수
+  const updateUserData = (userData: UserInfo): void => {
+    setUser(userData);
+    localStorage.setItem('user', JSON.stringify(userData));
+  };
+
+  const handleLogin = async (credentials: LoginCredentials) => {
+    setLoading(true);
     setError(null);
-    
+
     try {
-      if (!role) {
-        throw new Error('사용자 역할이 지정되지 않았습니다.');
-      }
+      const response = await apiLogin(credentials);
       
-      if (isDevelopment) {
-        const mockCredentials: MockUserCredentials = {
-          email: `${role.toLowerCase()}@example.com`,
-          username: role === UserRole.VOLUNTEER ? '봉사자' : '봉사기관',
-          name: role === UserRole.VOLUNTEER ? '봉사자' : '봉사기관'
+      // accessToken과 refreshToken 설정
+      const { access_token, refresh_token } = response.data;
+      localStorage.setItem('accessToken', access_token);
+      localStorage.setItem('refreshToken', refresh_token);
+      
+      // 백엔드에서 사용자 정보가 제공되는 경우
+      const userData = response.data.user;
+      
+      if (userData) {
+        // 기본값 설정
+        const email = userData.email || credentials.email || '';
+        
+        // role 정보 추가
+        const role = userData.role || determineUserRole(email);
+        const userInfo: UserInfo = { 
+          id: userData.id || 0,
+          email: email,
+          name: userData.name || '',
+          contact_number: userData.contact_number || '',
+          profile_image: userData.profile_image || null,
+          role: role,
+          ...userData
         };
-        
-        const mockUser = createMockUser(mockCredentials, role);
-        
-        localStorage.setItem(MOCK_USER_KEY, JSON.stringify(mockUser));
-        localStorage.setItem(MOCK_AUTH_STATE, 'true');
-        localStorage.setItem(MOCK_AUTH_TOKEN, 'mock_token_' + Date.now());
-        
-        await new Promise(resolve => setTimeout(resolve, 300));
-        
-        setUser(mockUser);
-        setIsAuthenticated(true);
-        
-        console.log(`[목업] ${role} 역할로 로그인되었습니다.`, mockUser);
-        return mockUser;
-      } else {
-        throw new Error('이 함수는 개발 환경에서만 사용 가능합니다.');
+
+        localStorage.setItem('user', JSON.stringify(userInfo));
+        setUser(userInfo);
       }
-    } catch (error) {
-      const errorMessage = error instanceof Error 
-        ? error.message 
-        : '로그인 중 오류가 발생했습니다.';
       
-      setError(errorMessage);
+      setIsAuthenticated(true);
+    } catch (error) {
+      const err = error as { response?: { data?: { message?: string } } };
+      
+      if (err.response?.data?.message) {
+        setError(err.response.data.message);
+      } else {
+        setError('로그인 중 오류가 발생했습니다.');
+      }
       throw error;
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
-  }, [isDevelopment]);
+  };
 
-  const register = useCallback(async (userData: RegisterCredentials): Promise<AuthUser> => {
-    setIsLoading(true);
+  const handleLogout = async () => {
+    setLoading(true);
     setError(null);
-    
+  
     try {
-      if (isDevelopment) {
-        if (!userData.email || !userData.password) {
-          throw new Error('이메일과 비밀번호는 필수입니다.');
-        }
-        
-        await new Promise(resolve => setTimeout(resolve, 800));
-        
-        const role = userData.role || UserRole.VOLUNTEER;
-        
-        const mockCredentials: MockUserCredentials = {
-          email: userData.email,
-          password: userData.password,
-          name: userData.name,
-          username: userData.username,
-          role: userData.role
-        };
-        
-        const mockUser = createMockUser(mockCredentials, role);
-        
-        localStorage.setItem(MOCK_USER_KEY, JSON.stringify(mockUser));
-        localStorage.setItem(MOCK_AUTH_STATE, 'true');
-        localStorage.setItem(MOCK_AUTH_TOKEN, 'mock_token_' + Date.now());
-        
-        setUser(mockUser);
-        setIsAuthenticated(true);
-        
-        return mockUser;
-      } else {
-        throw new Error('실제 API 연동이 구현되지 않았습니다.');
-      }
-    } catch (error) {
-      const errorMessage = error instanceof Error 
-        ? error.message 
-        : '회원가입 중 오류가 발생했습니다.';
+      const refreshToken = localStorage.getItem('refreshToken');
       
-      setError(errorMessage);
-      throw error;
-    } finally {
-      setIsLoading(false);
-    }
-  }, [isDevelopment]);
-
-  const loginWithKakao = useCallback(async (): Promise<AuthUser> => {
-    setIsLoading(true);
-    setError(null);
-    
-    try {
-      if (isDevelopment) {
-        await new Promise(resolve => setTimeout(resolve, 800));
-        
-        const mockUser = createMockUser({
-          email: 'kakao_user@example.com',
-          username: '카카오 사용자',
-          name: '카카오 사용자'
-        }, UserRole.VOLUNTEER);
-        
-        const mockSocialUser = {
-          ...mockUser,
-          socialProvider: SocialAuthProvider.KAKAO,
-          socialId: 'kakao_' + Math.random().toString(36).substring(2, 10),
-        };
-        
-        localStorage.setItem(MOCK_USER_KEY, JSON.stringify(mockSocialUser));
-        localStorage.setItem(MOCK_AUTH_STATE, 'true');
-        localStorage.setItem(MOCK_AUTH_TOKEN, 'mock_kakao_token_' + Date.now());
-        
-        setUser(mockSocialUser);
-        setIsAuthenticated(true);
-        
-        return mockSocialUser;
-      } else {
-        throw new Error('카카오 로그인 API 연동이 구현되지 않았습니다.');
+      if (!refreshToken) {
+        throw new Error('리프레시 토큰이 없습니다.');
       }
-    } catch (error) {
-      const errorMessage = error instanceof Error 
-        ? error.message 
-        : '카카오 로그인 중 오류가 발생했습니다.';
+  
+      await apiLogout({ refresh_token: refreshToken });
       
-      setError(errorMessage);
-      throw error;
+    } catch (error) {
+      console.error('로그아웃 오류:', error);
     } finally {
-      setIsLoading(false);
-    }
-  }, [isDevelopment]);
-
-  const logout = useCallback(async (): Promise<void> => {
-    setIsLoading(true);
-    
-    try {
-      if (isDevelopment) {
-        await new Promise(resolve => setTimeout(resolve, 300));
-      }
-      localStorage.removeItem(MOCK_USER_KEY);
-      localStorage.removeItem(MOCK_AUTH_STATE);
-      localStorage.removeItem(MOCK_AUTH_TOKEN);
+      // 로그아웃 시도 결과와 상관없이 항상 로컬 상태 초기화
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('user');
+      localStorage.removeItem('userType'); // userType도 제거
       
       setUser(null);
       setIsAuthenticated(false);
-    } catch (error) {
-      console.error('로그아웃 중 오류가 발생했습니다:', error);
-    } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
-  }, [isDevelopment]);
+  };
 
-  const refreshUserInfo = useCallback(async (): Promise<void> => {
-    if (!isAuthenticated) return;
-    
-    setIsLoading(true);
-    
-    try {
-      if (isDevelopment) {
-        await new Promise(resolve => setTimeout(resolve, 300));
-        
-        const userJson = localStorage.getItem(MOCK_USER_KEY);
-        if (userJson) {
-          const currentUser = JSON.parse(userJson);
-          currentUser.updatedAt = new Date().toISOString();
-          
-          localStorage.setItem(MOCK_USER_KEY, JSON.stringify(currentUser));
-          setUser(currentUser);
-        }
-      }
-    } catch (error) {
-      console.error('사용자 정보 갱신 중 오류가 발생했습니다:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [isAuthenticated, isDevelopment]);
-
-  const requestPasswordReset = useCallback(async (email: string): Promise<void> => {
-    setIsLoading(true);
+  const loginWithKakao = async () => {
+    setLoading(true);
     setError(null);
-    
+  
     try {
-      if (isDevelopment) {
-        if (!email) {
-          throw new Error('이메일을 입력해주세요.');
-        }
-        
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        console.log(`[목업] ${email}로 비밀번호 재설정 링크를 발송했습니다.`);
-      } else {
-        throw new Error('비밀번호 재설정 API 연동이 구현되지 않았습니다.');
-      }
-    } catch (error) {
-      const errorMessage = error instanceof Error 
-        ? error.message 
-        : '비밀번호 재설정 요청 중 오류가 발생했습니다.';
+      const response = await axiosInstance.post('/api/users/kakao-login/');
       
-      setError(errorMessage);
+      // accessToken과 refreshToken 설정
+      const { access_token, refresh_token } = response.data;
+      localStorage.setItem('accessToken', access_token);
+      localStorage.setItem('refreshToken', refresh_token);
+      
+      // 백엔드에서 사용자 정보가 제공되는 경우
+      const userData = response.data.user;
+      
+      if (userData) {
+        // 기본값 설정
+        const email = userData.email || '';
+        
+        // role 정보 추가
+        const role = userData.role || UserRole.VOLUNTEER; // 카카오 로그인은 기본적으로 봉사자로 설정
+        const userInfo: UserInfo = { 
+          id: userData.id || 0,
+          email: email,
+          name: userData.name || '',
+          contact_number: userData.contact_number || '',
+          profile_image: userData.profile_image || null,
+          role: role,
+          ...userData
+        };
+
+        localStorage.setItem('user', JSON.stringify(userInfo));
+        setUser(userInfo);
+      }
+      
+      setIsAuthenticated(true);
+    } catch (error) {
+      const err = error as { response?: { data?: { message?: string } } };
+      
+      if (err.response?.data?.message) {
+        setError(err.response.data.message);
+      } else {
+        setError('카카오 로그인 중 오류가 발생했습니다.');
+      }
       throw error;
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
-  }, [isDevelopment]);
-
-  useEffect(() => {
-    const checkAuthStatus = async () => {
-      const hasToken = localStorage.getItem(MOCK_AUTH_TOKEN);
-      if (isAuthenticated && hasToken && !user) {
-        await refreshUserInfo();
-      }
-    };
-    
-    checkAuthStatus();
-  }, [isAuthenticated, user, refreshUserInfo]);
-
-  const value: AuthContextType = {
-    user,
-    isAuthenticated,
-    isLoading,
-    error,
-    login,
-    loginAs,
-    register,
-    loginWithKakao,
-    logout,
-    refreshUserInfo,
-    requestPasswordReset
   };
 
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider
+      value={{
+        isAuthenticated,
+        user,
+        login: handleLogin,
+        logout: handleLogout,
+        loading,
+        error,
+        isLoading: loading,
+        loginWithKakao,
+        updateUserData
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
 };
 
-export const useAuth = (): AuthContextType => {
+export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) {
+  if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
 };
-
-export type { AuthUser, LoginCredentials, RegisterCredentials };
-export { UserRole, SocialAuthProvider };
-
-export default AuthContext;

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import Modal from "./Modal";
 import logo from "../../assets/logo.png";
-import { useAuth, UserRole } from "../../contexts/AuthContext";
+import { useAuth } from "../../contexts/AuthContext";
 import styles from "../../style/LoginModal.module.scss";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useModalContext } from '../../contexts/ModalContext';
@@ -9,13 +9,8 @@ import { useModalContext } from '../../contexts/ModalContext';
 // 탭 타입 정의
 type TabType = "volunteer" | "organization";
 
-// 탭 타입을 UserRole로 변환하는 함수
-const tabTypeToUserRole = (tabType: TabType): UserRole => {
-  return tabType === "volunteer" ? UserRole.VOLUNTEER : UserRole.ORGANIZATION;
-};
-
 const LoginModal: React.FC = () => {
-  const { login, loginAs, isLoading, error, loginWithKakao } = useAuth();
+  const { login, isLoading, error, loginWithKakao } = useAuth();
   const { isLoginModalOpen, closeLoginModal, openLoginModal, activeTab, setActiveTab, previousPath, setPreviousPath } = useModalContext();
   const navigate = useNavigate();
   const location = useLocation();
@@ -38,31 +33,27 @@ const LoginModal: React.FC = () => {
     try {
       setFormError("");
       
-      // 개발 환경에서는 loginAs 함수를 사용하여 간편하게 로그인
-      if (process.env.NODE_ENV === 'development') {
-        // 탭 타입을 UserRole로 변환
-        const userRole = tabTypeToUserRole(activeTab as TabType);
-        await loginAs(userRole);
-        console.log(`[목업] ${activeTab} 역할로 로그인`);
-      } else {
-        // 실제 환경에서는 이메일/비밀번호로 로그인
-        if (activeTab === "volunteer") {
-          if (!email || !password) {
-            setFormError("이메일과 비밀번호를 모두 입력해주세요.");
-            return;
-          }
-          await login({ email, password });
-        } else {
-          if (!organizationId || !organizationPassword) {
-            setFormError("기관 아이디와 비밀번호를 모두 입력해주세요.");
-            return;
-          }
-          await login({ 
-            email: organizationId.includes('@') ? organizationId : `${organizationId}@organization.com`, 
-            password: organizationPassword 
-          });
+      // 실제 환경에서는 이메일/비밀번호로 로그인
+      if (activeTab === "volunteer") {
+        if (!email || !password) {
+          setFormError("이메일과 비밀번호를 모두 입력해주세요.");
+          return;
         }
+        await login({ email, password });
+      } else {
+        if (!organizationId || !organizationPassword) {
+          setFormError("기관 아이디와 비밀번호를 모두 입력해주세요.");
+          return;
+        }
+        await login({ 
+          email: organizationId.includes('@') ? organizationId : `${organizationId}@organization.com`, 
+          password: organizationPassword 
+        });
       }
+      
+      // 사용자 타입 저장 (추가된 부분)
+      localStorage.setItem('userType', activeTab);
+      console.log(`로그인 성공: ${activeTab} 타입으로 저장됨`);
       
       closeLoginModal();
 
@@ -117,15 +108,10 @@ const LoginModal: React.FC = () => {
   const handleKakaoLogin = async () => {
     try {
       setFormError("");
+      await loginWithKakao();
       
-      if (process.env.NODE_ENV === 'development') {
-        // 개발 환경에서는 loginAs 사용
-        await loginAs(UserRole.VOLUNTEER);
-        console.log("[목업] 카카오 로그인으로 봉사자 역할 로그인");
-      } else {
-        // 실제 환경에서는 loginWithKakao 사용
-        await loginWithKakao();
-      }
+      // 카카오 로그인은 기본적으로 volunteer로 설정
+      localStorage.setItem('userType', 'volunteer');
       
       closeLoginModal();
       navigate("/");
@@ -167,12 +153,6 @@ const LoginModal: React.FC = () => {
 
           {activeTab === "volunteer" ? (
             <div className={styles.tabContent}>
-              {process.env.NODE_ENV === 'development' && (
-                <div className={styles.devModeNotice}>
-                  <p>개발 모드: 간편 로그인 활성화됨</p>
-                </div>
-              )}
-              
               <label>이메일 입력</label>
               <input
                 type="email"
@@ -180,7 +160,6 @@ const LoginModal: React.FC = () => {
                 placeholder="이메일 입력"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                disabled={process.env.NODE_ENV === 'development'}
               />
 
               <label>비밀번호 입력</label>
@@ -190,7 +169,6 @@ const LoginModal: React.FC = () => {
                 placeholder="비밀번호 입력"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                disabled={process.env.NODE_ENV === 'development'}
               />
 
               <div className={styles.buttonGroup}>
@@ -199,7 +177,7 @@ const LoginModal: React.FC = () => {
                   onClick={handleLogin}
                   disabled={isLoading}
                 >
-                  {isLoading ? "로그인 중..." : process.env.NODE_ENV === 'development' ? "봉사자로 로그인" : "로그인"}
+                  {isLoading ? "로그인 중..." : "로그인"}
                 </button>
                 <button className={styles.signupBtn} onClick={goToVolunteerSignup}>회원가입 하기</button>
               </div>
@@ -214,12 +192,6 @@ const LoginModal: React.FC = () => {
             </div>
           ) : (
             <div className={styles.tabContent}>
-              {process.env.NODE_ENV === 'development' && (
-                <div className={styles.devModeNotice}>
-                  <p>개발 모드: 간편 로그인 활성화됨</p>
-                </div>
-              )}
-              
               <label>기관 아이디</label>
               <input
                 type="text"
@@ -227,7 +199,6 @@ const LoginModal: React.FC = () => {
                 placeholder="기관 아이디 입력"
                 value={organizationId}
                 onChange={(e) => setOrganizationId(e.target.value)}
-                disabled={process.env.NODE_ENV === 'development'}
               />
 
               <label>비밀번호 입력</label>
@@ -237,7 +208,6 @@ const LoginModal: React.FC = () => {
                 placeholder="비밀번호 입력"
                 value={organizationPassword}
                 onChange={(e) => setOrganizationPassword(e.target.value)}
-                disabled={process.env.NODE_ENV === 'development'}
               />
 
               <div className={styles.buttonGroup}>
@@ -246,7 +216,7 @@ const LoginModal: React.FC = () => {
                   onClick={handleLogin}
                   disabled={isLoading}
                 >
-                  {isLoading ? "로그인 중..." : process.env.NODE_ENV === 'development' ? "기관으로 로그인" : "로그인"}
+                  {isLoading ? "로그인 중..." : "로그인"}
                 </button>
                 <button className={styles.signupBtn} onClick={goToShelterSignup}>기관 회원가입</button>
               </div>

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useTabStore } from "../store/TabStore";
 import { useShelterStore } from "../store/ShelterStore";
 import styles from "../style/Mypage.module.scss";
@@ -8,10 +8,10 @@ import Modal from "../components/common/Modal";
 import useModalStore from "../store/modalStore";
 import StarRating from "../components/common/StarRating";
 import PasswordChangeModal from "../components/common/PasswordChangeModal";
+import DeleteAccountModal from "../components/common/DeleteAccountModal";
 import { useModalContext } from "../contexts/ModalContext";
-import { useUserStore } from "../store/UsersStore";
-import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import { useAuth } from "../contexts/AuthContext";
+import { updateProfile, getUserInfo } from "../api/userApi";
 
 interface ShelterItem {
   application_id: number;
@@ -142,15 +142,15 @@ const VolunteerHistory: React.FC = () => {
   } = useModalStore();
 
   const handleSubmit = () => {
-    setSubmittedRating(rating); // 제출한 별점 저장
-    setSubmitted(true); // 제출 상태 true
-    resetSurvey(); // 설문 초기화 (rating도 초기화됨)
+    setSubmittedRating(rating); 
+    setSubmitted(true); 
+    resetSurvey(); 
   };
 
   const handleClose = () => {
     closeModal();
     setSubmitted(false);
-    setSubmittedRating(0); // submittedRating도 초기화
+    setSubmittedRating(0); 
   };
 
   return (
@@ -203,31 +203,124 @@ const VolunteerHistory: React.FC = () => {
   );
 };
 
-const TabContent: React.FC = () => {
+const UserNameDisplay = React.memo(({ userName, loading }: { userName: string, loading: boolean }) => {
+  return (
+    <div className={styles.infoText} style={{ fontWeight: 'bold', marginBottom: '15px' }}>
+      {loading ? "로딩중..." : (userName ? `${userName} 님` : "사용자명")}
+    </div>
+  );
+});
+
+const TabContent: React.FC = React.memo(() => {
   const { activeTab } = useTabStore();
   const { openPasswordModal } = useModalContext();
-  const { user, clearUser } = useUserStore(); // 사용자 상태 및 초기화
-  const navigate = useNavigate();
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [userName, setUserName] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { user, updateUserData } = useAuth();
+  const hasLoadedRef = useRef<boolean>(false);
 
-  const handleDeleteAccount = async () => {
-    if (!user) {
-      alert("로그인 상태가 아닙니다.");
-      return;
+  const loadUserInfo = useCallback(async () => {
+    if (activeTab === "info" && !hasLoadedRef.current) {
+      setLoading(true);
+      hasLoadedRef.current = true;
+      
+      try {
+        if (user && user.name) {
+          setUserName(user.name);
+        } else {
+          const storedUser = localStorage.getItem('user');
+          if (storedUser) {
+            try {
+              const localData = JSON.parse(storedUser);
+              const localUserData = localData.user || localData;
+              if (localUserData.name) {
+                setUserName(localUserData.name);
+              }
+            } catch (error) {
+              console.error('Local storage parsing error:', error);
+            }
+          }
+        }
+        
+        const userDetails = await getUserInfo();
+        if (userDetails) {
+          setUserName(userDetails.name || "");
+          
+          if (userDetails && updateUserData) {
+            updateUserData({
+              ...userDetails
+            });
+          }
+        }
+      } catch (error) {
+        console.error('User info fetch error:', error);
+      } finally {
+        setLoading(false);
+      }
     }
-  
-    const confirmDelete = window.confirm("정말 회원 탈퇴하시겠습니까?");
-    if (!confirmDelete) return;
-  
+  }, [activeTab, user, updateUserData]);
+
+  useEffect(() => {
+    loadUserInfo();
+    
+    return () => {
+      if (activeTab !== "info") {
+        hasLoadedRef.current = false;
+      }
+    };
+  }, [activeTab, loadUserInfo]);
+
+  const handleProfileClick = useCallback(() => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  }, []);
+
+  const handleFileChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
     try {
-      await axios.delete(`/api/users/${user.id}`); // 이제 안전하게 사용 가능
-      alert("회원 탈퇴가 완료되었습니다.");
-      clearUser();
-      navigate("/");
+      setLoading(true);
+      
+      const formData = new FormData();
+      formData.append('name', userName);
+      formData.append('profile_image', file);
+
+      await updateProfile({
+        name: userName,
+        profile_image: file
+      });
+      
+      const userDetails = await getUserInfo();
+      if (userDetails) {
+        setUserName(userDetails.name || "");
+        
+        if (userDetails && updateUserData) {
+          updateUserData({
+            ...userDetails
+          });
+        }
+      }
+      
+      alert('프로필 이미지가 성공적으로 업데이트되었습니다.');
     } catch (error) {
-      console.error("회원 탈퇴 실패:", error);
-      alert("탈퇴 중 오류가 발생했습니다. 다시 시도해주세요.");
+      console.error(error);
+      alert('프로필 이미지 업데이트 중 오류가 발생했습니다.');
+    } finally {
+      setLoading(false);
     }
-  };  
+  }, [userName, updateUserData]);
+
+  const openDeleteModal = useCallback(() => {
+    setIsDeleteModalOpen(true);
+  }, []);
+
+  const closeDeleteModal = useCallback(() => {
+    setIsDeleteModalOpen(false);
+  }, []);
 
   switch (activeTab) {
     case "info":
@@ -235,21 +328,41 @@ const TabContent: React.FC = () => {
         <div className={styles.mypageContainer}>
           <main className={styles.mypageContent}>
             <section className={styles.profileSection}>
-              <div className={styles.profileImage}></div>
-              <button className={styles.profileEditBtn}>프로필 변경</button>
+              <div className={styles.profileImage} onClick={handleProfileClick}>
+                {loading && <div className={styles.loadingOverlay}>로딩중...</div>}
+              </div>
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                style={{ display: 'none' }} 
+                accept="image/*"
+                onChange={handleFileChange}
+              />
+              <button 
+                className={styles.profileEditBtn}
+                onClick={handleProfileClick}
+                disabled={loading}
+              >
+                프로필 변경
+              </button>
             </section>
             <section className={styles.infoSection}>
-              <button className={styles.infoButton}>사용자명</button>
-              <button className={styles.infoButton}>
+              <UserNameDisplay userName={userName} loading={loading} />
+              
+              <div className={styles.infoText}>
                 펫모어핸즈와 함께해용💜
-              </button>
+              </div>
               <button className={styles.infoButton} onClick={openPasswordModal}>
                 비밀번호 변경
               </button>
-              <button className={styles.infoButton} onClick={handleDeleteAccount}>
+              <button className={styles.infoButton} onClick={openDeleteModal}>
                 회원 탈퇴
               </button>
               <PasswordChangeModal />
+              <DeleteAccountModal 
+                isOpen={isDeleteModalOpen} 
+                onClose={closeDeleteModal} 
+              />
             </section>
           </main>
         </div>
@@ -261,7 +374,7 @@ const TabContent: React.FC = () => {
     default:
       return null;
   }
-};
+});
 
 const MyPage: React.FC = () => {
   const { activeTab, setActiveTab } = useTabStore();

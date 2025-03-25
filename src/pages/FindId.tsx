@@ -2,21 +2,20 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import styles from '../style/FindId.module.scss';
 import logo from "../assets/logo.png";
+import { findEmail } from '../api/userApi';
 
 interface LocationState {
-    openLoginModal: boolean;
-    from: string;
-  }
-  
+  openLoginModal: boolean;
+  from: string;
+}
 
 const FindId = () => {
   const [step, setStep] = useState(1);
   const [name, setName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
-  const [verificationCode, setVerificationCode] = useState('');
-  const [verificationSent, setVerificationSent] = useState(false);
   const [foundId, setFoundId] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const formatPhoneNumber = (value: string) => {
@@ -39,54 +38,41 @@ const FindId = () => {
     setPhoneNumber(formatted);
   };
 
-  const sendVerification = () => {
+  const handleFindEmail = async () => {
     if (!name.trim()) {
       setError('이름을 입력해주세요.');
       return;
     }
 
-    if (phoneNumber.replace(/[^0-9]/g, '').length !== 11) {
+    const cleanPhoneNumber = phoneNumber.replace(/[^0-9]/g, '');
+    if (cleanPhoneNumber.length !== 11) {
       setError('올바른 전화번호를 입력해주세요.');
       return;
     }
 
     setError('');
-    setVerificationSent(true);
+    setLoading(true);
     
-    // 실제 구현시:
-    // try {
-    //   const response = await api.sendVerification({
-    //     name,
-    //     phoneNumber
-    //   });
-    //   setVerificationSent(true);
-    // } catch (error) {
-    //   setError('인증번호 전송에 실패했습니다. 다시 시도해주세요.');
-    // }
-  };
-
-  const verifyCode = () => {
-    if (!verificationCode.trim()) {
-      setError('인증번호를 입력해주세요.');
-      return;
+    try {
+      // 이메일 찾기 API 호출
+      const response = await findEmail({
+        name: name,
+        contact_number: cleanPhoneNumber
+      });
+      
+      setFoundId(response.data.email);
+      setStep(2);
+    } catch (error) {
+      const err = error as { response?: { data?: { message?: string } } };
+      
+      if (err.response?.data?.message) {
+        setError(err.response.data.message);
+      } else {
+        setError('이메일을 찾을 수 없습니다. 입력한 정보를 확인해주세요.');
+      }
+    } finally {
+      setLoading(false);
     }
-
-    setError('');
-    setFoundId('example_user'); 
-    setStep(2);
-    
-    // 실제 구현시:
-    // try {
-    //   const response = await api.verifyCode({
-    //     name,
-    //     phoneNumber,
-    //     code: verificationCode
-    //   });
-    //   setFoundId(response.data.userId);
-    //   setStep(2);
-    // } catch (error) {
-    //   setError('인증번호가 일치하지 않습니다. 다시 확인해주세요.');
-    // }
   };
 
   return (
@@ -109,54 +95,30 @@ const FindId = () => {
                 onChange={(e) => setName(e.target.value)}
                 placeholder="이름을 입력하세요"
                 className={styles.input}
+                disabled={loading}
               />
             </div>
             
             <div className={styles.formGroup}>
               <label htmlFor="phoneNumber">휴대폰 번호</label>
-              <div className={styles.verificationField}>
-                <input 
-                  type="tel" 
-                  id="phoneNumber"
-                  value={phoneNumber}
-                  onChange={handlePhoneNumberChange}
-                  placeholder="010-0000-0000"
-                  className={styles.input}
-                />
-                <button 
-                  onClick={sendVerification}
-                  className={styles.verificationButton}
-                  disabled={verificationSent}
-                >
-                  {verificationSent ? '재전송' : '인증번호 받기'}
-                </button>
-              </div>
+              <input 
+                type="tel" 
+                id="phoneNumber"
+                value={phoneNumber}
+                onChange={handlePhoneNumberChange}
+                placeholder="010-0000-0000"
+                className={styles.input}
+                disabled={loading}
+              />
             </div>
             
-            {verificationSent && (
-              <div className={styles.formGroup}>
-                <label htmlFor="verificationCode">인증번호</label>
-                <div className={styles.verificationField}>
-                  <input 
-                    type="text" 
-                    id="verificationCode"
-                    value={verificationCode}
-                    onChange={(e) => setVerificationCode(e.target.value)}
-                    placeholder="인증번호 6자리 입력"
-                    className={styles.input}
-                  />
-                  <button 
-                    onClick={verifyCode}
-                    className={styles.verificationButton}
-                  >
-                    확인
-                  </button>
-                </div>
-                <p className={styles.verificationInfo}>
-                  인증번호가 발송되었습니다. (유효시간 10분)
-                </p>
-              </div>
-            )}
+            <button 
+              onClick={handleFindEmail}
+              className={styles.submitButton}
+              disabled={loading}
+            >
+              {loading ? '처리 중...' : '아이디 찾기'}
+            </button>
             
             {error && <p className={styles.errorMessage}>{error}</p>}
           </div>
@@ -179,18 +141,18 @@ const FindId = () => {
         )}
         
         <div className={styles.linkContainer}>
-            <span
-                  onClick={() =>
-                    navigate("/", {
-                      state: {
-                        openLoginModal: true,
-                        from: "signup",
-                      } as LocationState,
-                    })
-                  }
-                  style={{ cursor: 'pointer' }}>
+          <span
+            onClick={() =>
+              navigate("/", {
+                state: {
+                  openLoginModal: true,
+                  from: "signup",
+                } as LocationState,
+              })
+            }
+            style={{ cursor: 'pointer' }}>
             로그인으로 돌아가기
-            </span>
+          </span>
         </div>
       </div>
     </div>
