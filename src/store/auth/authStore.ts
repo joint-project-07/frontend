@@ -29,6 +29,16 @@ interface AuthActions {
   processKakaoAuth: (code: string) => Promise<UserInfo>;
 }
 
+// API 오류 인터페이스 정의
+interface ApiError {
+  response?: {
+    data?: {
+      message?: string;
+    };
+  };
+  message: string;
+}
+
 type AuthStore = AuthState & AuthActions;
 
 const useAuthStore = create<AuthStore>((set) => ({
@@ -54,8 +64,9 @@ const useAuthStore = create<AuthStore>((set) => ({
       });
       
       return user;
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.message || '로그인에 실패했습니다.';
+    } catch (error) {
+      const apiError = error as ApiError;
+      const errorMessage = apiError.response?.data?.message || '로그인에 실패했습니다.';
       set({
         isLoading: false,
         error: errorMessage
@@ -150,9 +161,10 @@ const useAuthStore = create<AuthStore>((set) => ({
       });
       
       return user;
-    } catch (error: any) {
+    } catch (error) {
       console.error('카카오 로그인 오류:', error);
-      const errorMessage = error.response?.data?.message || '카카오 로그인에 실패했습니다.';
+      const apiError = error as ApiError;
+      const errorMessage = apiError.response?.data?.message || '카카오 로그인에 실패했습니다.';
       set({
         isLoading: false,
         error: errorMessage
