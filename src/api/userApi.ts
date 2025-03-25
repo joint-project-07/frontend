@@ -59,6 +59,10 @@ export interface ProfileUpdateRequest {
   profile_image?: File;
 }
 
+export interface KakaoLoginRequest {
+  access_token: string;
+}
+
 export const login = async (credentials: LoginCredentials) => {
   return await axiosInstance.post('/api/users/login/', credentials);
 };
@@ -67,7 +71,11 @@ export const logout = async (data: LogoutRequest) => {
   return await axiosInstance.post('/api/users/logout/', data);
 };
 
-export const getUserInfo = async () => {
+export const processKakaoLogin = async (data: KakaoLoginRequest) => {
+  return await axiosInstance.post('/api/users/kakao-login/', data);
+};
+
+export const getUserInfo = async (): Promise<UserInfo> => {
   try {
     const response = await axiosInstance.get<UserInfo>('/api/users/me/');
     return response.data;
@@ -78,21 +86,56 @@ export const getUserInfo = async () => {
 };
 
 export const updateProfile = async (data: ProfileUpdateRequest) => {
-  const formData = new FormData();
-  
-  if (data.profile_image) {
-    formData.append('profile_image', data.profile_image);
+  try {
+    const formData = new FormData();
+    
+    if (data.name) {
+      formData.append('name', data.name);
+    }
+    
+    const response = await axiosInstance.put('/api/users/me/', formData);
+    
+    if (data.profile_image) {
+      await uploadProfileImage(data.profile_image);
+    }
+    
+    return response;
+  } catch (error) {
+    console.error('프로필 업데이트 오류:', error);
+    throw error;
   }
-  
-  if (data.name) {
-    formData.append('name', data.name);
+};
+
+export const getProfileImageUrl = () => {
+  return '/api/users/profile_image/';
+};
+
+export const uploadProfileImage = async (imageFile: File) => {
+  try {
+    const formData = new FormData();
+    formData.append('image', imageFile);
+
+    const response = await axiosInstance.post('/api/users/profile_image/detail/', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    
+    return response.data;
+  } catch (error) {
+    console.error('프로필 이미지 업로드 오류:', error);
+    throw error;
   }
-  
-  return await axiosInstance.put('/api/users/me/', formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-  });
+};
+
+export const deleteProfileImage = async () => {
+  try {
+    const response = await axiosInstance.delete('/api/users/profile_image/detail/');
+    return response.data;
+  } catch (error) {
+    console.error('프로필 이미지 삭제 오류:', error);
+    throw error;
+  }
 };
 
 export const checkEmailExists = async (email: string) => {

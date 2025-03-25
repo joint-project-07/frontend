@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import Modal from "./Modal";
 import logo from "../../assets/logo.png";
+import kakaoLoginBtn from "../../assets/kakao_login_medium_wide.png";
 import { useAuth } from "../../contexts/AuthContext";
 import styles from "../../style/LoginModal.module.scss";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -105,16 +106,11 @@ const LoginModal: React.FC = () => {
   };
 
   // 카카오 로그인 핸들러
-  const handleKakaoLogin = async () => {
+  const handleKakaoLogin = () => {
     try {
       setFormError("");
-      await loginWithKakao();
-      
-      // 카카오 로그인은 기본적으로 volunteer로 설정
-      localStorage.setItem('userType', 'volunteer');
-      
-      closeLoginModal();
-      navigate("/");
+      closeLoginModal(); // 먼저 모달을 닫음
+      loginWithKakao(); // 카카오 로그인 프로세스 시작 (이제 리다이렉트됨)
     } catch (error) {
       console.error("카카오 로그인 중 오류 발생:", error);
       setFormError(error instanceof Error ? error.message : "카카오 로그인 중 오류가 발생했습니다.");
@@ -182,13 +178,16 @@ const LoginModal: React.FC = () => {
                 <button className={styles.signupBtn} onClick={goToVolunteerSignup}>회원가입 하기</button>
               </div>
 
-              <button 
-                className={styles.kakaoBtn} 
-                onClick={handleKakaoLogin}
-                disabled={isLoading}
-              >
-                카카오톡으로 시작하기
-              </button>
+              {/* 카카오 로그인 버튼 */}
+              <div className={styles.kakaoLoginContainer}>
+                <img 
+                  src={kakaoLoginBtn} 
+                  alt="카카오톡으로 시작하기" 
+                  className={styles.kakaoLoginImg}
+                  onClick={handleKakaoLogin}
+                  style={{ cursor: isLoading ? 'default' : 'pointer', opacity: isLoading ? 0.7 : 1 }}
+                />
+              </div>
             </div>
           ) : (
             <div className={styles.tabContent}>

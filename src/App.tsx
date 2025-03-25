@@ -14,6 +14,7 @@ import InstitutionDetailPage from "./pages/InstitutionDetailPage";
 import VolunteerScheduleRegistration from "./pages/VolunteerScheduleForm";
 import FindId from "./pages/FindId";
 import FindPassword from "./pages/FindPassward";
+import KakaoCallbackPage from "./pages/KakaoCallbackPage";
 
 function App() {
   return (
@@ -43,6 +44,7 @@ function App() {
             </Route>
             <Route path="/UsersSignup" element={<UsersSignupForm />} />
             <Route path="/ShelterSignup" element={<ShelterSignupForm />} />
+            <Route path="/auth/kakao/callback" element={<KakaoCallbackPage />} />
             {import.meta.env.DEV ? <Route path="test" element /> : null}
           </Routes>
         </Router>
