@@ -14,6 +14,7 @@ interface FormData {
   address: string;
   owner_name: string;
   contact_number: string;
+  business_license_id?: string;
 }
 
 interface ShelterData {
