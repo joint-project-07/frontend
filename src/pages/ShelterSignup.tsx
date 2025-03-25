@@ -4,7 +4,12 @@ import styles from "../style/ShelterSignup.module.scss";
 import { useState } from "react";
 import logoImage from "../assets/logo.png";
 import TermsAgreement from "../components/common/TermsAgreement";
-import axios from "axios";
+import {
+  checkDuplicateEmail,
+  requestVerificationCode,
+  verifyCode,
+  shelterSignup,
+} from "../api/services/shelterApi";
 
 interface LocationState {
   openLoginModal: boolean;
@@ -52,14 +57,13 @@ const ShelterSignupForm: React.FC = () => {
     setLoading(true);
 
     try {
-      const response = await axios.get(`https://yourapi.com/check-email`, {
-        params: { email: form.business_registration_email },
-      });
-
-      setEmailValid(!response.data.exists);
+      const response = await checkDuplicateEmail(
+        form.business_registration_email
+      );
+      setEmailValid(!response.exists);
       setEmailChecked(true);
     } catch (error) {
-      console.error("이메일 중복 확인 오류:", error);
+      console.error("이메일 중복 확인 에러:", error);
       alert("이메일 중복 확인 중 오류가 발생했습니다.");
     } finally {
       setLoading(false);
@@ -72,24 +76,20 @@ const ShelterSignupForm: React.FC = () => {
       return;
     }
 
-    try {
-      const response = await axios.post(
-        `https://yourapi.com/send-verification-code`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: form.business_registration_email }),
-        }
-      );
+    setLoading(true);
 
-      if (response.data.success) {
-        alert("인증 코드가 이메일로 전송되었습니다.");
-      } else {
-        alert("인증 코드 요청에 실패했습니다.");
-      }
-    } catch (error) {
-      console.error("인증 코드 요청 오류:", error);
+    try {
+      const response = await requestVerificationCode(
+        form.business_registration_email
+      );
+      console.log("인증 코드 요청 응답:", response);
+
+      setCodeSent(true);
+      alert("인증 코드가 이메일로 전송되었습니다.");
+    } catch {
       alert("인증 코드 요청 중 오류가 발생했습니다.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -100,20 +100,17 @@ const ShelterSignupForm: React.FC = () => {
     }
 
     try {
-      const response = await axios.post(`https://yourapi.com/verify-code`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: form.business_registration_email, code: verificationCode }),
-      });
-
-      if (response.data.success) {
+      const response = await verifyCode(
+        form.business_registration_email,
+        verificationCode
+      );
+      if (response.status === 200) {
         setCodeVerified(true);
         alert("이메일 인증이 완료되었습니다.");
       } else {
         alert("인증 코드가 올바르지 않습니다.");
       }
     } catch (error) {
-      console.error("인증 코드 검증 오류:", error);
       alert("인증 코드 검증 중 오류가 발생했습니다.");
     }
   };
@@ -127,7 +124,7 @@ const ShelterSignupForm: React.FC = () => {
     setPasswordMatch(value === form.password);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!emailChecked || emailValid === false) {
@@ -150,7 +147,21 @@ const ShelterSignupForm: React.FC = () => {
       return;
     }
 
-    alert("보호소 회원가입 완료!");
+    const signupData = {
+      ...form,
+      email: form.business_registration_email, // 추가
+    };
+
+    try {
+      await shelterSignup(signupData);
+      alert("보호소 회원가입 완료!");
+      navigate("/login");
+    } catch (error: any) {
+      console.error("회원가입 에러:", error.response?.data || error);
+      alert(
+        error.response?.data?.email?.[0] || "회원가입 중 오류가 발생했습니다."
+      );
+    }
   };
 
   return (
