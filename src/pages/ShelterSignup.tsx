@@ -7,7 +7,6 @@ import TermsAgreement from "../components/common/TermsAgreement";
 import {
   checkDuplicateEmail,
   requestVerificationCode,
-  verifyCode,
   shelterSignup,
 } from "../api/services/shelterApi";
 
@@ -98,20 +97,21 @@ const ShelterSignupForm: React.FC = () => {
       alert("인증 코드를 입력하세요.");
       return;
     }
+    setLoading(true);
 
     try {
-      const response = await verifyCode(
-        form.business_registration_email,
-        verificationCode
+      const response = await requestVerificationCode(
+        form.business_registration_email
       );
-      if (response.status === 200) {
-        setCodeVerified(true);
-        alert("이메일 인증이 완료되었습니다.");
-      } else {
-        alert("인증 코드가 올바르지 않습니다.");
-      }
+      console.log("인증 코드 요청 응답:", response);
+  
+      setCodeSent(true);
+      alert("인증 코드가 이메일로 전송되었습니다.");
     } catch (err) {
-      alert("인증 코드 검증 중 오류가 발생했습니다.");
+      console.error("인증 코드 요청 에러:", err);
+      alert("인증 코드 요청 중 오류가 발생했습니다.");
+    } finally {
+      setLoading(false);
     }
   };
 
