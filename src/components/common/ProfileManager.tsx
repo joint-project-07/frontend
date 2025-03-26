@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useAuth } from "../../contexts/AuthContext";
+import  useAuth  from "../../store/auth/useauthStore";
 import { getUserInfo, uploadProfileImage, deleteProfileImage } from "../../api/userApi";
 import styles from "../../style/Mypage.module.scss";
 import defaultProfileImg from "../../assets/profile.png";

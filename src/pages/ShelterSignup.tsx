@@ -423,7 +423,6 @@ const ShelterSignupForm: React.FC = () => {
             />
           </div>
 
-          {/* 사업자등록증 파일 업로드 영역 - 수정된 부분 */}
           <div className={styles.formGroup}>
             <label>
               사업자등록증 파일 <span className={styles.required}>*</span>
