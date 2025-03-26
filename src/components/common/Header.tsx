@@ -2,35 +2,58 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import styles from "../../style/Header.module.scss";
 import Logo from "../../assets/logo.png";
-import { useAuth } from "../../contexts/AuthContext";
+import useAuthStore from "../../store/auth/useauthStore";
 import { useModalContext } from "../../contexts/ModalContext";
 
 const Header: React.FC = () => {
-  const { isAuthenticated, logout } = useAuth();
+  // 앱에서 사용하는 인증 방식에 맞게 선택하세요
+  const { isAuthenticated, logout } = useAuthStore(); 
   const { openLoginModal } = useModalContext();
   const navigate = useNavigate();
   const [loggingOut, setLoggingOut] = useState(false);
   
-  // userType 상태 추가
-  const [userType, setUserType] = useState<string | null>(null);
+  // 강제 리렌더링을 위한 상태 추가
+  const [, forceUpdate] = useState({});
   
-  // 인증 상태가 변경되면 localStorage에서 userType 가져오기
+  // 카카오 로그인 후 강제 리렌더링을 위한 효과
   useEffect(() => {
-    if (isAuthenticated) {
-      const storedUserType = localStorage.getItem('userType');
-      setUserType(storedUserType);
-      console.log("사용자 타입 로드됨:", storedUserType);
-    } else {
-      setUserType(null);
-    }
-  }, [isAuthenticated]);
+    // 주기적으로 인증 상태 확인
+    const checkAuth = () => {
+      const token = localStorage.getItem('accessToken') || localStorage.getItem('access_token');
+      if (token) {
+        // 강제 리렌더링
+        forceUpdate({});
+      }
+    };
+    
+    // 처음 로드 시 확인
+    checkAuth();
+    
+    // 주기적으로 확인 (선택적)
+    const interval = setInterval(checkAuth, 1000); // 1초마다 확인
+    
+    return () => clearInterval(interval);
+  }, []);
+  
+  // 실제 인증 상태와 로컬 스토리지의 토큰을 모두 확인
+  const isActuallyAuthenticated = isAuthenticated || 
+    !!(localStorage.getItem('accessToken') || localStorage.getItem('access_token'));
+  
+  // userType 결정
+  const userType = localStorage.getItem('userType');
+
+  // 중요: 콘솔에 현재 상태 로깅
+  console.log("Header 렌더링 - 인증 상태:", isActuallyAuthenticated, "사용자 타입:", userType);
 
   const handleLogout = async () => {
     try {
       setLoggingOut(true);
-      // 로그아웃 시 userType 제거
-      localStorage.removeItem('userType');
+      console.log("로그아웃 시작");
+      
+      // useAuthStore의 logout 함수 호출
       await logout();
+      
+      console.log("로그아웃 완료, 홈으로 이동");
       navigate('/');
     } catch (error) {
       console.error('로그아웃 중 오류 발생:', error);
@@ -53,7 +76,7 @@ const Header: React.FC = () => {
       </div>
 
       <nav className={styles.nav}>
-        {isAuthenticated ? (
+        {isActuallyAuthenticated ? (
           <>
             {/* userType에 따라 다른 링크 표시 */}
             {userType === "volunteer" && (

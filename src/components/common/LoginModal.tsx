@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import Modal from "./Modal";
 import logo from "../../assets/logo.png";
 import kakaoLoginBtn from "../../assets/kakao_login_medium_wide.png";
-import { useAuth } from "../../contexts/AuthContext";
+import  useAuthStore  from "../../store/auth/useauthStore";
 import styles from "../../style/LoginModal.module.scss";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useModalContext } from '../../contexts/ModalContext';
@@ -11,7 +11,7 @@ import { useModalContext } from '../../contexts/ModalContext';
 type TabType = "volunteer" | "organization";
 
 const LoginModal: React.FC = () => {
-  const { login, isLoading, error, loginWithKakao } = useAuth();
+  const { login, isLoading, error, loginWithKakao } = useAuthStore();
   const { isLoginModalOpen, closeLoginModal, openLoginModal, activeTab, setActiveTab, previousPath, setPreviousPath } = useModalContext();
   const navigate = useNavigate();
   const location = useLocation();
@@ -106,11 +106,17 @@ const LoginModal: React.FC = () => {
   };
 
   // 카카오 로그인 핸들러
-  const handleKakaoLogin = () => {
+  const handleKakaoLogin = async () => {
     try {
       setFormError("");
-      closeLoginModal(); // 먼저 모달을 닫음
-      loginWithKakao(); // 카카오 로그인 프로세스 시작 (이제 리다이렉트됨)
+      closeLoginModal(); // 모달 닫기
+
+      // 카카오 로그인 시도
+      await loginWithKakao();
+
+      // 로그인 성공 후 기본 리다이렉트 처리
+      localStorage.setItem('userType', 'volunteer'); // 기본적으로 봉사자로 설정
+      navigate("/"); // 메인 페이지로 이동
     } catch (error) {
       console.error("카카오 로그인 중 오류 발생:", error);
       setFormError(error instanceof Error ? error.message : "카카오 로그인 중 오류가 발생했습니다.");
@@ -180,13 +186,16 @@ const LoginModal: React.FC = () => {
 
               {/* 카카오 로그인 버튼 */}
               <div className={styles.kakaoLoginContainer}>
-                <img 
-                  src={kakaoLoginBtn} 
-                  alt="카카오톡으로 시작하기" 
-                  className={styles.kakaoLoginImg}
-                  onClick={handleKakaoLogin}
-                  style={{ cursor: isLoading ? 'default' : 'pointer', opacity: isLoading ? 0.7 : 1 }}
-                />
+        <img 
+          src={kakaoLoginBtn} 
+          alt="카카오톡으로 시작하기" 
+          className={styles.kakaoLoginImg}
+          onClick={handleKakaoLogin}
+          style={{ 
+            cursor: isLoading ? 'default' : 'pointer', 
+            opacity: isLoading ? 0.7 : 1 
+          }}
+        />
               </div>
             </div>
           ) : (

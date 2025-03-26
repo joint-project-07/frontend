@@ -1,11 +1,15 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
-import { useAuth } from "../../contexts/AuthContext";
-import { getUserInfo, uploadProfileImage, deleteProfileImage, getProfileImageUrl } from "../../api/userApi";
+import React, { useState, useEffect, useRef } from "react";
+import  useAuth  from "../../store/auth/useauthStore";
+import { getUserInfo, uploadProfileImage, deleteProfileImage } from "../../api/userApi";
 import styles from "../../style/Mypage.module.scss";
 import defaultProfileImg from "../../assets/profile.png";
 
-// 사용자 이름 표시 컴포넌트
-export const UserNameDisplay: React.FC<{ userName: string; loading: boolean }> = React.memo(
+interface UserNameDisplayProps {
+  userName: string;
+  loading: boolean;
+}
+
+export const UserNameDisplay: React.FC<UserNameDisplayProps> = React.memo(
   ({ userName, loading }) => {
     return (
       <div className={styles.infoText} style={{ fontWeight: 'bold', marginBottom: '15px' }}>
@@ -15,144 +19,147 @@ export const UserNameDisplay: React.FC<{ userName: string; loading: boolean }> =
   }
 );
 
-// 프로필 이미지 컴포넌트
-export const ProfileImage: React.FC<{
-  hasImage: boolean;
+interface ProfileImageProps {
+  imageUrl: string | null;
   loading: boolean;
   onClick: () => void;
-}> = React.memo(({ hasImage, loading, onClick }) => {
-  // 프로필 이미지 URL 결정
-  const imageUrl = hasImage ? getProfileImageUrl() : defaultProfileImg;
+}
 
-  return (
-    <div
-      className={styles.profileImage}
-      onClick={onClick}
-      style={{ backgroundImage: `url(${imageUrl})` }}
-    >
-      {loading && <div className={styles.loadingOverlay}>로딩중...</div>}
-    </div>
-  );
-});
+export const ProfileImage: React.FC<ProfileImageProps> = React.memo(
+  ({ imageUrl, loading, onClick }) => {
+    const isValidImageUrl = imageUrl && imageUrl.trim().length > 0;
+    const displayUrl = isValidImageUrl ? imageUrl : defaultProfileImg;
 
-// 프로필 이미지 관리 컴포넌트
+    return (
+      <div className={styles.profileImage} onClick={onClick}>
+        <img 
+          src={displayUrl} 
+          alt="프로필 이미지" 
+          style={{ 
+            width: '100%', 
+            height: '100%', 
+            objectFit: 'cover',
+            borderRadius: '50%'
+          }} 
+          onError={(e) => {
+            e.currentTarget.src = defaultProfileImg;
+          }}
+        />
+        {loading && <div className={styles.loadingOverlay}>로딩중...</div>}
+      </div>
+    );
+  }
+);
+
 export const ProfileManager: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
-  const [hasProfileImage, setHasProfileImage] = useState<boolean>(false);
   const [userName, setUserName] = useState<string>("");
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { user, updateUserData } = useAuth();
   
-  // 사용자 정보 로딩
-  const loadUserInfo = useCallback(async () => {
-    setLoading(true);
-    
-    try {
-      // 로컬 상태에서 먼저 체크
-      if (user) {
-        setUserName(user.name || "");
-        setHasProfileImage(!!user.profile_image);
-      }
-      
-      // API에서 최신 정보 가져오기
-      const userDetails = await getUserInfo();
-      if (userDetails) {
-        setUserName(userDetails.name || "");
-        setHasProfileImage(!!userDetails.profile_image);
-        
-        if (updateUserData) {
-          updateUserData({
-            ...userDetails
-          });
-        }
-      }
-    } catch (error) {
-      console.error('사용자 정보 로딩 오류:', error);
-    } finally {
-      setLoading(false);
-    }
-  }, [user, updateUserData]);
+  const { user, updateUserData } = useAuth();
 
   useEffect(() => {
-    loadUserInfo();
-  }, [loadUserInfo]);
+    const fetchUserInfo = async () => {
+      setLoading(true);
+      try {
+        const userInfo = await getUserInfo();
+        
+        setUserName(userInfo.name || "");
+        setImageUrl(userInfo.profile_image || null);
+        updateUserData(userInfo);
+      } catch {
+        // error 변수 자체를 제거하여 ESLint 오류 해결
+        console.error("사용자 정보 로딩 실패");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  // 프로필 이미지 클릭 핸들러
-  const handleProfileClick = useCallback(() => {
+    fetchUserInfo();
+  }, [updateUserData]);
+
+  const handleProfileClick = (): void => {
     if (fileInputRef.current) {
       fileInputRef.current.click();
     }
-  }, []);
+  };
 
-  // 파일 선택 핸들러
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
     const file = e.target.files?.[0];
     if (!file) return;
-  
+
+    const previewUrl = URL.createObjectURL(file);
+    setImageUrl(previewUrl);
+    setLoading(true);
+
     try {
-      setLoading(true);
+      const response = await uploadProfileImage(file);
       
-      // 이미지 업로드
-      await uploadProfileImage(file);
+      URL.revokeObjectURL(previewUrl);
       
-      // 상태 업데이트 - 추가 API 호출 없이 바로 상태 변경
-      setHasProfileImage(true);
-      
-      // 필요한 경우에만 사용자 정보 갱신
-      if (updateUserData) {
-        updateUserData({
-          ...user,
-          profile_image: 'updated' // 실제 URL이 아니라 상태만 변경
-        });
+      if (response && typeof response === 'object' && 'image_url' in response) {
+        const newImageUrl = response.image_url as string;
+        setImageUrl(newImageUrl);
+        updateUserData({ profile_image: newImageUrl });
       }
       
       alert('프로필 이미지가 성공적으로 업데이트되었습니다.');
-    } catch (error) {
-      console.error('프로필 이미지 업로드 오류:', error);
+    } catch {
+      // error 변수 자체를 제거하여 ESLint 오류 해결
+      URL.revokeObjectURL(previewUrl);
+      setImageUrl(user?.profile_image || null);
+      
       alert('프로필 이미지 업로드 중 오류가 발생했습니다.');
+    } finally {
+      setLoading(false);
+      
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const handleDeleteProfileImage = async (): Promise<void> => {
+    if (!imageUrl) return;
+    
+    setLoading(true);
+    
+    try {
+      await deleteProfileImage();
+      
+      setImageUrl(null);
+      updateUserData({ profile_image: null });
+      
+      alert('프로필 이미지가 성공적으로 삭제되었습니다.');
+    } catch {
+      // error 변수 자체를 제거하여 ESLint 오류 해결
+      alert('프로필 이미지 삭제 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
     }
   };
 
-  // 프로필 이미지 삭제
-  const handleDeleteProfileImage = useCallback(async () => {
-    try {
-      setLoading(true);
+  useEffect(() => {
+    if (user) {
+      setUserName(user.name || "");
       
-      // 이미지 삭제 API 호출
-      await deleteProfileImage();
-      
-      // 상태 업데이트
-      setHasProfileImage(false);
-      
-      // 사용자 정보 다시 가져오기
-      const userDetails = await getUserInfo();
-      if (userDetails && updateUserData) {
-        updateUserData({
-          ...userDetails
-        });
+      if (user.profile_image === null) {
+        setImageUrl(null);
+      } else if (user.profile_image) {
+        setImageUrl(user.profile_image);
       }
-      
-      alert('프로필 이미지가 성공적으로 삭제되었습니다.');
-    } catch (error) {
-      console.error('프로필 이미지 삭제 오류:', error);
-      alert('프로필 이미지 삭제 중 오류가 발생했습니다.');
-    } finally {
-      setLoading(false);
     }
-  }, [updateUserData]);
+  }, [user]);
 
   return (
     <section className={styles.profileSection}>
-      {/* 프로필 이미지 */}
       <ProfileImage 
-        hasImage={hasProfileImage}
+        imageUrl={imageUrl}
         loading={loading}
         onClick={handleProfileClick}
       />
       
-      {/* 파일 입력 (숨김) */}
       <input 
         type="file" 
         ref={fileInputRef} 
@@ -161,7 +168,6 @@ export const ProfileManager: React.FC = () => {
         onChange={handleFileChange}
       />
       
-      {/* 프로필 버튼 그룹 */}
       <div className={styles.profileButtonGroup}>
         <button 
           className={styles.profileEditBtn}
@@ -170,7 +176,7 @@ export const ProfileManager: React.FC = () => {
         >
           프로필 변경
         </button>
-        {hasProfileImage && (
+        {imageUrl && (
           <button 
             className={styles.profileDeleteBtn}
             onClick={handleDeleteProfileImage}
@@ -181,7 +187,6 @@ export const ProfileManager: React.FC = () => {
         )}
       </div>
       
-      {/* 사용자 이름 표시 */}
       <UserNameDisplay userName={userName} loading={loading} />
     </section>
   );

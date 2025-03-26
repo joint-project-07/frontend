@@ -1,25 +1,26 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useAuth, UserRole } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import useAuth from '../store/auth/useauthStore';
 import Searchdate from '../components/feature/Searchdate';
 import SearchRange from '../components/feature/SearchRange';
 import styles from '../style/VolunteerScheduleRegistration.module.scss';
 import dayjs from 'dayjs';
-import { createRecruitment, uploadRecruitmentImages } from '../api/VolunteerApi';
+import { createRecruitment, uploadRecruitmentImages, CreateRecruitmentParams } from '../api/recruitmentApi';
 
 const activityOptions = [
-  '봉사활동 1: 시설 청소',
-  '봉사활동 2: 동물 산책',
-  '봉사활동 3: 동물 목욕',
-  '봉사활동 4: 사료 급여',
-  '봉사활동 5: 놀이 활동'
+  '시설 청소',
+  '동물 산책',
+  '동물 목욕',
+  '사료 급여',
+  '놀이 활동'
 ];
 
 const suppliesOptions = [
-  '준비물 1: 마스크',
-  '준비물 2: 장갑',
-  '준비물 3: 편한 복장',
-  '준비물 4: 마실 물',
-  '준비물 5: 수건'
+  '마스크',
+  '장갑',
+  '편한 복장',
+  '마실 물',
+  '수건'
 ];
 
 interface TimeSlot {
@@ -35,16 +36,14 @@ interface ImageFile {
 }
 
 const VolunteerScheduleRegistration: React.FC = () => {
+  const navigate = useNavigate();
   const { user } = useAuth();
-  const userRole = user?.role || null;
-
+  
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedDate, setSelectedDate] = useState<{ startDate: dayjs.Dayjs; endDate: dayjs.Dayjs } | null>(null);
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([{ startTime: '09:00', endTime: '12:00', id: 1 }]);
   const [selectedActivities, setSelectedActivities] = useState<string[]>([]);
   const [selectedSupplies, setSelectedSupplies] = useState<string[]>([]);
-  const [maxParticipants, setMaxParticipants] = useState<number>(5);
-  const [description, setDescription] = useState<string>('');
   const [showTimeRangePicker, setShowTimeRangePicker] = useState<number | null>(null);
   
   const [images, setImages] = useState<ImageFile[]>([]);
@@ -53,25 +52,22 @@ const VolunteerScheduleRegistration: React.FC = () => {
   
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitSuccess, setSubmitSuccess] = useState<boolean>(false);
 
+  // 로그인 확인 useEffect - 최상위 레벨에 배치
   useEffect(() => {
-    if (userRole === UserRole.ORGANIZATION) {
-      console.log('기관으로 로그인되어 있음:', userRole);
-    } else {
-      console.log('현재 사용자 역할:', userRole);
+    if (!user) {
+      alert('로그인이 필요합니다.');
+      navigate('/login');
     }
-  }, [userRole]);
+  }, [user, navigate]); // user와 navigate를 의존성 배열에 추가
 
+  // 이미지 클린업 useEffect
   useEffect(() => {
     return () => {
       images.forEach(image => URL.revokeObjectURL(image.preview));
     };
   }, [images]);
-
-  const handleDateSelect = (range: { startDate: dayjs.Dayjs; endDate: dayjs.Dayjs }) => {
-    setSelectedDate(range);
-    setShowDatePicker(false);
-  };
 
   const addTimeSlot = () => {
     if (timeSlots.length < 5) { 
@@ -88,6 +84,11 @@ const VolunteerScheduleRegistration: React.FC = () => {
         setShowTimeRangePicker(null);
       }
     }
+  };
+
+  const handleDateSelect = (range: { startDate: dayjs.Dayjs; endDate: dayjs.Dayjs }) => {
+    setSelectedDate(range);
+    setShowDatePicker(false);
   };
 
   const handleTimeRangeSelect = (id: number, range: { startTime: string; endTime: string }) => {
@@ -179,14 +180,14 @@ const VolunteerScheduleRegistration: React.FC = () => {
     e.preventDefault();
     setSubmitError(null);
     
-    const hasOverlap = checkTimeOverlap();
-    if (hasOverlap) {
-      setSubmitError('시간대가 중복됩니다. 다시 확인해주세요.');
+    if (!selectedDate) {
+      setSubmitError('봉사 날짜를 선택해주세요.');
       return;
     }
 
-    if (!selectedDate) {
-      setSubmitError('봉사 날짜를 선택해주세요.');
+    const hasOverlap = checkTimeOverlap();
+    if (hasOverlap) {
+      setSubmitError('시간대가 중복됩니다. 다시 확인해주세요.');
       return;
     }
 
@@ -203,62 +204,67 @@ const VolunteerScheduleRegistration: React.FC = () => {
     try {
       setIsLoading(true);
       
-      const recruitmentData = {
+      if (!user) {
+        throw new Error('로그인이 필요합니다.');
+      }
+      
+      const recruitmentData: CreateRecruitmentParams = {
+        shelter: user.id,
         date: selectedDate.startDate.format('YYYY-MM-DD'),
+        start_time: timeSlots[0].startTime,
+        end_time: timeSlots[0].endTime,
+        type: selectedActivities.join(', '),
+        supplies: selectedSupplies.join(', '),
+        status: 'open',
+        
         end_date: selectedDate.endDate.format('YYYY-MM-DD'),
         timeSlots: timeSlots.map(slot => ({
           start_time: slot.startTime,
           end_time: slot.endTime
         })),
         activities: selectedActivities,
-        supplies: selectedSupplies,
-        maxParticipants,
-        description
+        maxParticipants: 5,
+        description: ''
       };
 
-      const recruitmentResponse = await createRecruitment(recruitmentData);
-      const recruitmentId = recruitmentResponse.recruitment.id;
+      const response = await createRecruitment(recruitmentData);
       
-      await uploadRecruitmentImages(
-        recruitmentId, 
-        images.map(img => img.file)
-      );
+      if (!response || !response.id) {
+        throw new Error('봉사활동 ID를 찾을 수 없습니다.');
+      }
       
-      alert('봉사 일정이 성공적으로 등록되었습니다.');
-      resetForm();
+      await uploadRecruitmentImages(response.id, images.map(img => img.file));
+      
+      setSubmitSuccess(true);
+      
+      setTimeout(() => {
+        navigate('/institution-schedule'); 
+      }, 1500);
       
     } catch (error) {
       console.error('봉사 일정 등록 오류:', error);
+      
+      let errorMessage = '봉사 일정 등록 중 오류가 발생했습니다.';
+      
       if (error instanceof Error) {
-        setSubmitError(error.message);
+        errorMessage = error.message;
       } else if (typeof error === 'object' && error !== null && 'response' in error) {
-        const axiosError = error as any;
+        const axiosError = error as { response?: { data?: { error?: string } } };
         if (axiosError.response?.data?.error) {
-          setSubmitError(axiosError.response.data.error);
-        } else {
-          setSubmitError('봉사 일정 등록 중 오류가 발생했습니다.');
+          errorMessage = axiosError.response.data.error;
         }
-      } else {
-        setSubmitError('봉사 일정 등록 중 오류가 발생했습니다.');
       }
+      
+      setSubmitError(errorMessage);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const resetForm = () => {
-    setSelectedDate(null);
-    setTimeSlots([{ startTime: '09:00', endTime: '12:00', id: 1 }]);
-    setSelectedActivities([]);
-    setSelectedSupplies([]);
-    setMaxParticipants(5);
-    setDescription('');
-    
-    images.forEach(image => URL.revokeObjectURL(image.preview));
-    setImages([]);
-    setImageError(null);
-    setSubmitError(null);
-  };
+  // 로그인하지 않은 경우 로딩 표시 (조건부 렌더링은 가능, 조건부 훅 호출은 불가능)
+  if (!user) {
+    return <div className={styles.loadingContainer}>로그인이 필요합니다.</div>;
+  }
 
   return (
     <div className={styles.scheduleRegistration}>
@@ -267,6 +273,12 @@ const VolunteerScheduleRegistration: React.FC = () => {
       {submitError && (
         <div className={styles.errorNotification}>
           <p>{submitError}</p>
+        </div>
+      )}
+      
+      {submitSuccess && (
+        <div className={styles.successNotification}>
+          <p>봉사 일정이 성공적으로 등록되었습니다. 곧 메인 페이지로 이동합니다.</p>
         </div>
       )}
       
@@ -421,34 +433,6 @@ const VolunteerScheduleRegistration: React.FC = () => {
                 </label>
               </div>
             ))}
-          </div>
-        </section>
-        
-        <section className={styles.section}>
-          <h2>활동 설명</h2>
-          <div className={styles.textareaContainer}>
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="봉사활동에 대한 상세 설명을 입력해주세요."
-              className={styles.descriptionTextarea}
-              rows={5}
-            />
-          </div>
-        </section>
-        
-        <section className={styles.section}>
-          <h2>최대 참가 인원</h2>
-          <div className={styles.numberInputContainer}>
-            <input
-              type="number"
-              min="1"
-              max="100"
-              value={maxParticipants}
-              onChange={(e) => setMaxParticipants(parseInt(e.target.value))}
-              className={styles.numberInput}
-            />
-            <span className={styles.numberLabel}>명</span>
           </div>
         </section>
         

@@ -21,6 +21,16 @@ type InstitutionData = {
   images?: string[];
 };
 
+interface ApplicantData {
+  id: number;
+  user: {
+    name: string;
+    contact_number: string;
+  };
+  status: "approved" | "rejected" | string;
+  attendance?: "attended" | "absent" | string;
+}
+
 const InstitutionDetailPage = () => {
   const { institutionId } = useParams<{ institutionId: string }>();
   const navigate = useNavigate();
@@ -40,14 +50,11 @@ const InstitutionDetailPage = () => {
         setLoading(true);
         setError(null);
         
-        // 모집 정보 가져오기
         const recruitmentData = await getRecruitment(parseInt(institutionId));
         
-        // 지원자 목록 가져오기
         const applicantsData = await getRecruitmentApplicants(parseInt(institutionId));
         
-        // 데이터 변환
-        const mappedVolunteers: Volunteer[] = applicantsData.map((applicant: any) => ({
+        const mappedVolunteers: Volunteer[] = applicantsData.map((applicant: ApplicantData) => ({
           id: applicant.id,
           name: applicant.user.name,
           phone: applicant.user.contact_number,
@@ -57,7 +64,6 @@ const InstitutionDetailPage = () => {
                       applicant.attendance === "absent" ? "불참석" : undefined
         }));
         
-        // 기관 정보 가공
         const institutionInfo: InstitutionData = {
           id: recruitmentData.shelter.id,
           title: recruitmentData.shelter.name,
@@ -97,7 +103,6 @@ const InstitutionDetailPage = () => {
         setRejectionReason("");
       }
       
-      // 성공 후 데이터 업데이트
       setVolunteers((prev) =>
         prev.map((v) => (v.id === id ? { ...v, status } : v))
       );
@@ -120,7 +125,6 @@ const InstitutionDetailPage = () => {
         await markAsAbsent(id);
       }
       
-      // 성공 후 데이터 업데이트
       setVolunteers((prev) =>
         prev.map((v) => (v.id === id ? { ...v, attendance } : v))
       );
@@ -140,7 +144,6 @@ const InstitutionDetailPage = () => {
       setLoading(true);
       await rejectApplication(showRejectionModal, rejectionReason);
       
-      // 성공 후 데이터 업데이트
       setVolunteers((prev) =>
         prev.map((v) => (v.id === showRejectionModal ? { ...v, status: "반려" } : v))
       );
@@ -156,10 +159,9 @@ const InstitutionDetailPage = () => {
     }
   };
 
-  // 이미지 갤러리 관련 기능
   const images = institutionData?.images && institutionData.images.length > 0 
     ? institutionData.images 
-    : [dangimg, dangimg, dangimg]; // 기본 이미지
+    : [dangimg, dangimg, dangimg];
 
   const goToNextImage = () => {
     setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
@@ -333,7 +335,6 @@ const InstitutionDetailPage = () => {
         </div>
       </div>
 
-      {/* 반려 사유 입력 모달 */}
       {showRejectionModal && (
         <div className={styles.rejectionModal}>
           <div className={styles.modalContent}>

@@ -3,7 +3,6 @@ import "./App.css";
 import LandingPage from "./pages/LandingPage";
 import MyPage from "./pages/Mypage";
 import UsersSignupForm from "./pages/UsersSignup";
-import { AuthProvider } from "./contexts/AuthContext";
 import ShelterSignupForm from "./pages/ShelterSignup";
 import DetailPage from "./pages/DetailPage";
 import SearchNotFound from "./pages/SearchNotFound";
@@ -14,9 +13,11 @@ import InstitutionDetailPage from "./pages/InstitutionDetailPage";
 import VolunteerScheduleRegistration from "./pages/VolunteerScheduleForm";
 import FindId from "./pages/FindId";
 import FindPassword from "./pages/FindPassward";
-import KakaoCallbackPage from "./pages/KakaoCallbackPage";
+import KakaoCallbackPage from "./pages/kakaoCallback";
+import AuthProvider from "./store/auth/authStore";
 
 function App() {
+
   return (
     <AuthProvider>
       <ModalProvider>
