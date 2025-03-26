@@ -68,9 +68,9 @@ export const ProfileManager: React.FC = () => {
         setUserName(userInfo.name || "");
         setImageUrl(userInfo.profile_image || null);
         updateUserData(userInfo);
-      } catch (error) {
-        // 조용히 오류 처리
-        console.error("사용자 정보 로딩 실패", error);
+      } catch (_error) {
+        // 변수명 앞에 밑줄을 추가하여 의도적으로 사용하지 않음을 표시
+        console.error("사용자 정보 로딩 실패", _error);
       } finally {
         setLoading(false);
       }
@@ -105,7 +105,8 @@ export const ProfileManager: React.FC = () => {
       }
       
       alert('프로필 이미지가 성공적으로 업데이트되었습니다.');
-    } catch (error) {
+    } catch (_error) {
+      // 변수명 앞에 밑줄을 추가하여 의도적으로 사용하지 않음을 표시
       URL.revokeObjectURL(previewUrl);
       setImageUrl(user?.profile_image || null);
       
@@ -131,7 +132,8 @@ export const ProfileManager: React.FC = () => {
       updateUserData({ profile_image: null });
       
       alert('프로필 이미지가 성공적으로 삭제되었습니다.');
-    } catch (error) {
+    } catch (_error) {
+      // 변수명 앞에 밑줄을 추가하여 의도적으로 사용하지 않음을 표시
       alert('프로필 이미지 삭제 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);

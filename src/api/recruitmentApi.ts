@@ -48,7 +48,8 @@ export const fetchAllRecruitments = async (): Promise<CardData[]> => {
     }
     
     if (response && response.data) {
-      let data = response.data;
+      // 여기서 let을 const로 변경
+      const data = response.data;
       
       let recruitmentData: ApiRecruitment[] = [];
       
@@ -119,7 +120,7 @@ export const searchRecruitments = async (searchParams: SearchParams): Promise<Ca
     }
     
     if (response && response.data) {
-      let data = response.data;
+      const data = response.data;
       
       let recruitmentData: ApiRecruitment[] = [];
       
