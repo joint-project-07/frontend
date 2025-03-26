@@ -1,4 +1,3 @@
-// VolunteerScheduleRegistration.tsx
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useAuth from '../store/auth/useauthStore';
@@ -8,7 +7,6 @@ import styles from '../style/VolunteerScheduleRegistration.module.scss';
 import dayjs from 'dayjs';
 import { createRecruitment, uploadRecruitmentImages, CreateRecruitmentParams } from '../api/recruitmentApi';
 
-// 봉사활동 선택 옵션
 const activityOptions = [
   '시설 청소',
   '동물 산책',
@@ -17,7 +15,6 @@ const activityOptions = [
   '놀이 활동'
 ];
 
-// 준비물 선택 옵션
 const suppliesOptions = [
   '마스크',
   '장갑',
@@ -26,14 +23,12 @@ const suppliesOptions = [
   '수건'
 ];
 
-// 시간대 인터페이스
 interface TimeSlot {
   startTime: string;
   endTime: string;
   id: number;
 }
 
-// 이미지 파일 인터페이스
 interface ImageFile {
   id: number;
   file: File;
@@ -44,16 +39,6 @@ const VolunteerScheduleRegistration: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   
-  // 로그인 확인
-  if (!user) {
-    useEffect(() => {
-      alert('로그인이 필요합니다.');
-      navigate('/login');
-    }, []);
-    return <div>로그인이 필요합니다.</div>;
-  }
-
-  // 상태 관리
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedDate, setSelectedDate] = useState<{ startDate: dayjs.Dayjs; endDate: dayjs.Dayjs } | null>(null);
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([{ startTime: '09:00', endTime: '12:00', id: 1 }]);
@@ -69,7 +54,21 @@ const VolunteerScheduleRegistration: React.FC = () => {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitSuccess, setSubmitSuccess] = useState<boolean>(false);
 
-  // 시간대 추가
+  // 로그인 확인 useEffect - 최상위 레벨에 배치
+  useEffect(() => {
+    if (!user) {
+      alert('로그인이 필요합니다.');
+      navigate('/login');
+    }
+  }, [user, navigate]); // user와 navigate를 의존성 배열에 추가
+
+  // 이미지 클린업 useEffect
+  useEffect(() => {
+    return () => {
+      images.forEach(image => URL.revokeObjectURL(image.preview));
+    };
+  }, [images]);
+
   const addTimeSlot = () => {
     if (timeSlots.length < 5) { 
       const newSlot = { startTime: '09:00', endTime: '12:00', id: Date.now() };
@@ -78,7 +77,6 @@ const VolunteerScheduleRegistration: React.FC = () => {
     }
   };
 
-  // 시간대 삭제
   const removeTimeSlot = (id: number) => {
     if (timeSlots.length > 1) { 
       setTimeSlots(timeSlots.filter(slot => slot.id !== id));
@@ -88,13 +86,11 @@ const VolunteerScheduleRegistration: React.FC = () => {
     }
   };
 
-  // 날짜 선택 핸들러
   const handleDateSelect = (range: { startDate: dayjs.Dayjs; endDate: dayjs.Dayjs }) => {
     setSelectedDate(range);
     setShowDatePicker(false);
   };
 
-  // 시간 범위 선택 핸들러
   const handleTimeRangeSelect = (id: number, range: { startTime: string; endTime: string }) => {
     setTimeSlots(
       timeSlots.map(slot => 
@@ -104,7 +100,6 @@ const VolunteerScheduleRegistration: React.FC = () => {
     setShowTimeRangePicker(null);
   };
 
-  // 활동 선택 토글
   const toggleActivity = (activity: string) => {
     setSelectedActivities(prev => 
       prev.includes(activity)
@@ -113,7 +108,6 @@ const VolunteerScheduleRegistration: React.FC = () => {
     );
   };
 
-  // 준비물 선택 토글
   const toggleSupply = (supply: string) => {
     setSelectedSupplies(prev => 
       prev.includes(supply)
@@ -122,7 +116,6 @@ const VolunteerScheduleRegistration: React.FC = () => {
     );
   };
 
-  // 시간 중복 체크
   const checkTimeOverlap = () => {
     for (let i = 0; i < timeSlots.length; i++) {
       const slot1 = timeSlots[i];
@@ -134,14 +127,13 @@ const VolunteerScheduleRegistration: React.FC = () => {
           (slot1.startTime <= slot2.startTime && slot2.startTime < slot1.endTime) ||
           (slot2.startTime <= slot1.startTime && slot1.startTime < slot2.endTime)
         ) {
-          return true; // 중복 있음
+          return true; 
         }
       }
     }
-    return false; // 중복 없음
+    return false; 
   };
 
-  // 이미지 업로드 핸들러
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     setImageError(null);
@@ -175,7 +167,6 @@ const VolunteerScheduleRegistration: React.FC = () => {
     }
   };
   
-  // 이미지 삭제 핸들러
   const removeImage = (id: number) => {
     const imageToRemove = images.find(img => img.id === id);
     if (imageToRemove) {
@@ -185,12 +176,10 @@ const VolunteerScheduleRegistration: React.FC = () => {
     setImages(images.filter(image => image.id !== id));
   };
 
-  // 폼 제출 핸들러
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitError(null);
     
-    // 유효성 검사
     if (!selectedDate) {
       setSubmitError('봉사 날짜를 선택해주세요.');
       return;
@@ -215,7 +204,10 @@ const VolunteerScheduleRegistration: React.FC = () => {
     try {
       setIsLoading(true);
       
-      // API 문서에 맞게 데이터 구성
+      if (!user) {
+        throw new Error('로그인이 필요합니다.');
+      }
+      
       const recruitmentData: CreateRecruitmentParams = {
         shelter: user.id,
         date: selectedDate.startDate.format('YYYY-MM-DD'),
@@ -225,7 +217,6 @@ const VolunteerScheduleRegistration: React.FC = () => {
         supplies: selectedSupplies.join(', '),
         status: 'open',
         
-        // 선택적 필드 - null 체크 추가
         end_date: selectedDate.endDate.format('YYYY-MM-DD'),
         timeSlots: timeSlots.map(slot => ({
           start_time: slot.startTime,
@@ -236,23 +227,18 @@ const VolunteerScheduleRegistration: React.FC = () => {
         description: ''
       };
 
-      // 봉사활동 생성 API 호출
       const response = await createRecruitment(recruitmentData);
       
-      // 생성된 봉사활동 ID 확인
       if (!response || !response.id) {
         throw new Error('봉사활동 ID를 찾을 수 없습니다.');
       }
       
-      // 이미지 업로드 API 호출
       await uploadRecruitmentImages(response.id, images.map(img => img.file));
       
-      // 성공 처리
       setSubmitSuccess(true);
       
-      // 성공 메시지 표시 후 리디렉션
       setTimeout(() => {
-        navigate('/shelter/dashboard'); // 메인 페이지 경로로 수정
+        navigate('/institution-schedule'); 
       }, 1500);
       
     } catch (error) {
@@ -275,18 +261,15 @@ const VolunteerScheduleRegistration: React.FC = () => {
     }
   };
 
-  // 이미지 메모리 정리
-  useEffect(() => {
-    return () => {
-      images.forEach(image => URL.revokeObjectURL(image.preview));
-    };
-  }, []);
+  // 로그인하지 않은 경우 로딩 표시 (조건부 렌더링은 가능, 조건부 훅 호출은 불가능)
+  if (!user) {
+    return <div className={styles.loadingContainer}>로그인이 필요합니다.</div>;
+  }
 
   return (
     <div className={styles.scheduleRegistration}>
       <h1>봉사 일정 등록</h1>
       
-      {/* 알림 메시지 */}
       {submitError && (
         <div className={styles.errorNotification}>
           <p>{submitError}</p>
@@ -300,7 +283,6 @@ const VolunteerScheduleRegistration: React.FC = () => {
       )}
       
       <form onSubmit={handleSubmit}>
-        {/* 날짜 선택 섹션 */}
         <section className={styles.section}>
           <h2>봉사 날짜</h2>
           <div className={styles.dateSelection}>
@@ -324,7 +306,6 @@ const VolunteerScheduleRegistration: React.FC = () => {
           </div>
         </section>
         
-        {/* 시간 선택 섹션 */}
         <section className={styles.section}>
           <h2>봉사 시간</h2>
           <div className={styles.timeSlots}>
@@ -378,7 +359,6 @@ const VolunteerScheduleRegistration: React.FC = () => {
           </div>
         </section>
         
-        {/* 이미지 업로드 섹션 */}
         <section className={styles.section}>
           <h2>보호소 이미지</h2>
           <div className={styles.imageUploadSection}>
@@ -420,7 +400,6 @@ const VolunteerScheduleRegistration: React.FC = () => {
           </div>
         </section>
         
-        {/* 봉사활동 내용 섹션 */}
         <section className={styles.section}>
           <h2>주요 봉사활동 내용</h2>
           <div className={styles.optionsContainer}>
@@ -439,7 +418,6 @@ const VolunteerScheduleRegistration: React.FC = () => {
           </div>
         </section>
         
-        {/* 준비물 섹션 */}
         <section className={styles.section}>
           <h2>준비물</h2>
           <div className={styles.optionsContainer}>
@@ -458,7 +436,6 @@ const VolunteerScheduleRegistration: React.FC = () => {
           </div>
         </section>
         
-        {/* 제출 버튼 */}
         <div className={styles.submitContainer}>
           <button 
             type="submit" 

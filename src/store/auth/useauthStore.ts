@@ -31,6 +31,16 @@ interface AuthActions {
   clearAuth: () => void;
 }
 
+// API 오류 인터페이스 정의
+interface ApiError {
+  response?: {
+    data?: {
+      message?: string;
+    };
+  };
+  message?: string;
+}
+
 const KAKAO_REST_API_KEY = 'cbfe1b86b56a7e063d194679adf8c2c6';
 const KAKAO_REDIRECT_URI = 'http://localhost:5173/auth/kakao/callback';
 const KAKAO_AUTH_URL = `https://kauth.kakao.com/oauth/authorize?client_id=${KAKAO_REST_API_KEY}&redirect_uri=${KAKAO_REDIRECT_URI}&response_type=code`;
@@ -63,8 +73,9 @@ const useAuthStore = create<AuthState & AuthActions>((set, get) => ({
       });
       
       return user;
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.message || '로그인에 실패했습니다.';
+    } catch (error: unknown) {
+      const apiError = error as ApiError;
+      const errorMessage = apiError.response?.data?.message || '로그인에 실패했습니다.';
       set({
         isLoading: false,
         error: errorMessage
@@ -80,7 +91,7 @@ const useAuthStore = create<AuthState & AuthActions>((set, get) => ({
       if (refresh_token) {
         await logout({ refresh_token });
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('로그아웃 오류:', error);
     } finally {
       localStorage.removeItem('access_token');
@@ -112,7 +123,7 @@ const useAuthStore = create<AuthState & AuthActions>((set, get) => ({
       localStorage.setItem('access_token', access_token);
       
       axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('토큰 재발급 오류:', error);
       await get().logout();
     }
@@ -133,7 +144,7 @@ const useAuthStore = create<AuthState & AuthActions>((set, get) => ({
         isAuthenticated: true
       });
       return true;
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('인증 상태 확인 오류:', error);
       localStorage.removeItem('access_token');
       localStorage.removeItem('refresh_token');
@@ -178,9 +189,10 @@ const useAuthStore = create<AuthState & AuthActions>((set, get) => ({
       
       console.log("카카오 로그인 완료, 인증 상태:", true);
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('카카오 로그인 오류:', error);
-      const errorMessage = error.response?.data?.message || '카카오 로그인에 실패했습니다.';
+      const apiError = error as ApiError;
+      const errorMessage = apiError.response?.data?.message || '카카오 로그인에 실패했습니다.';
       set({
         isLoading: false,
         error: errorMessage
@@ -205,7 +217,7 @@ const useAuthStore = create<AuthState & AuthActions>((set, get) => ({
       localStorage.setItem('user', JSON.stringify(mergedUser));
       
       if (userData.name) {
-        updateProfile({ name: userData.name }).catch(console.error);
+        updateProfile({ name: userData.name }).catch((err: unknown) => console.error(err));
       }
     } else {
       console.log("사용자 정보가 없어 업데이트할 수 없습니다.");
