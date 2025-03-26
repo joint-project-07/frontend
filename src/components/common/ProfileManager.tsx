@@ -69,13 +69,15 @@ export const ProfileManager: React.FC = () => {
         setImageUrl(userInfo.profile_image || null);
         updateUserData(userInfo);
       } catch (error) {
+        // 조용히 오류 처리
+        console.error("사용자 정보 로딩 실패", error);
       } finally {
         setLoading(false);
       }
     };
 
     fetchUserInfo();
-  }, []);
+  }, [updateUserData]); // updateUserData 의존성 추가
 
   const handleProfileClick = (): void => {
     if (fileInputRef.current) {

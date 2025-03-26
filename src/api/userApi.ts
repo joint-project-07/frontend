@@ -75,58 +75,42 @@ export const processKakaoLogin = async (data: KakaoLoginRequest) => {
 };
 
 export const getUserInfo = async (): Promise<UserInfo> => {
-  try {
-    const response = await axiosInstance.get<UserResponse>('/api/users/me/');
-    return response.data.user;
-  } catch (error) {
-    throw error;
-  }
+  const response = await axiosInstance.get<UserResponse>('/api/users/me/');
+  return response.data.user;
 };
 
 export const updateProfile = async (data: ProfileUpdateRequest) => {
-  try {
-    const formData = new FormData();
-    
-    if (data.name) {
-      formData.append('name', data.name);
-    }
-    
-    const response = await axiosInstance.put('/api/users/me/', formData);
-    
-    if (data.profile_image) {
-      await uploadProfileImage(data.profile_image);
-    }
-    
-    return response;
-  } catch (error) {
-    throw error;
+  const formData = new FormData();
+  
+  if (data.name) {
+    formData.append('name', data.name);
   }
+  
+  const response = await axiosInstance.put('/api/users/me/', formData);
+  
+  if (data.profile_image) {
+    await uploadProfileImage(data.profile_image);
+  }
+  
+  return response;
 };
 
 export const uploadProfileImage = async (image: File) => {
-  try {
-    const formData = new FormData();
-    formData.append('image', image);
+  const formData = new FormData();
+  formData.append('image', image);
 
-    const response = await axiosInstance.post('/api/users/profile_image/detail/', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
-    
-    return response.data;
-  } catch (error) {
-    throw error;
-  }
+  const response = await axiosInstance.post('/api/users/profile_image/detail/', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  
+  return response.data;
 };
 
 export const deleteProfileImage = async () => {
-  try {
-    const response = await axiosInstance.delete('/api/users/profile_image/detail/');
-    return response.data;
-  } catch (error) {
-    throw error;
-  }
+  const response = await axiosInstance.delete('/api/users/profile_image/detail/');
+  return response.data;
 };
 
 export const checkEmailExists = async (email: string) => {

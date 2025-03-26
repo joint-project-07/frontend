@@ -7,6 +7,14 @@ import dayjs from 'dayjs';
 import { createRecruitment, uploadRecruitmentImages } from '../api/VolunteerApi';
 import { UserRole } from '../types/auth-types';
 
+interface AxiosErrorResponse {
+  response?: {
+    data?: {
+      error?: string;
+    };
+  };
+}
+
 const activityOptions = [
   '봉사활동 1: 시설 청소',
   '봉사활동 2: 동물 산책',
@@ -233,7 +241,7 @@ const VolunteerScheduleRegistration: React.FC = () => {
       if (error instanceof Error) {
         setSubmitError(error.message);
       } else if (typeof error === 'object' && error !== null && 'response' in error) {
-        const axiosError = error as any;
+        const axiosError = error as AxiosErrorResponse;
         if (axiosError.response?.data?.error) {
           setSubmitError(axiosError.response.data.error);
         } else {

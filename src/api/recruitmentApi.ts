@@ -1,10 +1,11 @@
+import { Dayjs } from "dayjs";
 import { axiosInstance } from "../api/axios/axiosInstance";
 
 export interface SearchParams {
   locations?: string[];
   dateRange?: {
-    startDate: any; 
-    endDate: any;   
+    startDate: Dayjs; 
+    endDate: Dayjs;   
   } | null;
   timeRange?: {
     startTime: string;
@@ -71,7 +72,7 @@ export const fetchAllRecruitments = async (): Promise<CardData[]> => {
         id: item.id,
         image: "https://via.placeholder.com/300x200", 
         title: item.shelter_name || "봉사센터",
-        region: "지역 정보", // 실제 region 정보가 없어 보임
+        region: "지역 정보", 
         date: item.date || "날짜 정보 없음",
         volunteerwork: item.type || "봉사 정보 없음",
       }));
