@@ -2,15 +2,12 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { 
   login as apiLogin, 
   logout as apiLogout,
-  LoginCredentials,
   UserInfo as ApiUserInfo,
-  processKakaoLogin
+  processKakaoLogin,
+  updateProfile
 } from '../api/userApi';
-
-export enum UserRole {
-  VOLUNTEER = 'volunteer',
-  ORGANIZATION = 'organization',
-}
+import { axiosInstance } from '../api/axios/axiosInstance';
+import { UserRole, LoginCredentials } from '../types/auth-types';
 
 interface UserInfo extends ApiUserInfo {
   role: UserRole;
@@ -26,6 +23,7 @@ interface AuthContextType {
   isLoading: boolean;
   loginWithKakao: () => Promise<void>;
   updateUserData: (userData: Partial<UserInfo>) => void;
+  refreshUserToken: () => Promise<void>; 
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -39,6 +37,28 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [user, setUser] = useState<UserInfo | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+
+  const refreshUserToken = async (): Promise<void> => {
+    const storedRefreshToken = localStorage.getItem('refreshToken');
+    
+    if (!storedRefreshToken) {
+      return;
+    }
+
+    try {
+      const response = await axiosInstance.post('/api/users/token/refresh/', {
+        refresh_token: storedRefreshToken
+      });
+      
+      const { access_token } = response.data;
+      localStorage.setItem('accessToken', access_token);
+      
+      axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
+    } catch (error) {
+      console.error('토큰 재발급 오류:', error);
+      await handleLogout();
+    }
+  };
 
   useEffect(() => {
     const handleKakaoCallback = async () => {
@@ -69,6 +89,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             const { access_token, refresh_token } = response.data;
             localStorage.setItem('accessToken', access_token);
             localStorage.setItem('refreshToken', refresh_token);
+            
+            axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
             
             const userData = response.data.user;
             
@@ -107,17 +129,19 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, []);
 
   useEffect(() => {
-    const checkAuth = () => {
+    const checkAuth = async () => {
       const storedUser = localStorage.getItem('user');
       const accessToken = localStorage.getItem('accessToken');
-      const refreshToken = localStorage.getItem('refreshToken');
+      const storedRefreshToken = localStorage.getItem('refreshToken');
 
-      if (storedUser && accessToken && refreshToken) {
+      if (storedUser && accessToken && storedRefreshToken) {
         try {
+          await refreshUserToken();
+          
           setUser(JSON.parse(storedUser));
           setIsAuthenticated(true);
         } catch (error) {
-          console.error('Failed to parse user data:', error);
+          console.error('인증 확인 오류:', error);
           localStorage.removeItem('user');
           localStorage.removeItem('accessToken');
           localStorage.removeItem('refreshToken');
@@ -138,14 +162,31 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       : UserRole.VOLUNTEER;
   };
 
-  const updateUserData = (userData: Partial<UserInfo>): void => {
-    if (user) {
-      // 기존 사용자 데이터와 새 데이터 병합
-      const updatedUser = { ...user, ...userData };
-      setUser(updatedUser);
-      localStorage.setItem('user', JSON.stringify(updatedUser));
+const updateUserData = (userData: Partial<UserInfo>): void => {
+  if (user) {
+    console.log("업데이트 전 사용자 데이터:", user);
+    console.log("업데이트할 데이터:", userData);
+    
+    const updatedUser = { ...user, ...userData };
+    setUser(updatedUser);
+    
+    console.log("업데이트 후 사용자 데이터:", updatedUser);
+    
+    const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+    const mergedUser = { ...storedUser, ...userData };
+    localStorage.setItem('user', JSON.stringify(mergedUser));
+    
+    if (userData.profile_image !== undefined) {
+      console.log("프로필 이미지 동기화 수행:", userData.profile_image);
     }
-  };
+    
+    if (userData.name) {
+      updateProfile({ name: userData.name }).catch(console.error);
+    }
+  } else {
+    console.log("사용자 정보가 없어 업데이트할 수 없습니다.");
+  }
+};
 
   const handleLogin = async (credentials: LoginCredentials) => {
     setLoading(true);
@@ -157,6 +198,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       const { access_token, refresh_token } = response.data;
       localStorage.setItem('accessToken', access_token);
       localStorage.setItem('refreshToken', refresh_token);
+      
+      axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
       
       const userData = response.data.user;
       
@@ -200,12 +243,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     try {
       const refreshToken = localStorage.getItem('refreshToken');
       
-      if (!refreshToken) {
-        throw new Error('리프레시 토큰이 없습니다.');
+      if (refreshToken) {
+        await apiLogout({ refresh_token: refreshToken });
       }
-  
-      await apiLogout({ refresh_token: refreshToken });
-      
     } catch (error) {
       console.error('로그아웃 오류:', error);
     } finally {
@@ -213,6 +253,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       localStorage.removeItem('refreshToken');
       localStorage.removeItem('user');
       localStorage.removeItem('userType'); 
+      
+      delete axiosInstance.defaults.headers.common['Authorization'];
       
       setUser(null);
       setIsAuthenticated(false);
@@ -235,7 +277,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         error,
         isLoading: loading,
         loginWithKakao,
-        updateUserData
+        updateUserData,
+        refreshUserToken
       }}
     >
       {children}

@@ -1,10 +1,19 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useAuth, UserRole } from '../contexts/AuthContext';
+import { useAuth } from '../contexts/AuthContext';
 import Searchdate from '../components/feature/Searchdate';
 import SearchRange from '../components/feature/SearchRange';
 import styles from '../style/VolunteerScheduleRegistration.module.scss';
 import dayjs from 'dayjs';
 import { createRecruitment, uploadRecruitmentImages } from '../api/VolunteerApi';
+import { UserRole } from '../types/auth-types';
+
+interface AxiosErrorResponse {
+  response?: {
+    data?: {
+      error?: string;
+    };
+  };
+}
 
 const activityOptions = [
   '봉사활동 1: 시설 청소',
@@ -232,7 +241,7 @@ const VolunteerScheduleRegistration: React.FC = () => {
       if (error instanceof Error) {
         setSubmitError(error.message);
       } else if (typeof error === 'object' && error !== null && 'response' in error) {
-        const axiosError = error as any;
+        const axiosError = error as AxiosErrorResponse;
         if (axiosError.response?.data?.error) {
           setSubmitError(axiosError.response.data.error);
         } else {

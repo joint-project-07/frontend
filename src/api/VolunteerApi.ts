@@ -1,5 +1,47 @@
 import { axiosInstance } from "../api/axios/axiosInstance";
 
+export interface User {
+  id: number;
+  email: string;
+  name: string;
+  contact_number: string;
+  profile_image: string | null;
+}
+
+export interface Recruitment {
+  id: number;
+  date: string;
+  start_time: string;
+  end_time: string;
+  status: string; 
+}
+
+export interface Shelter {
+  id: number;
+  name: string;
+  region: string;
+  address: string;
+}
+
+export interface VolunteerApplication {
+  id: number;
+  user: User;
+  recruitment: Recruitment;
+  shelter: Shelter;
+  status: string; 
+  rejected_reason: string | null;
+  rating?: number; 
+}
+
+export interface RatingRequest {
+  rating: number; 
+}
+
+export interface RatingResponse {
+  id: number;
+  rating: number;
+}
+
 interface TimeSlot {
   start_time: string;
   end_time: string;
@@ -32,6 +74,29 @@ interface ImageUploadResponse {
   recruitment: number;
   image_url: string;
 }
+
+export const getVolunteerApplications = async (): Promise<VolunteerApplication[]> => {
+  try {
+    const response = await axiosInstance.get<VolunteerApplication[]>('/api/applications/');
+    return response.data;
+  } catch (error) {
+    console.error('봉사 신청 목록 조회 오류:', error);
+    throw error;
+  }
+};
+
+export const submitVolunteerRating = async (historyId: number, rating: number): Promise<RatingResponse> => {
+  try {
+    const response = await axiosInstance.post<RatingResponse>(
+      `/api/histories/${historyId}/rate/`, 
+      { rating }
+    );
+    return response.data;
+  } catch (error) {
+    console.error('봉사활동 평가 제출 오류:', error);
+    throw error;
+  }
+};
 
 export const createRecruitment = async (data: RecruitmentData): Promise<RecruitmentResponse> => {
   const payload = {
@@ -101,3 +166,4 @@ export const cancelRecruitment = async (recruitmentId: number) => {
   const response = await axiosInstance.patch(`/api/recruitments/${recruitmentId}/cancel/`, {});
   return response.data;
 };
+
