@@ -68,16 +68,16 @@ export const ProfileManager: React.FC = () => {
         setUserName(userInfo.name || "");
         setImageUrl(userInfo.profile_image || null);
         updateUserData(userInfo);
-      } catch (_error) {
-        // 변수명 앞에 밑줄을 추가하여 의도적으로 사용하지 않음을 표시
-        console.error("사용자 정보 로딩 실패", _error);
+      } catch {
+        // error 변수 자체를 제거하여 ESLint 오류 해결
+        console.error("사용자 정보 로딩 실패");
       } finally {
         setLoading(false);
       }
     };
 
     fetchUserInfo();
-  }, [updateUserData]); // updateUserData 의존성 추가
+  }, [updateUserData]);
 
   const handleProfileClick = (): void => {
     if (fileInputRef.current) {
@@ -105,8 +105,8 @@ export const ProfileManager: React.FC = () => {
       }
       
       alert('프로필 이미지가 성공적으로 업데이트되었습니다.');
-    } catch (_error) {
-      // 변수명 앞에 밑줄을 추가하여 의도적으로 사용하지 않음을 표시
+    } catch {
+      // error 변수 자체를 제거하여 ESLint 오류 해결
       URL.revokeObjectURL(previewUrl);
       setImageUrl(user?.profile_image || null);
       
@@ -132,8 +132,8 @@ export const ProfileManager: React.FC = () => {
       updateUserData({ profile_image: null });
       
       alert('프로필 이미지가 성공적으로 삭제되었습니다.');
-    } catch (_error) {
-      // 변수명 앞에 밑줄을 추가하여 의도적으로 사용하지 않음을 표시
+    } catch {
+      // error 변수 자체를 제거하여 ESLint 오류 해결
       alert('프로필 이미지 삭제 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
