@@ -56,6 +56,13 @@ export interface CreateRecruitmentParams {
   description?: string;
 }
 
+// 이미지 업로드 응답 인터페이스
+export interface UploadImageResponse {
+  success: boolean;
+  imageUrls?: string[];
+  message?: string;
+}
+
 // 모든 봉사활동 모집 정보 가져오기
 export const fetchAllRecruitments = async (): Promise<CardData[]> => {
   try {
@@ -145,7 +152,7 @@ export const createRecruitment = async (data: CreateRecruitmentParams): Promise<
 };
 
 // 봉사활동 이미지 업로드
-export const uploadRecruitmentImages = async (recruitmentId: number, images: File[]): Promise<any> => {
+export const uploadRecruitmentImages = async (recruitmentId: number, images: File[]): Promise<UploadImageResponse> => {
   try {
     const formData = new FormData();
     
