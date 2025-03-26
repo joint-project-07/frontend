@@ -14,8 +14,7 @@ const ShelterCards = () => {
         
         setCards(recruitmentCards);
         setIsLoading(false);
-      } catch (_error) {
-        // 에러는 사용하지 않으므로 언더스코어 접두사를 사용하여 무시
+      } catch {
         setIsLoading(false);
       }
     };
