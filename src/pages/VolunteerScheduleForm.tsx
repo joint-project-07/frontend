@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useAuth, UserRole } from '../contexts/AuthContext';
+import { useAuth } from '../contexts/AuthContext';
 import Searchdate from '../components/feature/Searchdate';
 import SearchRange from '../components/feature/SearchRange';
 import styles from '../style/VolunteerScheduleRegistration.module.scss';
 import dayjs from 'dayjs';
 import { createRecruitment, uploadRecruitmentImages } from '../api/VolunteerApi';
+import { UserRole } from '../types/auth-types';
 
 const activityOptions = [
   '봉사활동 1: 시설 청소',

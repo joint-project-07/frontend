@@ -1,40 +1,32 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { useTabStore } from "../store/TabStore";
-import { useShelterStore } from "../store/ShelterStore";
 import styles from "../style/Mypage.module.scss";
 import { TabType, usePaginationStore } from "../store/CurrentStore";
 import "../style/Button.css";
 import Modal from "../components/common/Modal";
-import useModalStore from "../store/modalStore";
-import StarRating from "../components/common/StarRating";
+import { useModalContext } from "../contexts/ModalContext";
 import PasswordChangeModal from "../components/common/PasswordChangeModal";
 import DeleteAccountModal from "../components/common/DeleteAccountModal";
-import { useModalContext } from "../contexts/ModalContext";
-import { useAuth } from "../contexts/AuthContext";
-import { uploadProfileImage, deleteProfileImage } from "../api/userApi";
-import defaultProfileImg from "../assets/profile.png";
+import { ProfileManager } from "../components/common/ProfileManager";
+import { useVolunteerStore } from "../store/volunteerStore";
+import { VolunteerApplication } from "../api/VolunteerApi";
+import StarRating from "../components/common/StarRating";
 
-interface ShelterItem {
-  application_id: number;
-  shelter_name: string;
-  date: string;
-  description: string;
-  status: string;
-}
-
-interface ListProps {
+interface ListProps<T> {
   tabType: TabType;
-  list: ShelterItem[];
-  renderItem: (item: ShelterItem) => React.ReactNode;
+  list: T[];
+  renderItem: (item: T) => React.ReactNode;
   emptyMessage: string;
+  isLoading: boolean;
 }
 
-const PaginatedList: React.FC<ListProps> = ({
+const PaginatedList = <T extends { id: number }>({
   tabType,
   list,
   renderItem,
   emptyMessage,
-}) => {
+  isLoading,
+}: ListProps<T>) => {
   const {
     itemsPerPage,
     getPage,
@@ -57,6 +49,10 @@ const PaginatedList: React.FC<ListProps> = ({
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
+
+  if (isLoading) {
+    return <div className={styles.loadingMessage}>로딩 중...</div>;
+  }
 
   return (
     <section className={styles.listSection}>
@@ -96,110 +92,202 @@ const PaginatedList: React.FC<ListProps> = ({
   );
 };
 
-const ShelterList: React.FC = () => {
-  const { shelterList } = useShelterStore();
+const ShelterApplicationsList: React.FC = () => {
+  const { applications, isLoading, error, fetchApplications } = useVolunteerStore();
+  
+  useEffect(() => {
+    fetchApplications();
+  }, [fetchApplications]);
+
+  if (error) {
+    return <div className={styles.errorMessage}>{error}</div>;
+  }
+
+  const formatStatusText = (status: string) => {
+    switch (status) {
+      case 'pending': return '승인 대기';
+      case 'approved': return '승인 완료';
+      case 'rejected': return '반려';
+      default: return status;
+    }
+  };
 
   return (
     <div className={styles.shelterListContainer}>
-      <PaginatedList
+      <PaginatedList<VolunteerApplication>
         tabType="shelter"
-        list={shelterList}
-        renderItem={(item) => (
-          <div key={item.application_id} className={styles.shelterCard}>
-            <h3>{item.shelter_name}</h3>
-            <p>예약 날짜: {item.date}</p>
-            <p>봉사 활동: {item.description}</p>
+        list={applications}
+        isLoading={isLoading}
+        renderItem={(application) => (
+          <div key={application.id} className={styles.shelterCard}>
+            <h3>{application.shelter.name}</h3>
+            <p>예약 날짜: {application.recruitment.date}</p>
+            <p>시간: {application.recruitment.start_time} - {application.recruitment.end_time}</p>
+            <p>지역: {application.shelter.region}</p>
+            <p>주소: {application.shelter.address}</p>
             <p
               className={
-                item.status === "pending"
+                application.status === "pending"
                   ? styles.statusPending
-                  : styles.statusComplete
+                  : application.status === "approved"
+                  ? styles.statusComplete
+                  : styles.statusRejected
               }
             >
-              {item.status === "pending" ? "승인 대기" : "승인 완료"}
+              {formatStatusText(application.status)}
+              {application.rejected_reason && ` (사유: ${application.rejected_reason})`}
             </p>
           </div>
         )}
-        emptyMessage="예약 내역이 없습니다."
+        emptyMessage="보호소 신청 내역이 없습니다."
       />
     </div>
   );
 };
 
-const VolunteerHistory: React.FC = () => {
-  const { shelterList } = useShelterStore();
-  const {
-    isOpen,
-    selectedShelter,
-    openModal,
-    closeModal,
-    rating,
-    setRating,
-    resetSurvey,
-    isSubmitted,
-    setSubmitted,
-    submittedRating,
-    setSubmittedRating,
-  } = useModalStore();
+interface RatingModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  application: VolunteerApplication | null;
+  onSubmit: (applicationId: number, rating: number) => Promise<void>;
+}
 
-  const handleSubmit = () => {
-    setSubmittedRating(rating); 
-    setSubmitted(true); 
-    resetSurvey(); 
+const RatingModal: React.FC<RatingModalProps> = ({
+  isOpen,
+  onClose,
+  application,
+  onSubmit
+}) => {
+  const [rating, setRating] = useState(0);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (application) {
+      setRating(application.rating || 0);
+      setIsSubmitted(!!application.rating);
+    }
+  }, [application]);
+
+  const handleSubmit = async () => {
+    if (!application) return;
+    
+    setIsSubmitting(true);
+    try {
+      await onSubmit(application.id, rating);
+      setIsSubmitted(true);
+    } catch (error) {
+      console.error('평가 제출 오류:', error);
+      alert('평가 제출에 실패했습니다. 다시 시도해주세요.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const handleClose = () => {
-    closeModal();
-    setSubmitted(false);
-    setSubmittedRating(0); 
-  };
+  if (!application) return null;
 
   return (
-    <div className={styles.volunteerListContainer}>
-      <PaginatedList
-        list={shelterList}
-        renderItem={(item) => (
-          <div key={item.application_id} className={styles.volunteerCard}>
-            <h3>{item.shelter_name}</h3>
-            <p>예약 날짜: {item.date}</p>
-            <p>봉사 활동: {item.description}</p>
-            <button className="button" onClick={() => openModal(item)}>
-              만족도 조사
+    <Modal isOpen={isOpen} onClose={onClose} title="만족도 조사">
+      <div className="modal-content">
+        {!isSubmitted ? (
+          <div className={styles.surveyContainer}>
+            <h3>만족도 조사</h3>
+            <p>이번 봉사활동은 어떠셨나요?</p>
+            <p>보호소: {application.shelter.name}</p>
+            <p>봉사 날짜: {application.recruitment.date}</p>
+            <StarRating rating={rating} setRating={setRating} />
+            <button
+              className={styles.submitButton}
+              onClick={handleSubmit}
+              disabled={rating === 0 || isSubmitting}
+            >
+              {isSubmitting ? '제출 중...' : '제출'}
+            </button>
+          </div>
+        ) : (
+          <div className={styles.surveyContainer}>
+            <h3>제출 완료</h3>
+            <p>
+              보호소: {application.shelter.name} <br />
+              봉사 날짜: {application.recruitment.date} <br />
+              만족도 점수: ⭐ {rating}점 제출되었습니다!
+            </p>
+            <button className={styles.submitButton} onClick={onClose}>
+              닫기
             </button>
           </div>
         )}
+      </div>
+    </Modal>
+  );
+};
+
+const VolunteerHistoryList: React.FC = () => {
+  const { isLoading, error, fetchApplications, submitRating, getApprovedApplications } = useVolunteerStore();
+  const [ratingModalOpen, setRatingModalOpen] = useState(false);
+  const [selectedApplication, setSelectedApplication] = useState<VolunteerApplication | null>(null);
+
+  useEffect(() => {
+    fetchApplications();
+  }, [fetchApplications]);
+
+  const approvedApplications = getApprovedApplications();
+
+  const openRatingModal = (application: VolunteerApplication) => {
+    setSelectedApplication(application);
+    setRatingModalOpen(true);
+  };
+
+  const closeRatingModal = () => {
+    setRatingModalOpen(false);
+    setSelectedApplication(null);
+  };
+
+  const handleSubmitRating = async (applicationId: number, rating: number) => {
+    await submitRating(applicationId, rating);
+  };
+
+  if (error) {
+    return <div className={styles.errorMessage}>{error}</div>;
+  }
+
+  return (
+    <div className={styles.volunteerListContainer}>
+      <PaginatedList<VolunteerApplication>
+        tabType="volunteer"
+        list={approvedApplications}
+        isLoading={isLoading}
+        renderItem={(application) => (
+          <div key={application.id} className={styles.volunteerCard}>
+            <h3>{application.shelter.name}</h3>
+            <p>봉사 날짜: {application.recruitment.date}</p>
+            <p>시간: {application.recruitment.start_time} - {application.recruitment.end_time}</p>
+            <p>지역: {application.shelter.region}</p>
+            <p>주소: {application.shelter.address}</p>
+            
+            {application.rating ? (
+              <div className={styles.ratingDisplay}>
+                <p>만족도: ⭐ {application.rating}점</p>
+                <button className={`button ${styles.ratingButton}`} onClick={() => openRatingModal(application)}>
+                  평가 수정
+                </button>
+              </div>
+            ) : (
+              <button className={`button ${styles.ratingButton}`} onClick={() => openRatingModal(application)}>
+                만족도 평가
+              </button>
+            )}
+          </div>
+        )}
         emptyMessage="봉사활동 이력이 없습니다."
-        tabType={"shelter"}
       />
-      <Modal isOpen={isOpen} onClose={closeModal} title="만족도 조사">
-        <div className="modal-content">
-          {!isSubmitted ? (
-            <div className={styles.surveyContainer}>
-              <h3>만족도 조사</h3>
-              <p>이번 봉사활동은 어떠셨나요?</p>
-              <StarRating rating={rating} setRating={setRating} />
-              <button
-                className={styles.submitButton}
-                onClick={handleSubmit}
-                disabled={rating === 0}
-              >
-                제출
-              </button>
-            </div>
-          ) : (
-            <div className={styles.surveyContainer}>
-              <h3>제출 완료</h3>
-              <p>
-                보호소: {selectedShelter?.shelter_name} <br />
-                만족도 점수: ⭐ {submittedRating}점 제출되었습니다!
-              </p>
-              <button className={styles.submitButton} onClick={handleClose}>
-                닫기
-              </button>
-            </div>
-          )}
-        </div>
-      </Modal>
+      
+      <RatingModal
+        isOpen={ratingModalOpen}
+        onClose={closeRatingModal}
+        application={selectedApplication}
+        onSubmit={handleSubmitRating}
+      />
     </div>
   );
 };
@@ -207,57 +295,6 @@ const VolunteerHistory: React.FC = () => {
 const UserInfoTab: React.FC = () => {
   const { openPasswordModal } = useModalContext();
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [loading, setLoading] = useState<boolean>(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  
-  // 전역 user 객체에서 name과 profile_image 가져오기
-  const { user } = useAuth();
-  const { name = "사용자명", profile_image } = user || {};
-  
-  // profile_image가 있는지 여부를 상태로 관리
-  const [hasProfileImage, setHasProfileImage] = useState<boolean>(!!profile_image);
-  
-  // 컴포넌트 마운트 시 프로필 이미지 상태 확인
-  useEffect(() => {
-    setHasProfileImage(!!profile_image);
-  }, [profile_image]);
-  
-  const handleProfileClick = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
-    }
-  };
-
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    try {
-      setLoading(true);
-      await uploadProfileImage(file);
-      setHasProfileImage(true);
-      alert('프로필 이미지가 성공적으로 업데이트되었습니다.');
-    } catch (error) {
-      console.error('프로필 이미지 업로드 오류:', error);
-      alert('프로필 이미지 업로드 중 오류가 발생했습니다.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDeleteProfileImage = async () => {
-    try {
-      setLoading(true);
-      await deleteProfileImage();
-      setHasProfileImage(false);
-      alert('프로필 이미지가 성공적으로 삭제되었습니다.');
-    } catch (error) {
-      console.error('프로필 이미지 삭제 오류:', error);
-      alert('프로필 이미지 삭제 중 오류가 발생했습니다.');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const openDeleteModal = () => {
     setIsDeleteModalOpen(true);
@@ -267,55 +304,11 @@ const UserInfoTab: React.FC = () => {
     setIsDeleteModalOpen(false);
   };
 
-  const getProfileImageUrl = () => {
-    if (hasProfileImage) {
-      return `/api/users/profile_image/`;
-    }
-    return defaultProfileImg;
-  };
-
   return (
     <div className={styles.mypageContainer}>
       <main className={styles.mypageContent}>
-        <section className={styles.profileSection}>
-          <div 
-            className={styles.profileImage} 
-            onClick={handleProfileClick}
-            style={{ backgroundImage: `url(${getProfileImageUrl()})` }}
-          >
-            {loading && <div className={styles.loadingOverlay}>로딩중...</div>}
-          </div>
-          <input 
-            type="file" 
-            ref={fileInputRef} 
-            style={{ display: 'none' }} 
-            accept="image/*"
-            onChange={handleFileChange}
-          />
-          <div className={styles.profileButtonGroup}>
-            <button 
-              className={styles.profileEditBtn}
-              onClick={handleProfileClick}
-              disabled={loading}
-            >
-              프로필 변경
-            </button>
-            {hasProfileImage && (
-              <button 
-                className={styles.profileDeleteBtn}
-                onClick={handleDeleteProfileImage}
-                disabled={loading}
-              >
-                프로필 삭제
-              </button>
-            )}
-          </div>
-        </section>
+        <ProfileManager />
         <section className={styles.infoSection}>
-          <div className={styles.infoText} style={{ fontWeight: 'bold', marginBottom: '15px' }}>
-            {loading ? "로딩중..." : `${name} 님`}
-          </div>
-          
           <div className={styles.infoText}>
             펫모어핸즈와 함께해용💜
           </div>
@@ -343,9 +336,9 @@ const TabContent: React.FC = React.memo(() => {
     case "info":
       return <UserInfoTab />;
     case "shelter":
-      return <ShelterList />;
+      return <ShelterApplicationsList />;
     case "volunteer":
-      return <VolunteerHistory />;
+      return <VolunteerHistoryList />;
     default:
       return null;
   }

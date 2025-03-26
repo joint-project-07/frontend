@@ -1,14 +1,5 @@
-import { UserRole } from "../contexts/AuthContext";
+import { UserRole, LoginCredentials } from "../types/auth-types";
 import { axiosInstance } from "./axios/axiosInstance";
-
-export interface LoginCredentials {
-  email: string;
-  password: string;
-}
-
-export interface LogoutRequest {
-  refresh_token: string;
-}
 
 export interface UserInfo {
   id: number; 
@@ -17,6 +8,14 @@ export interface UserInfo {
   contact_number: string;
   profile_image: string | null;
   role: UserRole;
+}
+
+export interface UserResponse {
+  user: UserInfo;
+}
+
+export interface LogoutRequest {
+  refresh_token: string;
 }
 
 export interface SignupData {
@@ -77,10 +76,9 @@ export const processKakaoLogin = async (data: KakaoLoginRequest) => {
 
 export const getUserInfo = async (): Promise<UserInfo> => {
   try {
-    const response = await axiosInstance.get<UserInfo>('/api/users/me/');
-    return response.data;
+    const response = await axiosInstance.get<UserResponse>('/api/users/me/');
+    return response.data.user;
   } catch (error) {
-    console.error('사용자 정보 가져오기 오류:', error);
     throw error;
   }
 };
@@ -101,19 +99,14 @@ export const updateProfile = async (data: ProfileUpdateRequest) => {
     
     return response;
   } catch (error) {
-    console.error('프로필 업데이트 오류:', error);
     throw error;
   }
 };
 
-export const getProfileImageUrl = () => {
-  return '/api/users/profile_image/';
-};
-
-export const uploadProfileImage = async (imageFile: File) => {
+export const uploadProfileImage = async (image: File) => {
   try {
     const formData = new FormData();
-    formData.append('image', imageFile);
+    formData.append('image', image);
 
     const response = await axiosInstance.post('/api/users/profile_image/detail/', formData, {
       headers: {
@@ -123,7 +116,6 @@ export const uploadProfileImage = async (imageFile: File) => {
     
     return response.data;
   } catch (error) {
-    console.error('프로필 이미지 업로드 오류:', error);
     throw error;
   }
 };
@@ -133,7 +125,6 @@ export const deleteProfileImage = async () => {
     const response = await axiosInstance.delete('/api/users/profile_image/detail/');
     return response.data;
   } catch (error) {
-    console.error('프로필 이미지 삭제 오류:', error);
     throw error;
   }
 };
