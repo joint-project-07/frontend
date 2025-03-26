@@ -1,42 +1,39 @@
+// VolunteerScheduleRegistration.tsx
 import React, { useState, useEffect, useRef } from 'react';
-import { useAuth } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import useAuth from '../store/auth/useauthStore';
 import Searchdate from '../components/feature/Searchdate';
 import SearchRange from '../components/feature/SearchRange';
 import styles from '../style/VolunteerScheduleRegistration.module.scss';
 import dayjs from 'dayjs';
-import { createRecruitment, uploadRecruitmentImages } from '../api/VolunteerApi';
-import { UserRole } from '../types/auth-types';
+import { createRecruitment, uploadRecruitmentImages, CreateRecruitmentParams } from '../api/recruitmentApi';
 
-interface AxiosErrorResponse {
-  response?: {
-    data?: {
-      error?: string;
-    };
-  };
-}
-
+// 봉사활동 선택 옵션
 const activityOptions = [
-  '봉사활동 1: 시설 청소',
-  '봉사활동 2: 동물 산책',
-  '봉사활동 3: 동물 목욕',
-  '봉사활동 4: 사료 급여',
-  '봉사활동 5: 놀이 활동'
+  '시설 청소',
+  '동물 산책',
+  '동물 목욕',
+  '사료 급여',
+  '놀이 활동'
 ];
 
+// 준비물 선택 옵션
 const suppliesOptions = [
-  '준비물 1: 마스크',
-  '준비물 2: 장갑',
-  '준비물 3: 편한 복장',
-  '준비물 4: 마실 물',
-  '준비물 5: 수건'
+  '마스크',
+  '장갑',
+  '편한 복장',
+  '마실 물',
+  '수건'
 ];
 
+// 시간대 인터페이스
 interface TimeSlot {
   startTime: string;
   endTime: string;
   id: number;
 }
 
+// 이미지 파일 인터페이스
 interface ImageFile {
   id: number;
   file: File;
@@ -44,16 +41,24 @@ interface ImageFile {
 }
 
 const VolunteerScheduleRegistration: React.FC = () => {
+  const navigate = useNavigate();
   const { user } = useAuth();
-  const userRole = user?.role || null;
+  
+  // 로그인 확인
+  if (!user) {
+    useEffect(() => {
+      alert('로그인이 필요합니다.');
+      navigate('/login');
+    }, []);
+    return <div>로그인이 필요합니다.</div>;
+  }
 
+  // 상태 관리
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedDate, setSelectedDate] = useState<{ startDate: dayjs.Dayjs; endDate: dayjs.Dayjs } | null>(null);
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([{ startTime: '09:00', endTime: '12:00', id: 1 }]);
   const [selectedActivities, setSelectedActivities] = useState<string[]>([]);
   const [selectedSupplies, setSelectedSupplies] = useState<string[]>([]);
-  const [maxParticipants, setMaxParticipants] = useState<number>(5);
-  const [description, setDescription] = useState<string>('');
   const [showTimeRangePicker, setShowTimeRangePicker] = useState<number | null>(null);
   
   const [images, setImages] = useState<ImageFile[]>([]);
@@ -62,26 +67,9 @@ const VolunteerScheduleRegistration: React.FC = () => {
   
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitSuccess, setSubmitSuccess] = useState<boolean>(false);
 
-  useEffect(() => {
-    if (userRole === UserRole.ORGANIZATION) {
-      console.log('기관으로 로그인되어 있음:', userRole);
-    } else {
-      console.log('현재 사용자 역할:', userRole);
-    }
-  }, [userRole]);
-
-  useEffect(() => {
-    return () => {
-      images.forEach(image => URL.revokeObjectURL(image.preview));
-    };
-  }, [images]);
-
-  const handleDateSelect = (range: { startDate: dayjs.Dayjs; endDate: dayjs.Dayjs }) => {
-    setSelectedDate(range);
-    setShowDatePicker(false);
-  };
-
+  // 시간대 추가
   const addTimeSlot = () => {
     if (timeSlots.length < 5) { 
       const newSlot = { startTime: '09:00', endTime: '12:00', id: Date.now() };
@@ -90,6 +78,7 @@ const VolunteerScheduleRegistration: React.FC = () => {
     }
   };
 
+  // 시간대 삭제
   const removeTimeSlot = (id: number) => {
     if (timeSlots.length > 1) { 
       setTimeSlots(timeSlots.filter(slot => slot.id !== id));
@@ -99,6 +88,13 @@ const VolunteerScheduleRegistration: React.FC = () => {
     }
   };
 
+  // 날짜 선택 핸들러
+  const handleDateSelect = (range: { startDate: dayjs.Dayjs; endDate: dayjs.Dayjs }) => {
+    setSelectedDate(range);
+    setShowDatePicker(false);
+  };
+
+  // 시간 범위 선택 핸들러
   const handleTimeRangeSelect = (id: number, range: { startTime: string; endTime: string }) => {
     setTimeSlots(
       timeSlots.map(slot => 
@@ -108,6 +104,7 @@ const VolunteerScheduleRegistration: React.FC = () => {
     setShowTimeRangePicker(null);
   };
 
+  // 활동 선택 토글
   const toggleActivity = (activity: string) => {
     setSelectedActivities(prev => 
       prev.includes(activity)
@@ -116,6 +113,7 @@ const VolunteerScheduleRegistration: React.FC = () => {
     );
   };
 
+  // 준비물 선택 토글
   const toggleSupply = (supply: string) => {
     setSelectedSupplies(prev => 
       prev.includes(supply)
@@ -124,6 +122,7 @@ const VolunteerScheduleRegistration: React.FC = () => {
     );
   };
 
+  // 시간 중복 체크
   const checkTimeOverlap = () => {
     for (let i = 0; i < timeSlots.length; i++) {
       const slot1 = timeSlots[i];
@@ -135,13 +134,14 @@ const VolunteerScheduleRegistration: React.FC = () => {
           (slot1.startTime <= slot2.startTime && slot2.startTime < slot1.endTime) ||
           (slot2.startTime <= slot1.startTime && slot1.startTime < slot2.endTime)
         ) {
-          return true; 
+          return true; // 중복 있음
         }
       }
     }
-    return false; 
+    return false; // 중복 없음
   };
 
+  // 이미지 업로드 핸들러
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     setImageError(null);
@@ -175,6 +175,7 @@ const VolunteerScheduleRegistration: React.FC = () => {
     }
   };
   
+  // 이미지 삭제 핸들러
   const removeImage = (id: number) => {
     const imageToRemove = images.find(img => img.id === id);
     if (imageToRemove) {
@@ -184,18 +185,20 @@ const VolunteerScheduleRegistration: React.FC = () => {
     setImages(images.filter(image => image.id !== id));
   };
 
+  // 폼 제출 핸들러
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitError(null);
     
-    const hasOverlap = checkTimeOverlap();
-    if (hasOverlap) {
-      setSubmitError('시간대가 중복됩니다. 다시 확인해주세요.');
+    // 유효성 검사
+    if (!selectedDate) {
+      setSubmitError('봉사 날짜를 선택해주세요.');
       return;
     }
 
-    if (!selectedDate) {
-      setSubmitError('봉사 날짜를 선택해주세요.');
+    const hasOverlap = checkTimeOverlap();
+    if (hasOverlap) {
+      setSubmitError('시간대가 중복됩니다. 다시 확인해주세요.');
       return;
     }
 
@@ -212,74 +215,92 @@ const VolunteerScheduleRegistration: React.FC = () => {
     try {
       setIsLoading(true);
       
-      const recruitmentData = {
+      // API 문서에 맞게 데이터 구성
+      const recruitmentData: CreateRecruitmentParams = {
+        shelter: user.id,
         date: selectedDate.startDate.format('YYYY-MM-DD'),
+        start_time: timeSlots[0].startTime,
+        end_time: timeSlots[0].endTime,
+        type: selectedActivities.join(', '),
+        supplies: selectedSupplies.join(', '),
+        status: 'open',
+        
+        // 선택적 필드 - null 체크 추가
         end_date: selectedDate.endDate.format('YYYY-MM-DD'),
         timeSlots: timeSlots.map(slot => ({
           start_time: slot.startTime,
           end_time: slot.endTime
         })),
         activities: selectedActivities,
-        supplies: selectedSupplies,
-        maxParticipants,
-        description
+        maxParticipants: 5,
+        description: ''
       };
 
-      const recruitmentResponse = await createRecruitment(recruitmentData);
-      const recruitmentId = recruitmentResponse.recruitment.id;
+      // 봉사활동 생성 API 호출
+      const response = await createRecruitment(recruitmentData);
       
-      await uploadRecruitmentImages(
-        recruitmentId, 
-        images.map(img => img.file)
-      );
+      // 생성된 봉사활동 ID 확인
+      if (!response || !response.id) {
+        throw new Error('봉사활동 ID를 찾을 수 없습니다.');
+      }
       
-      alert('봉사 일정이 성공적으로 등록되었습니다.');
-      resetForm();
+      // 이미지 업로드 API 호출
+      await uploadRecruitmentImages(response.id, images.map(img => img.file));
+      
+      // 성공 처리
+      setSubmitSuccess(true);
+      
+      // 성공 메시지 표시 후 리디렉션
+      setTimeout(() => {
+        navigate('/shelter/dashboard'); // 메인 페이지 경로로 수정
+      }, 1500);
       
     } catch (error) {
       console.error('봉사 일정 등록 오류:', error);
+      
+      let errorMessage = '봉사 일정 등록 중 오류가 발생했습니다.';
+      
       if (error instanceof Error) {
-        setSubmitError(error.message);
+        errorMessage = error.message;
       } else if (typeof error === 'object' && error !== null && 'response' in error) {
-        const axiosError = error as AxiosErrorResponse;
+        const axiosError = error as { response?: { data?: { error?: string } } };
         if (axiosError.response?.data?.error) {
-          setSubmitError(axiosError.response.data.error);
-        } else {
-          setSubmitError('봉사 일정 등록 중 오류가 발생했습니다.');
+          errorMessage = axiosError.response.data.error;
         }
-      } else {
-        setSubmitError('봉사 일정 등록 중 오류가 발생했습니다.');
       }
+      
+      setSubmitError(errorMessage);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const resetForm = () => {
-    setSelectedDate(null);
-    setTimeSlots([{ startTime: '09:00', endTime: '12:00', id: 1 }]);
-    setSelectedActivities([]);
-    setSelectedSupplies([]);
-    setMaxParticipants(5);
-    setDescription('');
-    
-    images.forEach(image => URL.revokeObjectURL(image.preview));
-    setImages([]);
-    setImageError(null);
-    setSubmitError(null);
-  };
+  // 이미지 메모리 정리
+  useEffect(() => {
+    return () => {
+      images.forEach(image => URL.revokeObjectURL(image.preview));
+    };
+  }, []);
 
   return (
     <div className={styles.scheduleRegistration}>
       <h1>봉사 일정 등록</h1>
       
+      {/* 알림 메시지 */}
       {submitError && (
         <div className={styles.errorNotification}>
           <p>{submitError}</p>
         </div>
       )}
       
+      {submitSuccess && (
+        <div className={styles.successNotification}>
+          <p>봉사 일정이 성공적으로 등록되었습니다. 곧 메인 페이지로 이동합니다.</p>
+        </div>
+      )}
+      
       <form onSubmit={handleSubmit}>
+        {/* 날짜 선택 섹션 */}
         <section className={styles.section}>
           <h2>봉사 날짜</h2>
           <div className={styles.dateSelection}>
@@ -303,6 +324,7 @@ const VolunteerScheduleRegistration: React.FC = () => {
           </div>
         </section>
         
+        {/* 시간 선택 섹션 */}
         <section className={styles.section}>
           <h2>봉사 시간</h2>
           <div className={styles.timeSlots}>
@@ -356,6 +378,7 @@ const VolunteerScheduleRegistration: React.FC = () => {
           </div>
         </section>
         
+        {/* 이미지 업로드 섹션 */}
         <section className={styles.section}>
           <h2>보호소 이미지</h2>
           <div className={styles.imageUploadSection}>
@@ -397,6 +420,7 @@ const VolunteerScheduleRegistration: React.FC = () => {
           </div>
         </section>
         
+        {/* 봉사활동 내용 섹션 */}
         <section className={styles.section}>
           <h2>주요 봉사활동 내용</h2>
           <div className={styles.optionsContainer}>
@@ -415,6 +439,7 @@ const VolunteerScheduleRegistration: React.FC = () => {
           </div>
         </section>
         
+        {/* 준비물 섹션 */}
         <section className={styles.section}>
           <h2>준비물</h2>
           <div className={styles.optionsContainer}>
@@ -433,34 +458,7 @@ const VolunteerScheduleRegistration: React.FC = () => {
           </div>
         </section>
         
-        <section className={styles.section}>
-          <h2>활동 설명</h2>
-          <div className={styles.textareaContainer}>
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="봉사활동에 대한 상세 설명을 입력해주세요."
-              className={styles.descriptionTextarea}
-              rows={5}
-            />
-          </div>
-        </section>
-        
-        <section className={styles.section}>
-          <h2>최대 참가 인원</h2>
-          <div className={styles.numberInputContainer}>
-            <input
-              type="number"
-              min="1"
-              max="100"
-              value={maxParticipants}
-              onChange={(e) => setMaxParticipants(parseInt(e.target.value))}
-              className={styles.numberInput}
-            />
-            <span className={styles.numberLabel}>명</span>
-          </div>
-        </section>
-        
+        {/* 제출 버튼 */}
         <div className={styles.submitContainer}>
           <button 
             type="submit" 

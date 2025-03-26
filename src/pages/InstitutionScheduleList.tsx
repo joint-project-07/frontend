@@ -2,47 +2,90 @@ import React, { useEffect, useState } from "react";
 import Card from "../components/common/Card";
 import styles from "../style/InstitutionScheduleList.module.scss";
 import { useNavigate } from "react-router-dom";
-
-interface CardData {
-  id: number;
-  image: string;
-  title: string;
-  region: string;
-  date: string;
-  volunteerwork: string;
-}
+import { fetchAllRecruitments, CardData } from "../api/recruitmentApi";
+import useAuthStore from "../store/auth/useauthStore"; 
 
 const InstitutionScheduleList: React.FC = () => {
   const [cards, setCards] = useState<CardData[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
-
+  const { user } = useAuthStore();
+  
   useEffect(() => {
-    const data = Array.from({ length: 12 }, (_, index) => ({
-      id: index + 1,
-      image: "https://via.placeholder.com/300x200",
-      title: `보호기관 ${index + 1}`,
-      region:
-        index % 3 === 0
-          ? "서울특별시 마포구"
-          : index % 3 === 1
-          ? "서울특별시 서초구"
-          : "경기도 성남시",
-      date: `2025.${Math.floor(Math.random() * 12) + 1}.${
-        Math.floor(Math.random() * 28) + 1
-      }`,
-      volunteerwork: index % 2 === 0 ? "청소 및 관리" : "동물 돌보기",
-    }));
+    const loadInstitutionSchedules = async () => {
+      try {
+        if (!user?.id) {
+          setIsLoading(false);
+          return;
+        }
+        
+        // 모든 모집 정보 가져오기
+        const allRecruitments = await fetchAllRecruitments();
+        
+        // 간단하게 기관 ID로만 필터링
+        const institutionSchedules = allRecruitments.filter(
+          card => card.id === user.id
+        );
+        
+        setCards(institutionSchedules);
+        setIsLoading(false);
+      } catch (error) {
+        console.error("일정 데이터를 불러오는 중 오류가 발생했습니다:", error);
+        setIsLoading(false);
+      }
+    };
 
-    setCards(data);
-  }, []);
+    loadInstitutionSchedules();
+  }, [user]);
 
   const handleCardClick = (id: number) => {
     navigate(`/institution-detail/${id}`);
   };
 
+  // 사용자가 기관 계정으로 로그인했는지 확인
+  const isInstitution = localStorage.getItem('userType') === 'organization';
+  
+  if (!user || !isInstitution) {
+    return (
+      <div className={styles.noResultsContainer}>
+        <p>기관 계정으로 로그인해주세요.</p>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className={styles.loadingContainer}>
+        <p>데이터를 불러오는 중입니다...</p>
+      </div>
+    );
+  }
+
+  if (cards.length === 0) {
+    return (
+      <div className={styles.noResultsContainer}>
+        <p>등록된 봉사 일정이 없습니다.</p>
+        <button 
+          className={styles.addScheduleButton}
+          onClick={() => navigate('/add-schedule')}
+        >
+          새 봉사 일정 등록하기
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.institutionContainer}>
-      <h2 className={styles.institutionTitle}>보호기관 일정</h2>
+      <div className={styles.institutionHeader}>
+        <h2 className={styles.institutionTitle}>내 기관 봉사 일정</h2>
+        <button 
+          className={styles.addScheduleButton}
+          onClick={() => navigate('/add-schedule')}
+        >
+          새 일정 등록
+        </button>
+      </div>
       <div className={styles.institutionGrid}>
         {cards.map((card) => (
           <Card 

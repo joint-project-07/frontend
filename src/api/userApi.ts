@@ -59,7 +59,7 @@ export interface ProfileUpdateRequest {
 }
 
 export interface KakaoLoginRequest {
-  access_token: string;
+  authorization_code: string;
 }
 
 export const login = async (credentials: LoginCredentials) => {
@@ -71,7 +71,15 @@ export const logout = async (data: LogoutRequest) => {
 };
 
 export const processKakaoLogin = async (data: KakaoLoginRequest) => {
-  return await axiosInstance.post('/api/users/kakao-login/', data);
+  try {
+    console.log('백엔드로 전송할 데이터:', data);
+    const response = await axiosInstance.post('/api/users/kakao-login/', data);
+    console.log('백엔드 응답:', response);
+    return response;
+  } catch (error) {
+    console.error('카카오 로그인 API 호출 오류:', error);
+    throw error;
+  }
 };
 
 export const getUserInfo = async (): Promise<UserInfo> => {
@@ -148,3 +156,4 @@ export const requestTempPassword = async (userData: TempPasswordRequest) => {
 export const deleteAccount = async (data: DeleteAccountRequest) => {
   return await axiosInstance.post(`/api/users/delete/`, data);
 };
+

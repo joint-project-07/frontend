@@ -6,7 +6,7 @@ import useModalStore from "../store/modalStore";
 import DetailModal from "../components/common/DetailModal";
 import ShelterImageSwiper from "../components/common/ShelterImageSwiper";
 import { useModalContext } from "../contexts/ModalContext";
-import { useAuth } from "../contexts/AuthContext";
+import  useAuth  from "../store/auth/useauthStore";
 
 const DetailPage: React.FC = () => {
   const { id } = useParams();
