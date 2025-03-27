@@ -11,11 +11,22 @@ import {
   uploadBusinessLicense,
   verifyCode,
 } from "../api/services/shelterApi";
+import { AxiosError, isAxiosError } from "axios";
 
 interface LocationState {
   openLoginModal: boolean;
   from: string;
   activeTab?: string;
+}
+
+interface ShelterError {
+  user?: {
+    email?: string[];
+    contact_number_duplicate?: string[];
+    password?: string[];
+    contact_number_format?: string[];
+    password_confirm?: string[];
+  };
 }
 
 const ShelterSignupForm: React.FC = () => {
@@ -195,7 +206,7 @@ const ShelterSignupForm: React.FC = () => {
       } else {
         alert("인증 코드가 올바르지 않습니다. 다시 시도해주세요.");
       }
-    } catch (error) {
+    } catch {
       alert("인증 코드 검증 중 오류가 발생했습니다.");
     } finally {
       setLoading(false);
@@ -249,11 +260,15 @@ const ShelterSignupForm: React.FC = () => {
       await shelterSignup(signupData);
       alert("보호소 회원가입 완료!");
       navigate("/login");
-    } catch (error: any) {
-      console.error("회원가입 에러:", error.response?.data || error);
-      alert(
-        error.response?.data?.email?.[0] || "회원가입 중 오류가 발생했습니다."
-      );
+    } catch (err) {
+      if (isAxiosError(err)) {
+        const error = err as AxiosError<ShelterError>;
+        console.error("회원가입 에러:", error.response?.data || error);
+        alert(
+          error.response?.data?.user?.email?.[0] ||
+            "회원가입 중 오류가 발생했습니다."
+        );
+      }
     }
   };
 
