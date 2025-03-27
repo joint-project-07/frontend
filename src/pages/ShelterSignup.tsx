@@ -31,9 +31,11 @@ const ShelterSignupForm: React.FC = () => {
   const [codeVerified, setCodeVerified] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  
+
   // 사업자등록증 파일 상태 추가
-  const [businessLicenseFile, setBusinessLicenseFile] = useState<File | null>(null);
+  const [businessLicenseFile, setBusinessLicenseFile] = useState<File | null>(
+    null
+  );
   const [fileUploading, setFileUploading] = useState(false);
   const [fileUploaded, setFileUploaded] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -43,7 +45,7 @@ const ShelterSignupForm: React.FC = () => {
     setForm({ [name]: value });
 
     if (name === "business_registration_email") {
-      setEmailChecked(false); 
+      setEmailChecked(false);
       setEmailValid(null);
       setCodeSent(false);
       setCodeVerified(false);
@@ -61,20 +63,22 @@ const ShelterSignupForm: React.FC = () => {
       setUploadError(null);
     }
   };
-  
+
   // 파일 삭제 핸들러
   const handleFileDelete = () => {
     setBusinessLicenseFile(null);
     setFileUploaded(false);
     setUploadError(null);
-    
+
     // 파일 입력 필드 리셋
-    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const fileInput = document.querySelector(
+      'input[type="file"]'
+    ) as HTMLInputElement;
     if (fileInput) {
-      fileInput.value = '';
+      fileInput.value = "";
       fileInput.disabled = false;
     }
-    
+
     // 스토어에서 ID 제거
     if (form.business_license_id) {
       setForm({ business_license_id: undefined });
@@ -95,7 +99,12 @@ const ShelterSignupForm: React.FC = () => {
     }
 
     // 파일 형식 체크
-    const validFileTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
+    const validFileTypes = [
+      "application/pdf",
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+    ];
     if (!validFileTypes.includes(businessLicenseFile.type)) {
       setUploadError("PDF, JPG, PNG 형식의 파일만 업로드 가능합니다.");
       return;
@@ -110,7 +119,7 @@ const ShelterSignupForm: React.FC = () => {
         form.business_registration_number,
         form.name
       );
-      
+
       // 업로드 성공 시 폼 상태 업데이트
       setForm({ business_license_id: response.id });
       setFileUploaded(true);
@@ -137,8 +146,8 @@ const ShelterSignupForm: React.FC = () => {
       );
       setEmailValid(!response.exists);
       setEmailChecked(true);
-    } catch (err) {
-      console.error("이메일 중복 확인 에러:", err);
+    } catch (error) {
+      console.error("이메일 중복 확인 에러:", error);
       alert("이메일 중복 확인 중 오류가 발생했습니다.");
     } finally {
       setLoading(false);
@@ -176,20 +185,17 @@ const ShelterSignupForm: React.FC = () => {
     setLoading(true);
 
     try {
-      // 인증 코드 검증 함수 호출
       const response = await verifyCode(
         form.business_registration_email,
         verificationCode
       );
-      
       if (response.status === 200) {
         setCodeVerified(true);
         alert("이메일 인증이 완료되었습니다.");
       } else {
         alert("인증 코드가 올바르지 않습니다. 다시 시도해주세요.");
       }
-    } catch (err) {
-      console.error("인증 코드 검증 에러:", err);
+    } catch (error) {
       alert("인증 코드 검증 중 오류가 발생했습니다.");
     } finally {
       setLoading(false);
@@ -243,11 +249,10 @@ const ShelterSignupForm: React.FC = () => {
       await shelterSignup(signupData);
       alert("보호소 회원가입 완료!");
       navigate("/login");
-    } catch (err) {
-      const errorResponse = err as { response?: { data?: { email?: string[] } } };
-      console.error("회원가입 에러:", errorResponse?.response?.data || err);
+    } catch (error: any) {
+      console.error("회원가입 에러:", error.response?.data || error);
       alert(
-        errorResponse?.response?.data?.email?.[0] || "회원가입 중 오류가 발생했습니다."
+        error.response?.data?.email?.[0] || "회원가입 중 오류가 발생했습니다."
       );
     }
   };
@@ -314,8 +319,8 @@ const ShelterSignupForm: React.FC = () => {
           </div>
 
           <div className={styles.formGroup}>
-            <button 
-              type="button" 
+            <button
+              type="button"
               onClick={handleRequestVerificationCode}
               disabled={!emailValid || loading}
               className={!emailValid ? styles.disabledButton : styles.button}
@@ -337,7 +342,9 @@ const ShelterSignupForm: React.FC = () => {
               <button
                 type="button"
                 onClick={handleVerifyCode}
-                disabled={codeVerified || verificationCode.length < 4 || loading}
+                disabled={
+                  codeVerified || verificationCode.length < 4 || loading
+                }
                 className={styles.button}
               >
                 {codeVerified ? "인증 완료" : "인증 확인"}

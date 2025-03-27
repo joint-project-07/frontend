@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios from "axios";
 
 const API_URL = import.meta.env.API_BASE_URL || "https://back.dietstory.shop";
 
@@ -6,19 +6,19 @@ export const axiosInstance = axios.create({
   baseURL: API_URL,
   timeout: 10000,
   headers: {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json',
+    "Content-Type": "application/json",
+    Accept: "application/json",
   },
 });
 
 axiosInstance.interceptors.request.use(
   (config) => {
-    const accessToken = localStorage.getItem('accessToken');
-    
+    const accessToken = localStorage.getItem("accessToken");
+
     if (accessToken) {
-      config.headers['Authorization'] = `Bearer ${accessToken}`;
+      config.headers["Authorization"] = `Bearer ${accessToken}`;
     }
-    
+
     return config;
   },
   (error) => {
@@ -26,4 +26,4 @@ axiosInstance.interceptors.request.use(
   }
 );
 
-export * from '../userApi';
+export * from "../userApi";
