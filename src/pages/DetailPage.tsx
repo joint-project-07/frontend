@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import styles from "../style/DetailPage.module.scss"; 
+import styles from "../style/DetailPage.module.scss";
 import useStore from "../store/Detail";
 import useModalStore from "../store/modalStore";
 import DetailModal from "../components/common/DetailModal";
@@ -86,12 +86,12 @@ const formatTime = (timeString: string): string => {
 };
 
   useEffect(() => {
-    console.log("인증 상태 변화 감지:", { 
-      이전인증상태: prevAuthRef.current, 
+    console.log("인증 상태 변화 감지:", {
+      이전인증상태: prevAuthRef.current,
       현재인증상태: isAuthenticated,
       모달열기대기중: pendingModalOpen,
       로그인모달열림상태: isLoginModalOpen,
-      현재사용자: user
+      현재사용자: user,
     });
 
     if (!isLoginModalOpen && !prevAuthRef.current && isAuthenticated && pendingModalOpen && shelterData) {
@@ -208,7 +208,7 @@ const formatTime = (timeString: string): string => {
               <div className={styles["date-label"]}>선택 날짜:</div>
               <div className={styles["date-value"]}>{formattedDate || shelterData.date}</div>
             </div>
-            
+
             <div className={styles["time-label"]}>봉사시간:</div>
             <div className={styles["time-buttons"]}>
               {shelterData.start_time && shelterData.end_time ? (
@@ -226,7 +226,7 @@ const formatTime = (timeString: string): string => {
             <div className={styles["note-container"]}>
               봉사 시간은 선택 후 변경이 어려우니 신중하게 선택해주세요.
             </div>
-            
+
             <button
               className={styles["apply-btn"]}
               disabled={!selectedTime}

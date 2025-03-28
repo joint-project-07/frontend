@@ -10,11 +10,22 @@ import {
   shelterSignup,
   verifyCode,
 } from "../api/services/shelterApi";
+import { AxiosError, isAxiosError } from "axios";
 
 interface LocationState {
   openLoginModal: boolean;
   from: string;
   activeTab?: string;
+}
+
+interface ShelterError {
+  user?: {
+    email?: string[];
+    contact_number_duplicate?: string[];
+    password?: string[];
+    contact_number_format?: string[];
+    password_confirm?: string[];
+  };
 }
 
 const ShelterSignupForm: React.FC = () => {
@@ -39,7 +50,7 @@ const ShelterSignupForm: React.FC = () => {
     setForm({ [name]: value });
 
     if (name === "business_registration_email") {
-      setEmailChecked(false); 
+      setEmailChecked(false);
       setEmailValid(null);
       setCodeSent(false);
       setCodeVerified(false);
@@ -94,8 +105,8 @@ const ShelterSignupForm: React.FC = () => {
       );
       setEmailValid(!response.exists);
       setEmailChecked(true);
-    } catch (err) {
-      console.error("이메일 중복 확인 에러:", err);
+    } catch (error) {
+      console.error("이메일 중복 확인 에러:", error);
       alert("이메일 중복 확인 중 오류가 발생했습니다.");
     } finally {
       setLoading(false);
@@ -137,15 +148,13 @@ const ShelterSignupForm: React.FC = () => {
         form.business_registration_email,
         verificationCode
       );
-      
       if (response.status === 200) {
         setCodeVerified(true);
         alert("이메일 인증이 완료되었습니다.");
       } else {
         alert("인증 코드가 올바르지 않습니다. 다시 시도해주세요.");
       }
-    } catch (err) {
-      console.error("인증 코드 검증 에러:", err);
+    } catch {
       alert("인증 코드 검증 중 오류가 발생했습니다.");
     } finally {
       setLoading(false);
@@ -206,11 +215,14 @@ const ShelterSignupForm: React.FC = () => {
       alert("보호소 회원가입 완료!");
       navigate("/login");
     } catch (err) {
-      const errorResponse = err as { response?: { data?: { email?: string[] } } };
-      console.error("회원가입 에러:", errorResponse?.response?.data || err);
-      alert(
-        errorResponse?.response?.data?.email?.[0] || "회원가입 중 오류가 발생했습니다."
-      );
+      if (isAxiosError(err)) {
+        const error = err as AxiosError<ShelterError>;
+        console.error("회원가입 에러:", error.response?.data || error);
+        alert(
+          error.response?.data?.user?.email?.[0] ||
+            "회원가입 중 오류가 발생했습니다."
+        );
+      }
     }
   };
 
@@ -276,8 +288,8 @@ const ShelterSignupForm: React.FC = () => {
           </div>
 
           <div className={styles.formGroup}>
-            <button 
-              type="button" 
+            <button
+              type="button"
               onClick={handleRequestVerificationCode}
               disabled={!emailValid || loading}
               className={!emailValid ? styles.disabledButton : styles.button}
@@ -299,7 +311,9 @@ const ShelterSignupForm: React.FC = () => {
               <button
                 type="button"
                 onClick={handleVerifyCode}
-                disabled={codeVerified || verificationCode.length < 4 || loading}
+                disabled={
+                  codeVerified || verificationCode.length < 4 || loading
+                }
                 className={styles.button}
               >
                 {codeVerified ? "인증 완료" : "인증 확인"}
