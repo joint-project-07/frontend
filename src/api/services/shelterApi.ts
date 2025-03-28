@@ -22,7 +22,7 @@ interface BusinessLicenseResponse {
   business_license_file: string;
   business_number: string;
   business_name: string;
-  status: 'pending' | 'approved' | 'rejected';
+  status: "pending" | "approved" | "rejected";
 }
 
 // 보호소 이메일 중복 확인
@@ -67,29 +67,29 @@ export const uploadBusinessLicense = async (
 ): Promise<BusinessLicenseResponse> => {
   // FormData 객체 생성
   const formData = new FormData();
-  
+
   // 파일 추가
-  formData.append('business_license_file', file);
-  
+  formData.append("business_license_file", file);
+
   // 추가 정보가 있으면 FormData에 추가
   if (businessNumber) {
-    formData.append('business_number', businessNumber);
+    formData.append("business_number", businessNumber);
   }
-  
+
   if (businessName) {
-    formData.append('business_name', businessName);
+    formData.append("business_name", businessName);
   }
-  
+
   // multipart/form-data로 전송
   const response = await axiosInstance.post(
-    '/api/shelters/license/',
+    "/api/shelters/license/",
     formData,
     {
       headers: {
-        'Content-Type': 'multipart/form-data',
+        "Content-Type": "multipart/form-data",
       },
     }
   );
-  
+
   return response.data;
 };
