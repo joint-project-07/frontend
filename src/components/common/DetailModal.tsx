@@ -5,7 +5,7 @@ import styles from "../../style/DetailModal.module.scss";
 const DetailModal: React.FC = () => {
   const { isOpen, closeModal } = useModalStore();
 
-  if (!isOpen) return null;
+  if (!isOpen) return null; 
 
   return (
     <div className={styles.modalOverlay}>
