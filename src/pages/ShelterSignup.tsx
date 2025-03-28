@@ -24,14 +24,13 @@ const ShelterSignupForm: React.FC = () => {
   );
   const [passwordMatch, setPasswordMatch] = useState(true);
   const [emailChecked, setEmailChecked] = useState(false);
-  const [emailValid, setEmailValid] = useState<boolean | null>(null); // true: 사용 가능, false: 중복
-  const [verificationCode, setVerificationCode] = useState(""); // 사용자가 입력할 인증 코드
+  const [emailValid, setEmailValid] = useState<boolean | null>(null); 
+  const [verificationCode, setVerificationCode] = useState(""); 
   const [codeSent, setCodeSent] = useState(false);
   const [codeVerified, setCodeVerified] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   
-  // 사업자등록증 파일 상태 추가
   const [businessLicenseFile, setBusinessLicenseFile] = useState<File | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
@@ -51,18 +50,15 @@ const ShelterSignupForm: React.FC = () => {
     }
   };
 
-  // 파일 선택 핸들러
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
       
-      // 파일 크기 체크 (예: 10MB 제한)
       if (file.size > 10 * 1024 * 1024) {
         setUploadError("파일 크기는 10MB 이하여야 합니다.");
         return;
       }
 
-      // 파일 형식 체크
       const validFileTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
       if (!validFileTypes.includes(file.type)) {
         setUploadError("PDF, JPG, PNG 형식의 파일만 업로드 가능합니다.");
@@ -74,12 +70,10 @@ const ShelterSignupForm: React.FC = () => {
     }
   };
   
-  // 파일 삭제 핸들러
   const handleFileDelete = () => {
     setBusinessLicenseFile(null);
     setUploadError(null);
     
-    // 파일 입력 필드 리셋
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
     if (fileInput) {
       fileInput.value = '';
@@ -139,7 +133,6 @@ const ShelterSignupForm: React.FC = () => {
     setLoading(true);
 
     try {
-      // 인증 코드 검증 함수 호출
       const response = await verifyCode(
         form.business_registration_email,
         verificationCode
@@ -186,7 +179,6 @@ const ShelterSignupForm: React.FC = () => {
       return;
     }
 
-    // 사업자등록증 파일 확인
     if (!businessLicenseFile) {
       alert("사업자등록증 파일을 선택해주세요.");
       return;
@@ -197,20 +189,16 @@ const ShelterSignupForm: React.FC = () => {
       return;
     }
 
-    // FormData 생성
     const formData = new FormData();
     
-    // 폼 데이터 추가
     Object.entries(form).forEach(([key, value]) => {
       if (value !== undefined && value !== null) {
         formData.append(key, value.toString());
       }
     });
     
-    // 이메일 추가 (필요한 경우)
     formData.append('email', form.business_registration_email || '');
     
-    // 사업자등록증 파일 추가 ('license' 키 사용)
     formData.append('license', businessLicenseFile);
 
     try {

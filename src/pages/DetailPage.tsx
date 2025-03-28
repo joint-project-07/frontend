@@ -9,7 +9,6 @@ import { useModalContext } from "../contexts/ModalContext";
 import useAuth from "../store/auth/useauthStore";
 import { fetchRecruitmentDetail, applyForVolunteer } from "../api/recruitmentApi";
 
-// 실제 API 응답 구조에 맞게 인터페이스 정의
 interface ShelterDetail {
   id: number;
   shelter: number;
@@ -29,37 +28,29 @@ const DetailPage: React.FC = () => {
   const selectedTime = useStore((state) => state.selectedTime);
   const setSelectedTime = useStore((state) => state.setSelectedTime);
   
-  // Modal Store에서 필요한 상태와 함수 가져오기
   const { openModal, isOpen: isDetailModalOpen } = useModalStore();
   const { openLoginModal, isLoginModalOpen, setPreviousPath } = useModalContext();
   
-  // 통합된 AuthContext에서 인증 상태 가져오기
   const { isAuthenticated, user } = useAuth();
   
-  // 상세 정보 상태 관리
   const [shelterData, setShelterData] = useState<ShelterDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  // 로그인 완료 후 모달을 열어야 함을 나타내는 상태
   const [pendingModalOpen, setPendingModalOpen] = useState(false);
-  // 이전 인증 상태를 추적하기 위한 ref
   const prevAuthRef = useRef(isAuthenticated);
 
-  // 현재 경로 저장
   useEffect(() => {
     setPreviousPath(location.pathname);
   }, [location.pathname, setPreviousPath]);
 
-  // API에서 상세 정보 불러오기
   useEffect(() => {
     const loadShelterDetail = async () => {
       try {
         setIsLoading(true);
         const data = await fetchRecruitmentDetail(id);
-        console.log("API 응답 데이터:", data); // 디버깅용 로그
+        console.log("API 응답 데이터:", data); 
         
-        // 시간 형식 조정 (초 부분 제거)
         if (data.start_time) {
           data.start_time = formatTime(data.start_time);
         }
@@ -69,7 +60,6 @@ const DetailPage: React.FC = () => {
         
         setShelterData(data);
         
-        // API에서 받은 시간 정보로 자동 선택
         if (data.start_time && data.end_time) {
           setSelectedTime(`${data.start_time} ~ ${data.end_time}`);
         }
