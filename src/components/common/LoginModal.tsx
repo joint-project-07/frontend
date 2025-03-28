@@ -52,9 +52,23 @@ const LoginModal: React.FC = () => {
         });
       }
       
-      // 사용자 타입 저장 (추가된 부분)
+      // 사용자 타입 저장
       localStorage.setItem('userType', activeTab);
+      
+      // 탭 스토리지도 업데이트 - 이 부분 추가
+      const tabState = { state: { activeTab: activeTab, version: 0 } };
+      localStorage.setItem('tab-storage', JSON.stringify(tabState));
+      
       console.log(`로그인 성공: ${activeTab} 타입으로 저장됨`);
+      console.log("탭 스토리지 업데이트됨:", JSON.stringify(tabState));
+      
+      // 로그인 후 현재 상태 확인 로깅
+      console.log("로그인 후 상태 확인:", {
+        userType: localStorage.getItem('userType'),
+        tabStorage: localStorage.getItem('tab-storage'),
+        accessToken: localStorage.getItem('accessToken') || localStorage.getItem('access_token'),
+        isAuth: !!localStorage.getItem('accessToken') || !!localStorage.getItem('access_token')
+      });
       
       closeLoginModal();
 
@@ -116,6 +130,13 @@ const LoginModal: React.FC = () => {
 
       // 로그인 성공 후 기본 리다이렉트 처리
       localStorage.setItem('userType', 'volunteer'); // 기본적으로 봉사자로 설정
+      
+      // 탭 스토리지도 업데이트 - 카카오 로그인은 항상 volunteer로 설정
+      const tabState = { state: { activeTab: 'volunteer', version: 0 } };
+      localStorage.setItem('tab-storage', JSON.stringify(tabState));
+      
+      console.log("카카오 로그인 성공: volunteer 타입으로 저장됨");
+      
       navigate("/"); // 메인 페이지로 이동
     } catch (error) {
       console.error("카카오 로그인 중 오류 발생:", error);
@@ -186,16 +207,16 @@ const LoginModal: React.FC = () => {
 
               {/* 카카오 로그인 버튼 */}
               <div className={styles.kakaoLoginContainer}>
-        <img 
-          src={kakaoLoginBtn} 
-          alt="카카오톡으로 시작하기" 
-          className={styles.kakaoLoginImg}
-          onClick={handleKakaoLogin}
-          style={{ 
-            cursor: isLoading ? 'default' : 'pointer', 
-            opacity: isLoading ? 0.7 : 1 
-          }}
-        />
+                <img 
+                  src={kakaoLoginBtn} 
+                  alt="카카오톡으로 시작하기" 
+                  className={styles.kakaoLoginImg}
+                  onClick={handleKakaoLogin}
+                  style={{ 
+                    cursor: isLoading ? 'default' : 'pointer', 
+                    opacity: isLoading ? 0.7 : 1 
+                  }}
+                />
               </div>
             </div>
           ) : (

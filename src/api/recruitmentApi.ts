@@ -1,8 +1,6 @@
-// VolunteerApi.ts
-import { axiosInstance } from "../api/axios/axiosInstance";
+import { axiosInstance } from "./axios/axiosInstance";
 import { Dayjs } from "dayjs";
 
-// 검색 파라미터 인터페이스
 export interface SearchParams {
   locations?: string[];
   dateRange?: {
@@ -15,7 +13,6 @@ export interface SearchParams {
   } | null;
 }
 
-// API 응답 데이터 인터페이스
 export interface ApiRecruitment {
   id: number;
   shelter: number;
@@ -28,7 +25,6 @@ export interface ApiRecruitment {
   status: string;
 }
 
-// 카드 데이터 인터페이스
 export interface CardData {
   id: number;
   image: string;
@@ -36,34 +32,78 @@ export interface CardData {
   region: string;
   date: string;
   volunteerwork: string;
+  shelter: number;
 }
 
-// 봉사활동 등록 데이터 인터페이스
-export interface CreateRecruitmentParams {
-  shelter: number;
+export interface User {
+  id: number;
+  email: string;
+  name: string;
+  contact_number: string;
+  profile_image: string;
+}
+
+export interface RecruitmentDetails {
+  id: number;
   date: string;
   start_time: string;
   end_time: string;
-  type: string;
-  supplies: string;
   status: string;
-  
-  // 선택적 필드
-  end_date?: string;
-  timeSlots?: { start_time: string; end_time: string }[];
-  activities?: string[];
-  maxParticipants?: number;
-  description?: string;
 }
 
-// 이미지 업로드 응답 인터페이스
+export interface Shelter {
+  id: number;
+  name: string;
+  region: string;
+  address: string;
+}
+
+export interface CreateRecruitmentParams {
+  id: number;
+  user: User;
+  recruitment: RecruitmentDetails;
+  shelter: Shelter;
+  status: string;
+  rejected_reason: string;
+  
+  supplies?: string;
+  description?: string;
+  activities?: string[];
+  end_date?: string;
+  maxParticipants?: number;
+  timeSlots?: Array<{
+    start_time: string;
+    end_time: string;
+  }>;
+}
+
 export interface UploadImageResponse {
   success: boolean;
   imageUrls?: string[];
   message?: string;
 }
 
-// 모든 봉사활동 모집 정보 가져오기
+export const fetchRecruitmentDetail = async (id: string | undefined) => {
+  try {
+    if (!id) {
+      throw new Error('모집공고 ID가 제공되지 않았습니다.');
+    }
+    
+    const response = await axiosInstance.get(`/api/recruitments/${id}/`);
+    
+    // API 응답이 recruitment 객체로 감싸져 있는 경우
+    if (response.data && response.data.recruitment) {
+      console.log('중첩된 recruitment 데이터 발견:', response.data.recruitment);
+      return response.data.recruitment;
+    }
+    
+    // 감싸져 있지 않은 경우 원래 데이터 반환
+    return response.data;
+  } catch (error) {
+    console.error('모집공고 상세 정보 조회 실패:', error);
+    throw error;
+  }
+};
 export const fetchAllRecruitments = async (): Promise<CardData[]> => {
   try {
     const response = await axiosInstance.get('/api/recruitments/');
@@ -76,7 +116,8 @@ export const fetchAllRecruitments = async (): Promise<CardData[]> => {
         title: item.shelter_name || "봉사 센터",
         region: "지역 정보", 
         date: item.date || "날짜 정보 없음",
-        volunteerwork: item.type || "봉사 정보 없음"
+        volunteerwork: item.type || "봉사 정보 없음",
+        shelter: item.shelter 
       }));
     }
     
@@ -87,7 +128,8 @@ export const fetchAllRecruitments = async (): Promise<CardData[]> => {
         title: item.shelter_name || "봉사 센터",
         region: "지역 정보",
         date: item.date || "날짜 정보 없음",
-        volunteerwork: item.type || "봉사 정보 없음"
+        volunteerwork: item.type || "봉사 정보 없음",
+        shelter: item.shelter 
       }));
     }
     
@@ -98,7 +140,6 @@ export const fetchAllRecruitments = async (): Promise<CardData[]> => {
   }
 };
 
-// 검색 조건에 맞는 봉사활동 모집 정보 가져오기
 export const searchRecruitments = async (searchParams: SearchParams): Promise<CardData[]> => {
   try {
     const params = new URLSearchParams();
@@ -129,7 +170,8 @@ export const searchRecruitments = async (searchParams: SearchParams): Promise<Ca
         title: item.shelter_name || "봉사 센터",
         region: "지역 정보", 
         date: item.date || "날짜 정보 없음",
-        volunteerwork: item.type || "봉사 정보 없음"
+        volunteerwork: item.type || "봉사 정보 없음",
+        shelter: item.shelter 
       }));
     }
     
@@ -140,10 +182,19 @@ export const searchRecruitments = async (searchParams: SearchParams): Promise<Ca
   }
 };
 
-// 봉사활동 모집 공고 생성
 export const createRecruitment = async (data: CreateRecruitmentParams): Promise<{ id: number }> => {
   try {
-    const response = await axiosInstance.post('/api/recruitments/create/', data);
+    const requestData = {
+      shelter: data.shelter.id,
+      date: data.recruitment.date,
+      start_time: data.recruitment.start_time,
+      end_time: data.recruitment.end_time,
+      type: "cleaning", 
+      supplies: data.supplies || '',
+      status: data.recruitment.status || 'open'
+    };
+    
+    const response = await axiosInstance.post('/api/recruitments/create/', requestData);
     return response.data;
   } catch (error) {
     console.error('모집 공고 생성 실패:', error);
@@ -151,7 +202,6 @@ export const createRecruitment = async (data: CreateRecruitmentParams): Promise<
   }
 };
 
-// 봉사활동 이미지 업로드
 export const uploadRecruitmentImages = async (recruitmentId: number, images: File[]): Promise<UploadImageResponse> => {
   try {
     const formData = new FormData();
@@ -160,15 +210,37 @@ export const uploadRecruitmentImages = async (recruitmentId: number, images: Fil
       formData.append('images', image, `image_${index}`);
     });
 
-    const response = await axiosInstance.post(`/api/recruitments/${recruitmentId}/images/`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      }
-    });
+    const response = await axiosInstance.post(`/api/recruitments/${recruitmentId}/images/`, formData);
 
     return response.data;
   } catch (error) {
     console.error('이미지 업로드 실패:', error);
+    throw error;
+  }
+};
+
+export const applyForVolunteer = async (
+  recruitmentId: string | undefined, 
+  selectedTime: string,
+  userId: string | undefined
+) => {
+  try {
+    if (!recruitmentId || !userId) {
+      throw new Error('필수 정보가 누락되었습니다.');
+    }
+    
+    const [start_time, end_time] = selectedTime.split(' ~ ');
+    
+    const response = await axiosInstance.post(`/api/applications/`, {
+      recruitment_id: recruitmentId,
+      user_id: userId,
+      start_time,
+      end_time
+    });
+    
+    return response.data;
+  } catch (error) {
+    console.error('봉사 신청 실패:', error);
     throw error;
   }
 };

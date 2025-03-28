@@ -1,11 +1,11 @@
 import dogImage from "../../assets/dog-image.png";
-import useModalStore from "../../store/modalStore";
+import useModalStore from "../../store/ModalStore";
 import styles from "../../style/DetailModal.module.scss";
 
 const DetailModal: React.FC = () => {
   const { isOpen, closeModal } = useModalStore();
 
-  if (!isOpen) return null;
+  if (!isOpen) return null; 
 
   return (
     <div className={styles.modalOverlay}>
