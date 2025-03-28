@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import styles from "../style/DetailPage.module.scss";
 import useStore from "../store/Detail";
-import useModalStore from "../store/modalStore";
+import useModalStore from "../store/ModalStore";
 import DetailModal from "../components/common/DetailModal";
 import ShelterImageSwiper from "../components/common/ShelterImageSwiper";
 import { useModalContext } from "../contexts/ModalContext";
