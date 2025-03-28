@@ -8,23 +8,26 @@ import useAuthStore from "../store/auth/useauthStore";
 const InstitutionScheduleList: React.FC = () => {
   const [cards, setCards] = useState<CardData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isInstitution, setIsInstitution] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuthStore();
   
   useEffect(() => {
+    const userType = localStorage.getItem('userType');
+    setIsInstitution(userType === 'organization');
+  }, []);
+  
+  useEffect(() => {
     const loadInstitutionSchedules = async () => {
       try {
-        if (!user?.id) {
+        if (!user?.id || !isInstitution) {
           setIsLoading(false);
           return;
         }
         
-        // 모든 모집 정보 가져오기
         const allRecruitments = await fetchAllRecruitments();
-        
-        // 간단하게 기관 ID로만 필터링
         const institutionSchedules = allRecruitments.filter(
-          card => card.id === user.id
+          card => card.shelter === user.id
         );
         
         setCards(institutionSchedules);
@@ -36,19 +39,25 @@ const InstitutionScheduleList: React.FC = () => {
     };
 
     loadInstitutionSchedules();
-  }, [user]);
+  }, [user, isInstitution]);
 
   const handleCardClick = (id: number) => {
     navigate(`/institution-detail/${id}`);
   };
 
-  // 사용자가 기관 계정으로 로그인했는지 확인
-  const isInstitution = localStorage.getItem('userType') === 'organization';
-  
-  if (!user || !isInstitution) {
+  const handleAddSchedule = () => {
+    navigate('/institution-schedule/');
+  };
+  if (!isInstitution) {
     return (
       <div className={styles.noResultsContainer}>
         <p>기관 계정으로 로그인해주세요.</p>
+        <button 
+          className={styles.loginButton}
+          onClick={() => navigate('/')}
+        >
+          메인 페이지로 돌아가기
+        </button>
       </div>
     );
   }
@@ -67,7 +76,7 @@ const InstitutionScheduleList: React.FC = () => {
         <p>등록된 봉사 일정이 없습니다.</p>
         <button 
           className={styles.addScheduleButton}
-          onClick={() => navigate('/add-schedule')}
+          onClick={handleAddSchedule}
         >
           새 봉사 일정 등록하기
         </button>
@@ -81,7 +90,7 @@ const InstitutionScheduleList: React.FC = () => {
         <h2 className={styles.institutionTitle}>내 기관 봉사 일정</h2>
         <button 
           className={styles.addScheduleButton}
-          onClick={() => navigate('/add-schedule')}
+          onClick={handleAddSchedule}
         >
           새 일정 등록
         </button>

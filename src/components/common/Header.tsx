@@ -6,52 +6,48 @@ import useAuthStore from "../../store/auth/useauthStore";
 import { useModalContext } from "../../contexts/ModalContext";
 
 const Header: React.FC = () => {
-  // 앱에서 사용하는 인증 방식에 맞게 선택하세요
   const { isAuthenticated, logout } = useAuthStore(); 
   const { openLoginModal } = useModalContext();
   const navigate = useNavigate();
   const [loggingOut, setLoggingOut] = useState(false);
   
-  // 강제 리렌더링을 위한 상태 추가
-  const [, forceUpdate] = useState({});
+  const [localAuth, setLocalAuth] = useState(false);
   
-  // 카카오 로그인 후 강제 리렌더링을 위한 효과
   useEffect(() => {
-    // 주기적으로 인증 상태 확인
     const checkAuth = () => {
       const token = localStorage.getItem('accessToken') || localStorage.getItem('access_token');
-      if (token) {
-        // 강제 리렌더링
-        forceUpdate({});
-      }
+      setLocalAuth(!!token);
     };
     
-    // 처음 로드 시 확인
     checkAuth();
     
-    // 주기적으로 확인 (선택적)
-    const interval = setInterval(checkAuth, 1000); // 1초마다 확인
+    const handleStorageChange = () => {
+      checkAuth();
+    };
     
-    return () => clearInterval(interval);
+    window.addEventListener('storage', handleStorageChange);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
   }, []);
   
-  // 실제 인증 상태와 로컬 스토리지의 토큰을 모두 확인
-  const isActuallyAuthenticated = isAuthenticated || 
-    !!(localStorage.getItem('accessToken') || localStorage.getItem('access_token'));
+  const isActuallyAuthenticated = isAuthenticated || localAuth;
   
-  // userType 결정
   const userType = localStorage.getItem('userType');
 
-  // 중요: 콘솔에 현재 상태 로깅
-  console.log("Header 렌더링 - 인증 상태:", isActuallyAuthenticated, "사용자 타입:", userType);
+  if (process.env.NODE_ENV === 'development') {
+    console.log("Header 렌더링 - 인증 상태:", isActuallyAuthenticated, "사용자 타입:", userType);
+  }
 
   const handleLogout = async () => {
     try {
       setLoggingOut(true);
       console.log("로그아웃 시작");
       
-      // useAuthStore의 logout 함수 호출
       await logout();
+      
+      setLocalAuth(false);
       
       console.log("로그아웃 완료, 홈으로 이동");
       navigate('/');
@@ -78,7 +74,6 @@ const Header: React.FC = () => {
       <nav className={styles.nav}>
         {isActuallyAuthenticated ? (
           <>
-            {/* userType에 따라 다른 링크 표시 */}
             {userType === "volunteer" && (
               <Link to="/MyPage" className={styles.navLink}>마이페이지</Link>
             )}
@@ -94,7 +89,6 @@ const Header: React.FC = () => {
             </button>
           </>
         ) : (
-          // 로그인되지 않은 경우 로그인 모달 버튼 표시
           <button className={styles.loginBtn} onClick={openLoginModal}>
             로그인 / 회원가입
           </button>

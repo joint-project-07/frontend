@@ -5,7 +5,7 @@ import Searchdate from '../components/feature/Searchdate';
 import SearchRange from '../components/feature/SearchRange';
 import styles from '../style/VolunteerScheduleRegistration.module.scss';
 import dayjs from 'dayjs';
-import { createRecruitment, uploadRecruitmentImages, CreateRecruitmentParams } from '../api/recruitmentApi';
+import { createRecruitment, CreateRecruitmentParams, uploadRecruitmentImages,  } from '../api/recruitmentApi';
 
 const activityOptions = [
   '시설 청소',
@@ -54,15 +54,6 @@ const VolunteerScheduleRegistration: React.FC = () => {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitSuccess, setSubmitSuccess] = useState<boolean>(false);
 
-  // 로그인 확인 useEffect - 최상위 레벨에 배치
-  useEffect(() => {
-    if (!user) {
-      alert('로그인이 필요합니다.');
-      navigate('/login');
-    }
-  }, [user, navigate]); // user와 navigate를 의존성 배열에 추가
-
-  // 이미지 클린업 useEffect
   useEffect(() => {
     return () => {
       images.forEach(image => URL.revokeObjectURL(image.preview));
@@ -137,7 +128,8 @@ const VolunteerScheduleRegistration: React.FC = () => {
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     setImageError(null);
-    
+    console.log("이미지 업로드 시도:", files ? files.length : 0, "개 파일");
+
     if (!files || files.length === 0) return;
     
     if (images.length + files.length > 10) {
@@ -148,6 +140,8 @@ const VolunteerScheduleRegistration: React.FC = () => {
     const newImages: ImageFile[] = [];
     
     Array.from(files).forEach(file => {
+      console.log("이미지 파일 정보:", file.name, file.type, file.size);
+
       if (!file.type.match('image.*')) {
         setImageError('이미지 파일만 업로드 가능합니다.');
         return;
@@ -159,7 +153,8 @@ const VolunteerScheduleRegistration: React.FC = () => {
         preview: URL.createObjectURL(file)
       });
     });
-    
+    console.log("추가된 이미지 수:", newImages.length);
+
     setImages(prev => [...prev, ...newImages]);
     
     if (fileInputRef.current) {
@@ -180,17 +175,24 @@ const VolunteerScheduleRegistration: React.FC = () => {
     e.preventDefault();
     setSubmitError(null);
     
+    console.log("현재 로그인 상태:", {
+      user: user,
+      userType: localStorage.getItem('userType'),
+      accessToken: localStorage.getItem('accessToken') || localStorage.getItem('access_token'),
+      tabStorage: localStorage.getItem('tab-storage')
+    });
+  
     if (!selectedDate) {
       setSubmitError('봉사 날짜를 선택해주세요.');
       return;
     }
-
+  
     const hasOverlap = checkTimeOverlap();
     if (hasOverlap) {
       setSubmitError('시간대가 중복됩니다. 다시 확인해주세요.');
       return;
     }
-
+  
     if (selectedActivities.length === 0) {
       setSubmitError('봉사활동 내용을 최소 하나 이상 선택해주세요.');
       return;
@@ -200,47 +202,62 @@ const VolunteerScheduleRegistration: React.FC = () => {
       setImageError('이미지를 최소 3장 이상 업로드해주세요.');
       return;
     }
-
+  
     try {
       setIsLoading(true);
       
-      if (!user) {
-        throw new Error('로그인이 필요합니다.');
-      }
-      
-      const recruitmentData: CreateRecruitmentParams = {
-        shelter: user.id,
-        date: selectedDate.startDate.format('YYYY-MM-DD'),
-        start_time: timeSlots[0].startTime,
-        end_time: timeSlots[0].endTime,
-        type: selectedActivities.join(', '),
-        supplies: selectedSupplies.join(', '),
-        status: 'open',
-        
-        end_date: selectedDate.endDate.format('YYYY-MM-DD'),
-        timeSlots: timeSlots.map(slot => ({
-          start_time: slot.startTime,
-          end_time: slot.endTime
-        })),
-        activities: selectedActivities,
-        maxParticipants: 5,
-        description: ''
-      };
 
+const recruitmentData: CreateRecruitmentParams = {
+  id: 0,
+  user: {
+    id: user?.id || 0,
+    email: user?.email || '',
+    name: user?.name || '',
+    contact_number: user?.contact_number || '',
+    profile_image: user?.profile_image || ''
+  },
+  recruitment: {
+    id: 0,
+    date: selectedDate.startDate.format('YYYY-MM-DD'),
+    start_time: timeSlots[0].startTime,
+    end_time: timeSlots[0].endTime,
+    status: 'open'
+  },
+  shelter: {
+    id: user?.id || 0,
+    name: user?.name || '',
+    region: '서울',
+    address: ''
+  },
+  status: 'pending',
+  rejected_reason: '',
+  supplies: selectedSupplies.join(', ')
+};
+console.log("API 요청 시작", recruitmentData);
       const response = await createRecruitment(recruitmentData);
-      
+      console.log("API 응답 받음", response);
       if (!response || !response.id) {
         throw new Error('봉사활동 ID를 찾을 수 없습니다.');
       }
       
-      await uploadRecruitmentImages(response.id, images.map(img => img.file));
-      
-      setSubmitSuccess(true);
-      
-      setTimeout(() => {
-        navigate('/institution-schedule'); 
-      }, 1500);
-      
+      console.log("이미지 업로드 시작:", images.length, "개 이미지");
+      console.log("이미지 정보:", images.map(img => ({
+        name: img.file.name,
+        size: img.file.size,
+        type: img.file.type
+      })));
+try {
+  console.log("이미지 업로드 시작, response.id:", response.id);
+  await uploadRecruitmentImages(response.id, images.map(img => img.file));
+  console.log("이미지 업로드 완료");
+} catch (imageError) {
+  console.error("이미지 업로드 오류:", imageError);
+}
+
+setSubmitSuccess(true);
+console.log("리다이렉트 시작");
+navigate('/institution-schedule');
+
     } catch (error) {
       console.error('봉사 일정 등록 오류:', error);
       
@@ -260,11 +277,6 @@ const VolunteerScheduleRegistration: React.FC = () => {
       setIsLoading(false);
     }
   };
-
-  // 로그인하지 않은 경우 로딩 표시 (조건부 렌더링은 가능, 조건부 훅 호출은 불가능)
-  if (!user) {
-    return <div className={styles.loadingContainer}>로그인이 필요합니다.</div>;
-  }
 
   return (
     <div className={styles.scheduleRegistration}>
