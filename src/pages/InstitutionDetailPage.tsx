@@ -54,107 +54,31 @@ const InstitutionDetailPage = () => {
         const recruitmentData = await getRecruitment(parseInt(institutionId));
         
         // 지원자 목록 조회
-        const applicantsResponse = await getRecruitmentApplicants(parseInt(institutionId));
+        const applicantsData = await getRecruitmentApplicants(parseInt(institutionId));
         
-        // 응답 로그 확인
-        console.log('지원자 응답 데이터 구조:', applicantsResponse);
+        // 지원자 데이터 매핑
+        const mappedVolunteers: Volunteer[] = applicantsData.map((applicant: ApplicantData) => ({
+          id: applicant.id,
+          name: applicant.user.name,
+          phone: applicant.user.contact_number,
+          status: applicant.status === "approved" ? "승인" : 
+                 applicant.status === "rejected" ? "반려" : "대기",
+          attendance: applicant.attendance === "attended" ? "참석" : 
+                      applicant.attendance === "absent" ? "불참석" : undefined
+        }));
         
-        // applicants가 이중 배열로 중첩되어 있는지 확인하고 적절히 처리
-        let applicantsData = applicantsResponse;
-        
-        // 배열인지 확인
-        if (Array.isArray(applicantsResponse)) {
-          // 첫 번째 요소가 다시 배열인지 확인 (중첩 배열인 경우)
-          if (Array.isArray(applicantsResponse[0])) {
-            applicantsData = applicantsResponse[0];
-          }
-        }
-        
-        // 다시 한번 중첩 구조 확인
-        if (applicantsData?.applicants && Array.isArray(applicantsData.applicants)) {
-          applicantsData = applicantsData.applicants;
-        }
-        
-        // 최종 처리된 데이터 로그
-        console.log('처리된 지원자 데이터:', applicantsData);
-        
-        const mappedVolunteers: Volunteer[] = [];
-        
-        // 지원자 데이터가 배열인 경우 처리
-        if (Array.isArray(applicantsData)) {
-          applicantsData.forEach((applicant: any) => {
-            // 각 지원자가 객체이고 필수 필드가 있는지 확인
-            if (applicant && typeof applicant === 'object') {
-              // 중첩된 구조 처리 - 실제 데이터가 applicant.user에 있는지 확인
-              const userData = applicant.user || applicant;
-              
-              mappedVolunteers.push({
-                id: applicant.id || 0,
-                name: userData.name || '이름 없음',
-                phone: userData.contact_number || '',
-                status: applicant.status === "approved" ? "승인" : 
-                      applicant.status === "rejected" ? "반려" : "대기",
-                attendance: applicant.attendance === "attended" ? "참석" : 
-                          applicant.attendance === "absent" ? "불참석" : undefined,
-                profile_image: userData.profile_image || ''
-              });
-            }
-          });
-        }
-        
-        let shelterId = 0;
-        let shelterName = '';
-        let shelterType = '';
-        let shelterSupplies = '';
-        let shelterRegion = '서울'; // 기본값
-        
-        // id 처리
-        shelterId = recruitmentData.id || 0;
-        
-        // shelter_name 처리 (string 타입으로 직접 들어오는 경우)
-        if (typeof recruitmentData.shelter_name === 'string') {
-          shelterName = recruitmentData.shelter_name;
-        }
-        // shelter가 객체인 경우
-        else if (recruitmentData.shelter && typeof recruitmentData.shelter === 'object') {
-          shelterId = recruitmentData.shelter.id || 0;
-          shelterName = recruitmentData.shelter.name || '';
-        }
-        // shelter가 ID 값인 경우
-        else if (typeof recruitmentData.shelter === 'number') {
-          shelterId = recruitmentData.shelter;
-        }
-        
-        // type 처리 (string 타입 'cleaning' 등으로 들어오는 경우)
-        if (typeof recruitmentData.type === 'string') {
-          shelterType = recruitmentData.type;
-        }
-        // activities 배열이 있는 경우
-        else if (Array.isArray(recruitmentData.activities) && recruitmentData.activities.length > 0) {
-          shelterType = recruitmentData.activities[0];
-        }
-        
-        // supplies 처리 (string 또는 array 타입으로 들어오는 경우)
-        if (typeof recruitmentData.supplies === 'string') {
-          shelterSupplies = recruitmentData.supplies;
-        } 
-        else if (Array.isArray(recruitmentData.supplies)) {
-          shelterSupplies = recruitmentData.supplies.join(', ');
-        }
-        
-        // 기관 정보 매핑
         const institutionInfo: InstitutionData = {
-          id: shelterId,
-          title: shelterName || '이름 없음',
-          region: shelterRegion,
-          mainActivities: shelterType ? [shelterType] : [],
-          preparations: shelterSupplies ? 
-            shelterSupplies.split(',').map((item: string) => item.trim()) : 
-            [],
-          images: []
+          id: recruitmentData.shelter.id,
+          title: recruitmentData.shelter.name,
+          region: recruitmentData.shelter.region,
+          mainActivities: [],
+          preparations: [],
+          
+          images: recruitmentData.images || []
         };
         
-        console.log('매핑된 기관 정보:', institutionInfo);
+        // API 응답 확인 후 콘솔에 출력
+        console.log('응답 데이터 구조:', recruitmentData);
         
         setVolunteers(mappedVolunteers);
         setInstitutionData(institutionInfo);

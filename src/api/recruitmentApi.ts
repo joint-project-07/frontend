@@ -292,7 +292,7 @@ export const applyForVolunteer = async (
   }
 };
 
-export const fetchInstitutionRecruitments = async (institutionId: number): Promise<CardData[]> => {
+export const fetchInstitutionRecruitments = async (): Promise<CardData[]> => {
   try {
     const response = await axiosInstance.get(`/api/recruitments/mylist/`);
     
