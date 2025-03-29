@@ -98,6 +98,7 @@ const useAuthStore = create<AuthState & AuthActions>((set, get) => ({
       localStorage.removeItem('refresh_token');
       localStorage.removeItem('userType');
       localStorage.removeItem('user');
+      localStorage.removeItem('tab-storage');
       
       delete axiosInstance.defaults.headers.common['Authorization'];
       
@@ -232,6 +233,7 @@ const useAuthStore = create<AuthState & AuthActions>((set, get) => ({
     localStorage.removeItem('refresh_token');
     localStorage.removeItem('userType');
     localStorage.removeItem('user');
+    localStorage.removeItem('tab-storage');
     
     set({
       user: null,
