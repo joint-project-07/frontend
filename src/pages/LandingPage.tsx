@@ -4,7 +4,7 @@ import styles from "../style/LandingPage.module.scss";
 import SearchBar from "../components/feature/SearchBar";
 import { useLocation } from "react-router-dom";
 import { useModalContext } from '../contexts/ModalContext';
-import { searchRecruitments, SearchParams } from '../api/recruitmentApi'; 
+import { searchRecruitments, SearchParams, CardData } from '../api/recruitmentApi'; 
 
 interface LocationState {
   activeTab: string;
@@ -14,6 +14,8 @@ interface LocationState {
 
 const LandingPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [searchResults, setSearchResults] = useState<CardData[] | undefined>(undefined);
+  const [isSearching, setIsSearching] = useState<boolean>(false);
   const location = useLocation();
   const { openLoginModal, setActiveTab } = useModalContext();
 
@@ -35,13 +37,21 @@ const LandingPage: React.FC = () => {
     );
     
     setIsLoading(true);
+    
     try {
       if (hasSearchConditions) {
         console.log('검색 조건 적용:', searchParams);
-        await searchRecruitments(searchParams);
+        setIsSearching(true);
+        const results = await searchRecruitments(searchParams);
+        setSearchResults(results);
+        console.log('검색 결과:', results);
+      } else {
+        setSearchResults(undefined);
+        setIsSearching(false);
       }
     } catch (error) {
       console.error('Error during search:', error);
+      setSearchResults([]);
     } finally {
       setIsLoading(false);
     }
@@ -56,7 +66,10 @@ const LandingPage: React.FC = () => {
           <p>데이터를 불러오는 중입니다...</p>
         </div>
       ) : (
-        <ShelterCards />
+        <ShelterCards 
+          searchResults={searchResults} 
+          isSearching={isSearching} 
+        />
       )}
     </div>
   );
