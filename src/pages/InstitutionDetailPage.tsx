@@ -50,10 +50,13 @@ const InstitutionDetailPage = () => {
         setLoading(true);
         setError(null);
         
+        // 모집 공고 상세 정보 조회
         const recruitmentData = await getRecruitment(parseInt(institutionId));
         
+        // 지원자 목록 조회
         const applicantsData = await getRecruitmentApplicants(parseInt(institutionId));
         
+        // 지원자 데이터 매핑
         const mappedVolunteers: Volunteer[] = applicantsData.map((applicant: ApplicantData) => ({
           id: applicant.id,
           name: applicant.user.name,
@@ -68,10 +71,14 @@ const InstitutionDetailPage = () => {
           id: recruitmentData.shelter.id,
           title: recruitmentData.shelter.name,
           region: recruitmentData.shelter.region,
-          mainActivities: recruitmentData.activities || [],
-          preparations: recruitmentData.supplies || [],
+          mainActivities: [],
+          preparations: [],
+          
           images: recruitmentData.images || []
         };
+        
+        // API 응답 확인 후 콘솔에 출력
+        console.log('응답 데이터 구조:', recruitmentData);
         
         setVolunteers(mappedVolunteers);
         setInstitutionData(institutionInfo);

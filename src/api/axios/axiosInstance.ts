@@ -18,6 +18,10 @@ axiosInstance.interceptors.request.use(
     if (accessToken) {
       config.headers["Authorization"] = `Bearer ${accessToken}`;
     }
+    
+    if (config.data instanceof FormData) {
+      delete config.headers["Content-Type"];
+    }
 
     return config;
   },

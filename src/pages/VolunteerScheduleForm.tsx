@@ -5,7 +5,7 @@ import Searchdate from '../components/feature/Searchdate';
 import SearchRange from '../components/feature/SearchRange';
 import styles from '../style/VolunteerScheduleRegistration.module.scss';
 import dayjs from 'dayjs';
-import { createRecruitment, CreateRecruitmentParams, uploadRecruitmentImages,  } from '../api/recruitmentApi';
+import { createRecruitment, CreateRecruitmentParams } from '../api/recruitmentApi';
 
 const activityOptions = [
   '시설 청소',
@@ -206,57 +206,50 @@ const VolunteerScheduleRegistration: React.FC = () => {
     try {
       setIsLoading(true);
       
-
-const recruitmentData: CreateRecruitmentParams = {
-  id: 0,
-  user: {
-    id: user?.id || 0,
-    email: user?.email || '',
-    name: user?.name || '',
-    contact_number: user?.contact_number || '',
-    profile_image: user?.profile_image || ''
-  },
-  recruitment: {
-    id: 0,
-    date: selectedDate.startDate.format('YYYY-MM-DD'),
-    start_time: timeSlots[0].startTime,
-    end_time: timeSlots[0].endTime,
-    status: 'open'
-  },
-  shelter: {
-    id: user?.id || 0,
-    name: user?.name || '',
-    region: '서울',
-    address: ''
-  },
-  status: 'pending',
-  rejected_reason: '',
-  supplies: selectedSupplies.join(', ')
-};
-console.log("API 요청 시작", recruitmentData);
-      const response = await createRecruitment(recruitmentData);
-      console.log("API 응답 받음", response);
-      if (!response || !response.id) {
-        throw new Error('봉사활동 ID를 찾을 수 없습니다.');
-      }
+      const recruitmentData: CreateRecruitmentParams = {
+        id: 0,
+        user: {
+          id: user?.id || 0,
+          email: user?.email || '',
+          name: user?.name || '',
+          contact_number: user?.contact_number || '',
+          profile_image: user?.profile_image || ''
+        },
+        recruitment: {
+          id: 0,
+          date: selectedDate.startDate.format('YYYY-MM-DD'),
+          start_time: timeSlots[0].startTime,
+          end_time: timeSlots[0].endTime,
+          status: 'open'
+        },
+        shelter: {
+          id: user?.id || 0,
+          name: user?.name || '',
+          region: '',
+          address: ''
+        },
+        status: 'pending',
+        rejected_reason: '',
+        supplies: selectedSupplies.join(', '),
+        type: selectedActivities.join(', ') 
+      };
       
-      console.log("이미지 업로드 시작:", images.length, "개 이미지");
-      console.log("이미지 정보:", images.map(img => ({
-        name: img.file.name,
-        size: img.file.size,
-        type: img.file.type
+      console.log("API 요청 시작", recruitmentData);
+      console.log("전송할 이미지:", images.map(img => ({
+        name: img.file.name, 
+        type: img.file.type, 
+        size: img.file.size
       })));
-try {
-  console.log("이미지 업로드 시작, response.id:", response.id);
-  await uploadRecruitmentImages(response.id, images.map(img => img.file));
-  console.log("이미지 업로드 완료");
-} catch (imageError) {
-  console.error("이미지 업로드 오류:", imageError);
-}
 
-setSubmitSuccess(true);
-console.log("리다이렉트 시작");
-navigate('/institution-schedule');
+      const response = await createRecruitment(
+        recruitmentData, 
+        images.map(img => img.file)
+      );
+      
+      console.log("API 응답 받음", response);
+      
+      setSubmitSuccess(true);
+      navigate('/institution-schedule');
 
     } catch (error) {
       console.error('봉사 일정 등록 오류:', error);
