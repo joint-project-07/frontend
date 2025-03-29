@@ -4,13 +4,24 @@ import Card from './Card';
 import styles from '../../style/LandingPage.module.scss';
 import { fetchAllRecruitments, CardData } from '../../api/recruitmentApi';
 
-const ShelterCards = () => {
+interface ShelterCardsProps {
+  searchResults?: CardData[]; 
+  isSearching?: boolean; 
+}
+
+const ShelterCards = ({ searchResults, isSearching }: ShelterCardsProps) => {
   const [cards, setCards] = useState<CardData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
+    if (searchResults !== undefined) {
+      setIsLoading(false);
+      setCards(searchResults);
+      return;
+    }
+
     const loadRecruitments = async () => {
       try {
         setIsLoading(true);
@@ -26,7 +37,7 @@ const ShelterCards = () => {
     };
 
     loadRecruitments();
-  }, []);
+  }, [searchResults]);
 
   const handleCardClick = (card: CardData) => {
     navigate(`/detail/${card.id}`);
@@ -50,6 +61,14 @@ const ShelterCards = () => {
         >
           다시 시도
         </button>
+      </div>
+    );
+  }
+
+  if (isSearching && searchResults !== undefined && searchResults.length === 0) {
+    return (
+      <div className={styles.noResultsContainer}>
+        <p>검색 결과가 없습니다.</p>
       </div>
     );
   }

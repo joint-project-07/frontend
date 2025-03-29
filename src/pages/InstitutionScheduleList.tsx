@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import Card from "../components/common/Card";
 import styles from "../style/InstitutionScheduleList.module.scss";
 import { useNavigate } from "react-router-dom";
-import { fetchAllRecruitments, CardData } from "../api/recruitmentApi";
+import { fetchInstitutionRecruitments, CardData } from "../api/recruitmentApi";
 import useAuthStore from "../store/auth/useauthStore"; 
 
 const InstitutionScheduleList: React.FC = () => {
@@ -20,16 +20,12 @@ const InstitutionScheduleList: React.FC = () => {
   useEffect(() => {
     const loadInstitutionSchedules = async () => {
       try {
-        if (!user?.id || !isInstitution) {
+        if (!isInstitution) {
           setIsLoading(false);
           return;
         }
         
-        const allRecruitments = await fetchAllRecruitments();
-        const institutionSchedules = allRecruitments.filter(
-          card => card.shelter === user.id
-        );
-        
+        const institutionSchedules = await fetchInstitutionRecruitments(user?.id || 0);
         setCards(institutionSchedules);
         setIsLoading(false);
       } catch (error) {
@@ -48,6 +44,7 @@ const InstitutionScheduleList: React.FC = () => {
   const handleAddSchedule = () => {
     navigate('/institution-schedule/');
   };
+  
   if (!isInstitution) {
     return (
       <div className={styles.noResultsContainer}>
@@ -88,12 +85,6 @@ const InstitutionScheduleList: React.FC = () => {
     <div className={styles.institutionContainer}>
       <div className={styles.institutionHeader}>
         <h2 className={styles.institutionTitle}>내 기관 봉사 일정</h2>
-        <button 
-          className={styles.addScheduleButton}
-          onClick={handleAddSchedule}
-        >
-          새 일정 등록
-        </button>
       </div>
       <div className={styles.institutionGrid}>
         {cards.map((card) => (

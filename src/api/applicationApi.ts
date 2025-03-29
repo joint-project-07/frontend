@@ -1,6 +1,6 @@
 import { axiosInstance } from "../api/axios/axiosInstance";
 
-// 봉사자 정보 타입 정의
+// Type definitions
 export interface Volunteer {
   id: number;
   name: string;
@@ -12,7 +12,6 @@ export interface Volunteer {
   profile_image?: string;
 }
 
-// 보호소 정보 타입 정의
 export interface Institution {
   id: number;
   name: string;
@@ -20,13 +19,11 @@ export interface Institution {
   address: string;
 }
 
-// 봉사 활동 시간대 타입 정의
 export interface TimeSlot {
   start_time: string;
   end_time: string;
 }
 
-// 봉사 모집 생성 데이터 타입 정의
 export interface RecruitmentData {
   date: string;
   end_date: string;
@@ -37,7 +34,6 @@ export interface RecruitmentData {
   description: string;
 }
 
-// 봉사 모집 생성 응답 타입
 export interface RecruitmentResponse {
   id: number;
   recruitment: {
@@ -50,14 +46,12 @@ export interface RecruitmentResponse {
   };
 }
 
-// 이미지 업로드 응답 타입
 export interface ImageUploadResponse {
   id: number;
   recruitment: number;
   image_url: string;
 }
 
-// 봉사 모집 상세 정보 타입
 export interface RecruitmentDetail {
   id: number;
   date: string;
@@ -69,6 +63,8 @@ export interface RecruitmentDetail {
   description: string;
   images: string[];
   shelter: Institution;
+  shelter_name?: string;
+  type?: string;
   time_slots: TimeSlot[];
 }
 
@@ -76,6 +72,8 @@ export interface ApplicationData {
   recruitment: number;
   shelter: number;
 }
+
+// API Functions
 
 // 봉사 신청 승인 API
 export const approveApplication = async (applicationId: number) => {
@@ -110,6 +108,23 @@ export const markAsAbsent = async (applicationId: number) => {
     status: "pending"
   };
   const response = await axiosInstance.post(`/api/applications/${applicationId}/absence/`, payload);
+  return response.data;
+};
+
+// 봉사 모집 조회 API
+export const getRecruitment = async (recruitmentId: number): Promise<RecruitmentDetail> => {
+  const response = await axiosInstance.get(`/api/recruitments/${recruitmentId}/`);
+  return response.data;
+};
+
+// 봉사 모집 목록 조회 API
+export const getRecruitmentList = async (page: number = 1, size: number = 10) => {
+  const response = await axiosInstance.get(`/api/recruitments/`, {
+    params: {
+      page,
+      size
+    }
+  });
   return response.data;
 };
 
@@ -159,23 +174,6 @@ export const uploadRecruitmentImages = async (
   return response.data;
 };
 
-// 봉사 모집 조회 API
-export const getRecruitment = async (recruitmentId: number): Promise<RecruitmentDetail> => {
-  const response = await axiosInstance.get(`/api/recruitments/${recruitmentId}/`);
-  return response.data;
-};
-
-// 봉사 모집 목록 조회 API
-export const getRecruitmentList = async (page: number = 1, size: number = 10) => {
-  const response = await axiosInstance.get(`/api/recruitments/`, {
-    params: {
-      page,
-      size
-    }
-  });
-  return response.data;
-};
-
 // 봉사 모집 수정 API
 export const updateRecruitment = async (recruitmentId: number, data: Partial<RecruitmentData>) => {
   const response = await axiosInstance.put(`/api/recruitments/${recruitmentId}/`, data);
@@ -194,6 +192,7 @@ export const getRecruitmentApplicants = async (recruitmentId: number) => {
   return response.data;
 };
 
+// 봉사 신청 API
 export const applyForVolunteer = async (data: ApplicationData) => {
   const response = await axiosInstance.post('/api/applications/', {
     recruitment: data.recruitment,

@@ -204,7 +204,9 @@ const ShelterSignupForm: React.FC = () => {
     formData.append('password', form.password || '');
     formData.append('password_confirm', form.password_confirm || '');
     formData.append('shelter_name', form.name || '');
-    formData.append('shelter_type', form.shelter_type || '');
+    if (form.shelter_type) {
+      formData.append('shelter_type', form.shelter_type);
+    }
     formData.append('business_registration_number', form.business_registration_number || '');
     formData.append('business_registration_email', form.business_registration_email || '');
     formData.append('address', form.address || '');
@@ -397,19 +399,21 @@ const ShelterSignupForm: React.FC = () => {
           </div>
 
           <div className={styles.formGroup}>
-            <label>
-              보호소 유형 <span className={styles.required}>*</span>
-            </label>
-            <input
-              type="text"
-              name="shelter_type"
-              placeholder="보호소 유형"
-              value={form.shelter_type || ""}
-              onChange={handleChange}
-              className={styles.input}
-              required
-            />
-          </div>
+          <label>
+          보호소 유형
+          </label>
+          <select
+            name="shelter_type"
+            value={form.shelter_type || ""}
+            onChange={handleChange}
+            className={styles.input}
+            >
+            <option value="">선택하세요</option>
+            <option value="corporation">법인</option>
+            <option value="individual">개인 사업자</option>
+            <option value="non_profit">비영리 단체</option>
+            </select>
+            </div>
 
           <div className={styles.formGroup}>
             <label>
