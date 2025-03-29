@@ -200,20 +200,47 @@ const ShelterSignupForm: React.FC = () => {
 
     const formData = new FormData();
     
-    Object.entries(form).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) {
-        formData.append(key, value.toString());
-      }
-    });
-    
     formData.append('email', form.business_registration_email || '');
+    formData.append('password', form.password || '');
+    formData.append('password_confirm', form.password_confirm || '');
+    formData.append('shelter_name', form.name || '');
+    formData.append('shelter_type', form.shelter_type || '');
+    formData.append('business_registration_number', form.business_registration_number || '');
+    formData.append('business_registration_email', form.business_registration_email || '');
+    formData.append('address', form.address || '');
+    formData.append('contact_number', form.contact_number || '');
+    formData.append('user_name', form.owner_name || ''); 
     
-    formData.append('license', businessLicenseFile);
+       const extractRegionFromAddress = (address: string): string => {
+        const regions = [
+          '서울', '부산', '대구', '인천', '광주', '대전', '울산', '세종',
+          '경기', '강원', '충북', '충남', '전북', '전남', '경북', '경남', '제주'
+        ];
+        
+        for (const region of regions) {
+          if (address.startsWith(region) || address.includes(region)) {
+            return region;
+          }
+        }
+        
+        return '서울';
+      };
+      
+      const regionValue = form.address ? extractRegionFromAddress(form.address) : '서울';
+      formData.append('region', regionValue);
+    
+    if (businessLicenseFile) {
+      formData.append('business_license_file', businessLicenseFile);
+    }
+    
+    if (form.agree_terms) formData.append('agree_terms', form.agree_terms.toString());
+    if (form.agree_privacy) formData.append('agree_privacy', form.agree_privacy.toString());
+    if (form.agree_marketing) formData.append('agree_marketing', form.agree_marketing.toString());
 
     try {
       await shelterSignup(formData);
       alert("보호소 회원가입 완료!");
-      navigate("/login");
+      navigate("/");
     } catch (err) {
       if (isAxiosError(err)) {
         const error = err as AxiosError<ShelterError>;

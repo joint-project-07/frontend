@@ -7,7 +7,7 @@ import DetailModal from "../components/common/DetailModal";
 import ShelterImageSwiper from "../components/common/ShelterImageSwiper";
 import { useModalContext } from "../contexts/ModalContext";
 import useAuth from "../store/auth/useauthStore";
-import { fetchRecruitmentDetail, applyForVolunteer } from "../api/recruitmentApi";
+import { fetchRecruitmentDetail } from "../api/recruitmentApi";
 
 interface ShelterDetail {
   id: number;
@@ -43,6 +43,16 @@ const DetailPage: React.FC = () => {
   useEffect(() => {
     setPreviousPath(location.pathname);
   }, [location.pathname, setPreviousPath]);
+
+  const formatDateWithDay = (dateString: string): string => {
+    if (!dateString) return "날짜 정보 없음";
+    
+    const date = new Date(dateString);
+    const day = ["일", "월", "화", "수", "목", "금", "토"];
+    const dayOfWeek = date.getDay();
+    
+    return `${dateString} ${day[dayOfWeek]}요일`;
+  };
 
   useEffect(() => {
     const loadShelterDetail = async () => {
@@ -130,18 +140,10 @@ const formatTime = (timeString: string): string => {
       console.log("인증된 상태에서 모달 열기");
       openModal({
         shelter_name: shelterData.shelter_name, 
-        description: shelterData.type
+        description: shelterData.type,
+        recruitmentId: shelterData.id,
+        shelterId: shelterData.shelter
       });
-      
-      if (user && user.id && selectedTime) {
-        applyForVolunteer(id, selectedTime, user.id.toString())
-          .then(response => {
-            console.log('봉사 신청 성공:', response);
-          })
-          .catch(err => {
-            console.error('봉사 신청 실패:', err);
-          });
-      }
     } else {
       console.log("비인증 상태에서 로그인 모달 열기");
       setPendingModalOpen(true);
@@ -172,8 +174,6 @@ const formatTime = (timeString: string): string => {
     );
   }
 
-  const formattedDate = shelterData.date || "날짜 정보 없음";
-
   return (
     <div className={styles["detail-container"]}>
       <div className={styles["back-button-container"]}>
@@ -186,7 +186,7 @@ const formatTime = (timeString: string): string => {
 
       <div className={styles["detail-content"]}>
         <div className={styles["shelter-info"]}>
-          <h2>📌 상세 페이지 - {shelterData.shelter_name}</h2>
+          <h2>📌 {shelterData.shelter_name}</h2>
           <div className={styles["shelter-location"]}>
             <h3>보호소 위치: 서울특별시 / 동작구</h3>
             <p>주요 봉사 활동 내용:</p>
@@ -206,7 +206,7 @@ const formatTime = (timeString: string): string => {
           <div className={styles["date-selection"]}>
             <div className={styles["date-row"]}>
               <div className={styles["date-label"]}>선택 날짜:</div>
-              <div className={styles["date-value"]}>{formattedDate || shelterData.date}</div>
+              <div className={styles["date-value"]}>{formatDateWithDay(shelterData.date)}</div>
             </div>
 
             <div className={styles["time-label"]}>봉사시간:</div>

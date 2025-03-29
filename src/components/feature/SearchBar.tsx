@@ -29,6 +29,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
     endTime: string;
   } | null>(null);
 
+  // 서울,경기,인천 형식으로 입력될 수 있게 수정
   const locations: string[] = [
     '서울', '인천', '경기', '대전', 
     '세종', '충북', '충남', '강원',
@@ -79,8 +80,8 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
   const formatTimeRange = (): string => {
     if (!timeRange) return '시간 선택';
     
-    const { startTime, endTime } = timeRange;
-    return `${startTime} - ${endTime}`;
+    const { startTime } = timeRange;
+    return `${startTime}`;
   };
 
   const handleSearch = (): void => {

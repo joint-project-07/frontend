@@ -72,6 +72,11 @@ export interface RecruitmentDetail {
   time_slots: TimeSlot[];
 }
 
+export interface ApplicationData {
+  recruitment: number;
+  shelter: number;
+}
+
 // 봉사 신청 승인 API
 export const approveApplication = async (applicationId: number) => {
   const payload = {
@@ -186,5 +191,13 @@ export const cancelRecruitment = async (recruitmentId: number) => {
 // 특정 봉사 모집에 신청한 지원자 목록 조회
 export const getRecruitmentApplicants = async (recruitmentId: number) => {
   const response = await axiosInstance.get(`/api/recruitments/${recruitmentId}/applicants/`);
+  return response.data;
+};
+
+export const applyForVolunteer = async (data: ApplicationData) => {
+  const response = await axiosInstance.post('/api/applications/', {
+    recruitment: data.recruitment,
+    shelter: data.shelter
+  });
   return response.data;
 };

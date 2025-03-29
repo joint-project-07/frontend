@@ -66,6 +66,7 @@ export interface CreateRecruitmentParams {
   status: string;
   rejected_reason: string;
   
+  type?: string;
   supplies?: string;
   description?: string;
   activities?: string[];
@@ -91,13 +92,11 @@ export const fetchRecruitmentDetail = async (id: string | undefined) => {
     
     const response = await axiosInstance.get(`/api/recruitments/${id}/`);
     
-    // API 응답이 recruitment 객체로 감싸져 있는 경우
     if (response.data && response.data.recruitment) {
       console.log('중첩된 recruitment 데이터 발견:', response.data.recruitment);
       return response.data.recruitment;
     }
     
-    // 감싸져 있지 않은 경우 원래 데이터 반환
     return response.data;
   } catch (error) {
     console.error('모집공고 상세 정보 조회 실패:', error);
@@ -145,19 +144,16 @@ export const searchRecruitments = async (searchParams: SearchParams): Promise<Ca
     const params = new URLSearchParams();
     
     if (searchParams.locations && searchParams.locations.length > 0) {
-      searchParams.locations.forEach(loc => {
-        params.append('location', loc);
-      });
+      params.append('region', searchParams.locations.join(','));
     }
     
     if (searchParams.dateRange) {
-      params.append('startDate', searchParams.dateRange.startDate.format('YYYY-MM-DD'));
-      params.append('endDate', searchParams.dateRange.endDate.format('YYYY-MM-DD'));
+      params.append('start_date', searchParams.dateRange.startDate.format('YYYY-MM-DD'));
+      params.append('end_date', searchParams.dateRange.endDate.format('YYYY-MM-DD'));
     }
     
     if (searchParams.timeRange) {
-      params.append('startTime', searchParams.timeRange.startTime);
-      params.append('endTime', searchParams.timeRange.endTime);
+      params.append('time', searchParams.timeRange.startTime);
     }
     
     const queryString = params.toString() ? `?${params.toString()}` : '';
@@ -182,39 +178,30 @@ export const searchRecruitments = async (searchParams: SearchParams): Promise<Ca
   }
 };
 
-export const createRecruitment = async (data: CreateRecruitmentParams): Promise<{ id: number }> => {
-  try {
-    const requestData = {
-      shelter: data.shelter.id,
-      date: data.recruitment.date,
-      start_time: data.recruitment.start_time,
-      end_time: data.recruitment.end_time,
-      type: "cleaning", 
-      supplies: data.supplies || '',
-      status: data.recruitment.status || 'open'
-    };
-    
-    const response = await axiosInstance.post('/api/recruitments/create/', requestData);
-    return response.data;
-  } catch (error) {
-    console.error('모집 공고 생성 실패:', error);
-    throw error;
-  }
-};
-
-export const uploadRecruitmentImages = async (recruitmentId: number, images: File[]): Promise<UploadImageResponse> => {
+export const createRecruitment = async (data: CreateRecruitmentParams, images?: File[]): Promise<{ id: number }> => {
   try {
     const formData = new FormData();
     
-    images.forEach((image, index) => {
-      formData.append('images', image, `image_${index}`);
-    });
+    formData.append('shelter', data.shelter.id.toString());
+    formData.append('date', data.recruitment.date);
+    formData.append('start_time', data.recruitment.start_time);
+    formData.append('end_time', data.recruitment.end_time);
+    formData.append('type', data.type || '');
+    formData.append('supplies', data.supplies || '');
+    formData.append('status', data.recruitment.status || 'open');
+    
+    console.log("이미지 개수:", images?.length);
 
-    const response = await axiosInstance.post(`/api/recruitments/${recruitmentId}/images/`, formData);
+    if (images && images.length > 0) {
+      images.forEach((image, index) => {
+        formData.append('image', image, `image_${index}`);
+      });
+    }
 
+    const response = await axiosInstance.post('/api/recruitments/create/', formData);
     return response.data;
   } catch (error) {
-    console.error('이미지 업로드 실패:', error);
+    console.error('모집 공고 생성 실패:', error);
     throw error;
   }
 };
