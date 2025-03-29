@@ -157,8 +157,8 @@ export const searchRecruitments = async (searchParams: SearchParams): Promise<Ca
     const params = new URLSearchParams();
     
     if (searchParams.locations && searchParams.locations.length > 0) {
-      // shelter_region 파라미터만 사용
-      params.append('shelter_region', searchParams.locations.join(','));
+      // region 파라미터 사용
+      params.append('region', searchParams.locations.join(','));
     }
     
     if (searchParams.dateRange) {
@@ -167,9 +167,12 @@ export const searchRecruitments = async (searchParams: SearchParams): Promise<Ca
     }
     
     if (searchParams.timeRange) {
-      params.append('time', searchParams.timeRange.startTime);
+      // 시작 시간과 종료 시간 분리
+      params.append('start_time', searchParams.timeRange.startTime);
+      params.append('end_time', searchParams.timeRange.endTime);
     }
     
+    // URL 형식 수정
     const queryString = params.toString() ? `?${params.toString()}` : '';
     const response = await axiosInstance.get(`/api/recruitments/search/${queryString}`);
     
