@@ -50,10 +50,25 @@ const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({
       const response = await deleteAccount({ password });
       
       if (response.status === 200) {
+        // 모든 가능한 인증 정보 제거
+        localStorage.clear(); // 로컬 스토리지 전체 비우기
+        sessionStorage.clear(); // 세션 스토리지 전체 비우기
+        
+        // 모든 쿠키 제거
+        const cookies = document.cookie.split(";");
+        for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i];
+          const eqPos = cookie.indexOf("=");
+          const name = eqPos > -1 ? cookie.substring(0, eqPos).trim() : cookie.trim();
+          document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+        }
+        
         alert("회원 탈퇴가 완료되었습니다. 그동안 이용해주셔서 감사합니다.");
         clearUser();
         onClose();
-        navigate("/");
+        
+        // 강제로 브라우저 새로고침하여 인증 상태 초기화
+        window.location.href = "/";
       }
     } catch (error) {
       const err = error as ErrorResponse;
