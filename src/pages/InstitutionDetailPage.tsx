@@ -74,7 +74,8 @@ const InstitutionDetailPage = () => {
         const response = await getRecruitment(parseInt(institutionId || '0'));
         const recruitmentData: RecruitmentResponse = response.recruitment || response;
         
-        console.log('처리된 모집 데이터:', recruitmentData);
+        console.log('원본 API 응답:', response);
+      console.log('처리된 모집 데이터:', recruitmentData);
         
         let mainActivities: string[] = [];
         if (recruitmentData.type) {
