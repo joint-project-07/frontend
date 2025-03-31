@@ -24,6 +24,10 @@ export interface ApiRecruitment {
   type: string;
   supplies: string;
   status: string;
+  images?: {
+    id: number;
+    image_url: string;
+  }[];
 }
 
 export interface CardData {
@@ -85,7 +89,16 @@ export interface UploadImageResponse {
   message?: string;
 }
 
-const convertTypeToCode = (type: string): string => {
+export interface Volunteer {
+  id: number;
+  name: string;
+  phone: string;
+  status: string;
+  attendance?: string;
+  profile_image?: string;
+}
+
+export const convertTypeToCode = (type: string): string => {
   const typeMap: Record<string, string> = {
     "시설 청소": "cleaning",
     "동물 목욕": "bathing",
@@ -97,6 +110,18 @@ const convertTypeToCode = (type: string): string => {
   return typeMap[type] || type;
 };
 
+export const convertCodeToType = (code: string): string => {
+  const codeMap: Record<string, string> = {
+    "cleaning": "시설 청소",
+    "bathing": "동물 목욕",
+    "walking": "동물 산책",
+    "feeding": "사료 급여",
+    "playing": "놀이 활동"
+  };
+  
+  return codeMap[code] || code; 
+};
+
 export const fetchRecruitmentDetail = async (id: string | undefined) => {
   try {
     if (!id) {
@@ -105,17 +130,104 @@ export const fetchRecruitmentDetail = async (id: string | undefined) => {
     
     const response = await axiosInstance.get(`/api/recruitments/${id}/`);
     
+    // 응답 구조 확인
+    console.log('API 응답:', response.data);
+    
+    // recruitment 객체가 최상위에 있는 경우 직접 반환
     if (response.data && response.data.recruitment) {
-      console.log('중첩된 recruitment 데이터 발견:', response.data.recruitment);
       return response.data.recruitment;
     }
     
+    // 응답 자체가 recruitment 객체인 경우
     return response.data;
   } catch (error) {
     console.error('모집공고 상세 정보 조회 실패:', error);
     throw error;
   }
 };
+
+// 지원자 목록 조회 함수 추가
+export const getRecruitmentApplicants = async (recruitmentId: number): Promise<any[]> => {
+  try {
+    const response = await axiosInstance.get(`/api/recruitments/${recruitmentId}/applicants/`);
+    
+    console.log('API 응답 데이터:', response.data);
+    
+    // applicants 배열이 있는 경우
+    if (response.data && response.data.applicants) {
+      return response.data.applicants; // 배열 자체를 반환
+    }
+    
+    // 다른 형태의 응답인 경우
+    if (Array.isArray(response.data)) {
+      return response.data;
+    }
+    
+    // 디버깅을 위해 응답 로깅
+    console.log('처리할 수 없는 응답 구조:', response.data);
+    return [];
+  } catch (error) {
+    console.error('지원자 목록 조회 중 오류 발생:', error);
+    throw error;
+  }
+};
+// 신청 승인
+export const approveApplication = async (applicationId: number): Promise<any> => {
+  try {
+    const response = await axiosInstance.post(`/api/applications/${applicationId}/approve/`);
+    return response.data;
+  } catch (error) {
+    console.error('신청 승인 중 오류 발생:', error);
+    throw error;
+  }
+};
+
+// 신청 반려
+export const rejectApplication = async (applicationId: number, reason: string): Promise<any> => {
+  try {
+    const response = await axiosInstance.post(`/api/applications/${applicationId}/reject/`, {
+      reason: reason
+    });
+    return response.data;
+  } catch (error) {
+    console.error('신청 반려 중 오류 발생:', error);
+    throw error;
+  }
+};
+
+// 참석 처리
+export const markAsAttended = async (applicationId: number): Promise<any> => {
+  try {
+    const response = await axiosInstance.post(`/api/applications/${applicationId}/attended/`);
+    return response.data;
+  } catch (error) {
+    console.error('참석 처리 중 오류 발생:', error);
+    throw error;
+  }
+};
+
+// 불참석 처리
+export const markAsAbsent = async (applicationId: number): Promise<any> => {
+  try {
+    const response = await axiosInstance.post(`/api/applications/${applicationId}/absent/`);
+    return response.data;
+  } catch (error) {
+    console.error('불참석 처리 중 오류 발생:', error);
+    throw error;
+  }
+};
+
+// 모집 공고 상세 정보 조회
+export const getRecruitment = async (recruitmentId: number): Promise<any> => {
+  try {
+    const response = await axiosInstance.get(`/api/recruitments/${recruitmentId}/`);
+    return response.data;
+  } catch (error) {
+    console.error('모집 공고 상세 정보 조회 중 오류 발생:', error);
+    throw error;
+  }
+};
+
 export const fetchAllRecruitments = async (): Promise<CardData[]> => {
   try {
     const response = await axiosInstance.get('/api/recruitments/');
@@ -124,7 +236,9 @@ export const fetchAllRecruitments = async (): Promise<CardData[]> => {
     if (Array.isArray(data)) {
       return data.map((item: ApiRecruitment) => ({
         id: item.id,
-        image: "https://via.placeholder.com/300x200", 
+        image: item.images && item.images.length > 0 && item.images[0].image_url 
+          ? item.images[0].image_url 
+          : "https://via.placeholder.com/300x200",
         title: item.shelter_name || "봉사 센터",
         region: item.shelter_region || "지역 정보 없음",
         date: item.date || "날짜 정보 없음",
@@ -136,7 +250,9 @@ export const fetchAllRecruitments = async (): Promise<CardData[]> => {
     if (data.recruitments && Array.isArray(data.recruitments)) {
       return data.recruitments.map((item: ApiRecruitment) => ({
         id: item.id,
-        image: "https://via.placeholder.com/300x200", 
+        image: item.images && item.images.length > 0 && item.images[0].image_url 
+        ? item.images[0].image_url 
+        : "https://via.placeholder.com/300x200", 
         title: item.shelter_name || "봉사 센터",
         region: item.shelter_region || "지역 정보 없음",
         date: item.date || "날짜 정보 없음",
@@ -157,7 +273,6 @@ export const searchRecruitments = async (searchParams: SearchParams): Promise<Ca
     const params = new URLSearchParams();
     
     if (searchParams.locations && searchParams.locations.length > 0) {
-      // region 파라미터 사용
       params.append('region', searchParams.locations.join(','));
     }
     
@@ -167,24 +282,22 @@ export const searchRecruitments = async (searchParams: SearchParams): Promise<Ca
     }
     
     if (searchParams.timeRange) {
-      // 시작 시간과 종료 시간 분리
       params.append('start_time', searchParams.timeRange.startTime);
       params.append('end_time', searchParams.timeRange.endTime);
     }
     
-    // URL 형식 수정
     const queryString = params.toString() ? `?${params.toString()}` : '';
     const response = await axiosInstance.get(`/api/recruitments/search/${queryString}`);
     
     console.log('검색 API 응답:', response.data);
     
-    // 응답 구조 확인
     if (response.data && response.data.recruitments && Array.isArray(response.data.recruitments)) {
-      // 중첩된 구조인 경우 (response.data.recruitments 배열)
       console.log('중첩 구조 발견:', response.data.recruitments.length);
       return response.data.recruitments.map((item: ApiRecruitment) => ({
         id: item.id,
-        image: "https://via.placeholder.com/300x200", 
+        image: item.images && item.images.length > 0 && item.images[0].image_url 
+          ? item.images[0].image_url 
+          : "https://via.placeholder.com/300x200", 
         title: item.shelter_name || "봉사 센터",
         region: item.shelter_region || "지역 정보 없음",
         date: item.date || "날짜 정보 없음",
@@ -192,11 +305,12 @@ export const searchRecruitments = async (searchParams: SearchParams): Promise<Ca
         shelter: item.shelter 
       }));
     } else if (Array.isArray(response.data)) {
-      // 중첩되지 않은 배열인 경우 (직접 배열인 response.data)
       console.log('일반 배열 구조 발견:', response.data.length);
       return response.data.map((item: ApiRecruitment) => ({
         id: item.id,
-        image: "https://via.placeholder.com/300x200", 
+        image: item.images && item.images.length > 0 && item.images[0].image_url 
+        ? item.images[0].image_url 
+        : "https://via.placeholder.com/300x200", 
         title: item.shelter_name || "봉사 센터",
         region: item.shelter_region || "지역 정보 없음",
         date: item.date || "날짜 정보 없음",
@@ -205,16 +319,16 @@ export const searchRecruitments = async (searchParams: SearchParams): Promise<Ca
       }));
     }
     
-    // 다른 구조일 경우도 처리
     if (response.data && typeof response.data === 'object') {
       console.log('다른 구조 발견, 키:', Object.keys(response.data));
-      // 응답에서 배열 형태의 데이터 찾기
       for (const key in response.data) {
         if (Array.isArray(response.data[key])) {
           console.log(`${key} 배열 발견:`, response.data[key].length);
           return response.data[key].map((item: ApiRecruitment) => ({
             id: item.id,
-            image: "https://via.placeholder.com/300x200", 
+            image: item.images && item.images.length > 0 && item.images[0].image_url 
+          ? item.images[0].image_url 
+          : "https://via.placeholder.com/300x200", 
             title: item.shelter_name || "봉사 센터",
             region: item.shelter_region || "지역 정보 없음",
             date: item.date || "날짜 정보 없음",
@@ -241,15 +355,14 @@ export const createRecruitment = async (data: CreateRecruitmentParams, images?: 
     formData.append('date', data.recruitment.date);
     formData.append('start_time', data.recruitment.start_time);
     formData.append('end_time', data.recruitment.end_time);
-    formData.append('type', data.type || '');
-
-    if (data.type) {
+    if (data.activities && data.activities.length > 0) {
+      formData.append('type', JSON.stringify(data.activities));
+    } else if (data.type) {
       const typeCode = convertTypeToCode(data.type);
       formData.append('type', typeCode);
     } else {
-      formData.append('type', '');
+      formData.append('type', '[]');
     }
-
     formData.append('supplies', data.supplies || '');
     formData.append('status', data.recruitment.status || 'open');
     
@@ -302,7 +415,9 @@ export const fetchInstitutionRecruitments = async (): Promise<CardData[]> => {
     if (Array.isArray(response.data)) {
       return response.data.map((item: ApiRecruitment) => ({
         id: item.id,
-        image: "https://via.placeholder.com/300x200", 
+        image: item.images && item.images.length > 0 && item.images[0].image_url 
+          ? item.images[0].image_url 
+          : "https://via.placeholder.com/300x200", 
         title: item.shelter_name || "봉사 센터",
         region: item.shelter_region || "지역 정보 없음",
         date: item.date || "날짜 정보 없음",
@@ -314,7 +429,9 @@ export const fetchInstitutionRecruitments = async (): Promise<CardData[]> => {
     if (response.data.recruitments && Array.isArray(response.data.recruitments)) {
       return response.data.recruitments.map((item: ApiRecruitment) => ({
         id: item.id,
-        image: "https://via.placeholder.com/300x200", 
+        image: item.images && item.images.length > 0 && item.images[0].image_url 
+        ? item.images[0].image_url 
+        : "https://via.placeholder.com/300x200", 
         title: item.shelter_name || "봉사 센터",
         region: item.shelter_region || "지역 정보 없음",
         date: item.date || "날짜 정보 없음",

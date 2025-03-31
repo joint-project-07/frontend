@@ -11,6 +11,7 @@ import {
   getRecruitment,
   getRecruitmentApplicants
 } from "../api/applicationApi";
+import { convertCodeToType } from "../api/recruitmentApi";
 
 type InstitutionData = {
   id: number;
@@ -21,14 +22,34 @@ type InstitutionData = {
   images?: string[];
 };
 
-interface ApplicantData {
+interface ShelterInfo {
   id: number;
-  user: {
-    name: string;
-    contact_number: string;
-  };
-  status: "approved" | "rejected" | string;
-  attendance?: "attended" | "absent" | string;
+  name: string;
+  region: string;
+}
+
+interface RecruitmentResponse {
+  id: number;
+  shelter: number | ShelterInfo;
+  shelter_name?: string;
+  shelter_region?: string;
+  date: string;
+  start_time: string;
+  end_time: string;
+  type: string[] | string;
+  supplies: string;
+  status: string;
+  images?: string[];
+  recruitment?: RecruitmentResponse;
+}
+
+interface ApplicantData {
+  id?: number;
+  name?: string;
+  contact_number?: string;
+  status?: string;
+  attendance?: string;
+  profile_image?: string;
 }
 
 const InstitutionDetailPage = () => {
@@ -50,39 +71,106 @@ const InstitutionDetailPage = () => {
         setLoading(true);
         setError(null);
         
-        // 모집 공고 상세 정보 조회
-        const recruitmentData = await getRecruitment(parseInt(institutionId));
+        const response = await getRecruitment(parseInt(institutionId || '0'));
+        const recruitmentData: RecruitmentResponse = response.recruitment || response;
         
-        // 지원자 목록 조회
-        const applicantsData = await getRecruitmentApplicants(parseInt(institutionId));
+        console.log('처리된 모집 데이터:', recruitmentData);
         
-        // 지원자 데이터 매핑
-        const mappedVolunteers: Volunteer[] = applicantsData.map((applicant: ApplicantData) => ({
-          id: applicant.id,
-          name: applicant.user.name,
-          phone: applicant.user.contact_number,
-          status: applicant.status === "approved" ? "승인" : 
-                 applicant.status === "rejected" ? "반려" : "대기",
-          attendance: applicant.attendance === "attended" ? "참석" : 
-                      applicant.attendance === "absent" ? "불참석" : undefined
-        }));
+        let mainActivities: string[] = [];
+        if (recruitmentData.type) {
+          if (typeof recruitmentData.type === 'string') {
+            try {
+              const typesArray = JSON.parse(recruitmentData.type);
+              if (Array.isArray(typesArray)) {
+                mainActivities = typesArray.map((code: string) => convertCodeToType(code));
+              } else {
+                mainActivities = [convertCodeToType(recruitmentData.type as string)];
+              }
+            } catch {
+              mainActivities = [convertCodeToType(recruitmentData.type as string)];
+            }
+          } else if (Array.isArray(recruitmentData.type)) {
+            mainActivities = recruitmentData.type.map((code: string) => convertCodeToType(code));
+          }
+        }
+        
+        let preparations: string[] = [];
+        if (recruitmentData.supplies && typeof recruitmentData.supplies === 'string') {
+          const suppliesStr = recruitmentData.supplies.trim();
+          if (suppliesStr) {
+            preparations = suppliesStr.split(', ');
+          }
+        }
+        
+        let shelterId = 0;
+        let shelterName = '';
+        let shelterRegion = '';
+        
+        if (typeof recruitmentData.shelter === 'number') {
+          shelterId = recruitmentData.shelter;
+          shelterName = recruitmentData.shelter_name || '';
+          shelterRegion = recruitmentData.shelter_region || '';
+        } else if (recruitmentData.shelter && typeof recruitmentData.shelter === 'object') {
+          const shelterObj = recruitmentData.shelter as ShelterInfo;
+          shelterId = shelterObj.id || 0;
+          shelterName = shelterObj.name || '';
+          shelterRegion = shelterObj.region || '';
+        }
         
         const institutionInfo: InstitutionData = {
-          id: recruitmentData.shelter.id,
-          title: recruitmentData.shelter.name,
-          region: recruitmentData.shelter.region,
-          mainActivities: [],
-          preparations: [],
-          
+          id: shelterId,
+          title: shelterName,
+          region: shelterRegion,
+          mainActivities: mainActivities,
+          preparations: preparations,
           images: recruitmentData.images || []
         };
         
-        // API 응답 확인 후 콘솔에 출력
-        console.log('응답 데이터 구조:', recruitmentData);
-        
-        setVolunteers(mappedVolunteers);
         setInstitutionData(institutionInfo);
         
+        try {
+          const applicantsData = await getRecruitmentApplicants(parseInt(institutionId || '0'));
+console.log('지원자 데이터:', applicantsData);
+          
+const applicantsArray = Array.isArray(applicantsData) 
+? applicantsData 
+: (applicantsData.applicants && Array.isArray(applicantsData.applicants))
+  ? applicantsData.applicants
+  : [];
+  console.log('사용할 applicants 배열:', applicantsArray);
+  const mappedVolunteers = applicantsArray.flatMap((item: ApplicantData | ApplicantData[]) => {
+    if (Array.isArray(item)) {
+      return item.map(subItem => ({
+        id: subItem.id || 0,
+        name: subItem.name || '',
+        phone: subItem.contact_number || '',
+        status: subItem.status === "approved" ? "승인" : 
+                subItem.status === "rejected" ? "반려" : "대기",
+        attendance: subItem.attendance === "attended" ? "참석" : 
+                   subItem.attendance === "absent" ? "불참석" : undefined,
+        profile_image: subItem.profile_image || ''
+      }));
+    }
+    
+    return {
+      id: item.id || 0,
+      name: item.name || '',
+      phone: item.contact_number || '',
+      status: item.status === "approved" ? "승인" : 
+             item.status === "rejected" ? "반려" : "대기",
+      attendance: item.attendance === "attended" ? "참석" : 
+                 item.attendance === "absent" ? "불참석" : undefined,
+      profile_image: item.profile_image || ''
+    };
+  });
+          
+          console.log('매핑된 volunteers:', mappedVolunteers);
+          setVolunteers(mappedVolunteers);
+        } catch (error) {
+          console.error("지원자 정보 로딩 중 오류 발생:", error);
+          setVolunteers([]);
+        }
+    
       } catch (error) {
         console.error("데이터 로딩 중 오류 발생:", error);
         setError("데이터를 불러오는 중 오류가 발생했습니다.");
@@ -90,7 +178,7 @@ const InstitutionDetailPage = () => {
         setLoading(false);
       }
     };
-
+  
     fetchData();
   }, [institutionId]);
 
@@ -266,9 +354,13 @@ const InstitutionDetailPage = () => {
             <div className={styles.infoItem}>
               <span className={styles.infoLabel}>준비물:</span>
               <div className={styles.preparations}>
-                {institutionData.preparations.map((item, index) => (
-                  <span key={index} className={styles.preparationItem}>{item}</span>
-                ))}
+                {institutionData.preparations.length > 0 ? (
+                  institutionData.preparations.map((item, index) => (
+                    <span key={index} className={styles.preparationItem}>{item}</span>
+                  ))
+                ) : (
+                  <span>준비물 없음</span>
+                )}
               </div>
             </div>
           </section>
@@ -292,7 +384,15 @@ const InstitutionDetailPage = () => {
                   {volunteers.map((volunteer) => (
                     <div className={styles.volunteerItem} key={volunteer.id}>
                       <div className={styles.profilePic}>
-                        <span>{volunteer.name[0]}</span>
+                        {volunteer.profile_image ? (
+                          <img 
+                            src={volunteer.profile_image} 
+                            alt={`${volunteer.name}의 프로필`} 
+                            className={styles.profileImage}
+                          />
+                        ) : (
+                          <span>{volunteer.name[0]}</span>
+                        )}
                       </div>
                       <div className={styles.userInfo}>
                         <p className={styles.userName}>{volunteer.name}</p>
