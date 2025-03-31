@@ -5,7 +5,7 @@ import Searchdate from '../components/feature/Searchdate';
 import SearchRange from '../components/feature/SearchRange';
 import styles from '../style/VolunteerScheduleRegistration.module.scss';
 import dayjs from 'dayjs';
-import { createRecruitment, CreateRecruitmentParams } from '../api/recruitmentApi';
+import { createRecruitment, CreateRecruitmentParams, convertTypeToCode  } from '../api/recruitmentApi';
 
 const activityOptions = [
   '시설 청소',
@@ -231,7 +231,7 @@ const VolunteerScheduleRegistration: React.FC = () => {
         status: 'pending',
         rejected_reason: '',
         supplies: selectedSupplies.join(', '),
-        type: selectedActivities.join(', ') 
+        activities: selectedActivities.map(activity => convertTypeToCode(activity))
       };
       
       console.log("API 요청 시작", recruitmentData);

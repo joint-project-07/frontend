@@ -25,7 +25,7 @@ const InstitutionScheduleList: React.FC = () => {
           return;
         }
         
-        const institutionSchedules = await fetchInstitutionRecruitments(user?.id || 0);
+        const institutionSchedules = await fetchInstitutionRecruitments();
         setCards(institutionSchedules);
         setIsLoading(false);
       } catch (error) {
