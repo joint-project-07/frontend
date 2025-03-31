@@ -7,7 +7,7 @@ import DetailModal from "../components/common/DetailModal";
 import ShelterImageSwiper from "../components/common/ShelterImageSwiper";
 import { useModalContext } from "../contexts/ModalContext";
 import useAuth from "../store/auth/useauthStore";
-import { fetchRecruitmentDetail } from "../api/recruitmentApi";
+import { fetchRecruitmentDetail, convertCodeToType } from "../api/recruitmentApi";
 
 interface ShelterDetail {
   id: number;
@@ -191,13 +191,17 @@ const formatTime = (timeString: string): string => {
             <h3>보호소 위치: 서울특별시 / 동작구</h3>
             <p>주요 봉사 활동 내용:</p>
             <ul>
-              {shelterData.type && typeof shelterData.type === 'string' ? 
-                shelterData.type.split(', ').map((activity, index) => (
-                  <li key={index}>{activity}</li>
-                )) : 
-                <li>{shelterData.type || "청소"}</li>
-              }
-            </ul>
+    {Array.isArray(shelterData.type) ? 
+      shelterData.type.map((activity, index) => (
+        <li key={index}>{convertCodeToType(activity)}</li>
+      )) : 
+      typeof shelterData.type === 'string' ?
+        shelterData.type.split(', ').map((activity, index) => (
+          <li key={index}>{convertCodeToType(activity)}</li>
+        )) :
+        <li>{"청소"}</li>
+    }
+  </ul>
             <p>준비물: {shelterData.supplies || "물, 막 입을 수 있는 옷"}</p>
           </div>
         </div>

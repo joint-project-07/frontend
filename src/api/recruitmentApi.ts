@@ -24,6 +24,10 @@ export interface ApiRecruitment {
   type: string;
   supplies: string;
   status: string;
+  images?: {
+    id: number;
+    image_url: string;
+  }[];
 }
 
 export interface CardData {
@@ -85,7 +89,38 @@ export interface UploadImageResponse {
   message?: string;
 }
 
-const convertTypeToCode = (type: string): string => {
+export interface Volunteer {
+  id: number;
+  name: string;
+  phone: string;
+  status: string;
+  attendance?: string;
+  profile_image?: string;
+}
+
+export interface Applicant {
+  id: number;
+  user_id: number;
+  name: string;
+  phone?: string;
+  email?: string;
+  status: string;
+  attendance?: string;
+  profile_image?: string;
+  rejected_reason?: string;
+}
+
+export interface ApiResponse<T> {
+  success?: boolean;
+  message?: string;
+  data?: T;
+  recruitment?: T;
+  applicants?: T[];
+  recruitments?: T[];
+  [key: string]: unknown;
+}
+
+export const convertTypeToCode = (type: string): string => {
   const typeMap: Record<string, string> = {
     "시설 청소": "cleaning",
     "동물 목욕": "bathing",
@@ -97,7 +132,20 @@ const convertTypeToCode = (type: string): string => {
   return typeMap[type] || type;
 };
 
-export const fetchRecruitmentDetail = async (id: string | undefined) => {
+export const convertCodeToType = (code: string): string => {
+  const codeMap: Record<string, string> = {
+    "cleaning": "시설 청소",
+    "bathing": "동물 목욕",
+    "walking": "동물 산책",
+    "feeding": "사료 급여",
+    "playing": "놀이 활동"
+  };
+  
+  return codeMap[code] || code; 
+};
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const fetchRecruitmentDetail = async (id: string | undefined): Promise<any> => {
   try {
     if (!id) {
       throw new Error('모집공고 ID가 제공되지 않았습니다.');
@@ -105,8 +153,9 @@ export const fetchRecruitmentDetail = async (id: string | undefined) => {
     
     const response = await axiosInstance.get(`/api/recruitments/${id}/`);
     
+    console.log('API 응답:', response.data);
+    
     if (response.data && response.data.recruitment) {
-      console.log('중첩된 recruitment 데이터 발견:', response.data.recruitment);
       return response.data.recruitment;
     }
     
@@ -116,15 +165,100 @@ export const fetchRecruitmentDetail = async (id: string | undefined) => {
     throw error;
   }
 };
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const getRecruitmentApplicants = async (recruitmentId: number): Promise<any[]> => {
+  try {
+    const response = await axiosInstance.get(`/api/recruitments/${recruitmentId}/applicants/`);
+    
+    console.log('API 응답 데이터:', response.data);
+    
+    if (response.data && response.data.applicants) {
+      return response.data.applicants;
+    }
+    
+    if (Array.isArray(response.data)) {
+      return response.data;
+    }
+    
+    console.log('처리할 수 없는 응답 구조:', response.data);
+    return [];
+  } catch (error) {
+    console.error('지원자 목록 조회 중 오류 발생:', error);
+    throw error;
+  }
+};
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const approveApplication = async (applicationId: number): Promise<any> => {
+  try {
+    const response = await axiosInstance.post(`/api/applications/${applicationId}/approve/`);
+    return response.data;
+  } catch (error) {
+    console.error('신청 승인 중 오류 발생:', error);
+    throw error;
+  }
+};
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const rejectApplication = async (applicationId: number, reason: string): Promise<any> => {
+  try {
+    const response = await axiosInstance.post(`/api/applications/${applicationId}/reject/`, {
+      reason: reason
+    });
+    return response.data;
+  } catch (error) {
+    console.error('신청 반려 중 오류 발생:', error);
+    throw error;
+  }
+};
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const markAsAttended = async (applicationId: number): Promise<any> => {
+  try {
+    const response = await axiosInstance.post(`/api/applications/${applicationId}/attended/`);
+    return response.data;
+  } catch (error) {
+    console.error('참석 처리 중 오류 발생:', error);
+    throw error;
+  }
+};
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const markAsAbsent = async (applicationId: number): Promise<any> => {
+  try {
+    const response = await axiosInstance.post(`/api/applications/${applicationId}/absent/`);
+    return response.data;
+  } catch (error) {
+    console.error('불참석 처리 중 오류 발생:', error);
+    throw error;
+  }
+};
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const getRecruitment = async (recruitmentId: number): Promise<any> => {
+  try {
+    const response = await axiosInstance.get(`/api/recruitments/${recruitmentId}/`);
+    return response.data;
+  } catch (error) {
+    console.error('모집 공고 상세 정보 조회 중 오류 발생:', error);
+    throw error;
+  }
+};
+
 export const fetchAllRecruitments = async (): Promise<CardData[]> => {
   try {
     const response = await axiosInstance.get('/api/recruitments/');
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const data = response.data;
     
     if (Array.isArray(data)) {
-      return data.map((item: ApiRecruitment) => ({
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
+      return data.map((item: any) => ({
         id: item.id,
-        image: "https://via.placeholder.com/300x200", 
+        image: item.images && item.images.length > 0 && item.images[0].image_url 
+          ? item.images[0].image_url 
+          : "https://via.placeholder.com/300x200",
         title: item.shelter_name || "봉사 센터",
         region: item.shelter_region || "지역 정보 없음",
         date: item.date || "날짜 정보 없음",
@@ -133,10 +267,14 @@ export const fetchAllRecruitments = async (): Promise<CardData[]> => {
       }));
     }
     
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (data.recruitments && Array.isArray(data.recruitments)) {
-      return data.recruitments.map((item: ApiRecruitment) => ({
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
+      return data.recruitments.map((item: any) => ({
         id: item.id,
-        image: "https://via.placeholder.com/300x200", 
+        image: item.images && item.images.length > 0 && item.images[0].image_url 
+        ? item.images[0].image_url 
+        : "https://via.placeholder.com/300x200", 
         title: item.shelter_name || "봉사 센터",
         region: item.shelter_region || "지역 정보 없음",
         date: item.date || "날짜 정보 없음",
@@ -157,7 +295,6 @@ export const searchRecruitments = async (searchParams: SearchParams): Promise<Ca
     const params = new URLSearchParams();
     
     if (searchParams.locations && searchParams.locations.length > 0) {
-      // region 파라미터 사용
       params.append('region', searchParams.locations.join(','));
     }
     
@@ -167,24 +304,25 @@ export const searchRecruitments = async (searchParams: SearchParams): Promise<Ca
     }
     
     if (searchParams.timeRange) {
-      // 시작 시간과 종료 시간 분리
       params.append('start_time', searchParams.timeRange.startTime);
       params.append('end_time', searchParams.timeRange.endTime);
     }
     
-    // URL 형식 수정
     const queryString = params.toString() ? `?${params.toString()}` : '';
     const response = await axiosInstance.get(`/api/recruitments/search/${queryString}`);
     
     console.log('검색 API 응답:', response.data);
     
-    // 응답 구조 확인
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (response.data && response.data.recruitments && Array.isArray(response.data.recruitments)) {
-      // 중첩된 구조인 경우 (response.data.recruitments 배열)
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       console.log('중첩 구조 발견:', response.data.recruitments.length);
-      return response.data.recruitments.map((item: ApiRecruitment) => ({
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
+      return response.data.recruitments.map((item: any) => ({
         id: item.id,
-        image: "https://via.placeholder.com/300x200", 
+        image: item.images && item.images.length > 0 && item.images[0].image_url 
+          ? item.images[0].image_url 
+          : "https://via.placeholder.com/300x200", 
         title: item.shelter_name || "봉사 센터",
         region: item.shelter_region || "지역 정보 없음",
         date: item.date || "날짜 정보 없음",
@@ -192,11 +330,13 @@ export const searchRecruitments = async (searchParams: SearchParams): Promise<Ca
         shelter: item.shelter 
       }));
     } else if (Array.isArray(response.data)) {
-      // 중첩되지 않은 배열인 경우 (직접 배열인 response.data)
       console.log('일반 배열 구조 발견:', response.data.length);
-      return response.data.map((item: ApiRecruitment) => ({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return response.data.map((item: any) => ({
         id: item.id,
-        image: "https://via.placeholder.com/300x200", 
+        image: item.images && item.images.length > 0 && item.images[0].image_url 
+        ? item.images[0].image_url 
+        : "https://via.placeholder.com/300x200", 
         title: item.shelter_name || "봉사 센터",
         region: item.shelter_region || "지역 정보 없음",
         date: item.date || "날짜 정보 없음",
@@ -205,16 +345,22 @@ export const searchRecruitments = async (searchParams: SearchParams): Promise<Ca
       }));
     }
     
-    // 다른 구조일 경우도 처리
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (response.data && typeof response.data === 'object') {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
       console.log('다른 구조 발견, 키:', Object.keys(response.data));
-      // 응답에서 배열 형태의 데이터 찾기
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       for (const key in response.data) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (Array.isArray(response.data[key])) {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
           console.log(`${key} 배열 발견:`, response.data[key].length);
-          return response.data[key].map((item: ApiRecruitment) => ({
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
+          return response.data[key].map((item: any) => ({
             id: item.id,
-            image: "https://via.placeholder.com/300x200", 
+            image: item.images && item.images.length > 0 && item.images[0].image_url 
+          ? item.images[0].image_url 
+          : "https://via.placeholder.com/300x200", 
             title: item.shelter_name || "봉사 센터",
             region: item.shelter_region || "지역 정보 없음",
             date: item.date || "날짜 정보 없음",
@@ -233,7 +379,8 @@ export const searchRecruitments = async (searchParams: SearchParams): Promise<Ca
   }
 };
 
-export const createRecruitment = async (data: CreateRecruitmentParams, images?: File[]): Promise<{ id: number }> => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const createRecruitment = async (data: CreateRecruitmentParams, images?: File[]): Promise<any> => {
   try {
     const formData = new FormData();
     
@@ -241,15 +388,14 @@ export const createRecruitment = async (data: CreateRecruitmentParams, images?: 
     formData.append('date', data.recruitment.date);
     formData.append('start_time', data.recruitment.start_time);
     formData.append('end_time', data.recruitment.end_time);
-    formData.append('type', data.type || '');
-
-    if (data.type) {
+    if (data.activities && data.activities.length > 0) {
+      formData.append('type', JSON.stringify(data.activities));
+    } else if (data.type) {
       const typeCode = convertTypeToCode(data.type);
       formData.append('type', typeCode);
     } else {
-      formData.append('type', '');
+      formData.append('type', '[]');
     }
-
     formData.append('supplies', data.supplies || '');
     formData.append('status', data.recruitment.status || 'open');
     
@@ -269,11 +415,12 @@ export const createRecruitment = async (data: CreateRecruitmentParams, images?: 
   }
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const applyForVolunteer = async (
   recruitmentId: string | undefined, 
   selectedTime: string,
   userId: string | undefined
-) => {
+): Promise<any> => {
   try {
     if (!recruitmentId || !userId) {
       throw new Error('필수 정보가 누락되었습니다.');
@@ -300,9 +447,12 @@ export const fetchInstitutionRecruitments = async (): Promise<CardData[]> => {
     const response = await axiosInstance.get(`/api/recruitments/mylist/`);
     
     if (Array.isArray(response.data)) {
-      return response.data.map((item: ApiRecruitment) => ({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return response.data.map((item: any) => ({
         id: item.id,
-        image: "https://via.placeholder.com/300x200", 
+        image: item.images && item.images.length > 0 && item.images[0].image_url 
+          ? item.images[0].image_url 
+          : "https://via.placeholder.com/300x200", 
         title: item.shelter_name || "봉사 센터",
         region: item.shelter_region || "지역 정보 없음",
         date: item.date || "날짜 정보 없음",
@@ -311,10 +461,14 @@ export const fetchInstitutionRecruitments = async (): Promise<CardData[]> => {
       }));
     }
     
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (response.data.recruitments && Array.isArray(response.data.recruitments)) {
-      return response.data.recruitments.map((item: ApiRecruitment) => ({
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
+      return response.data.recruitments.map((item: any) => ({
         id: item.id,
-        image: "https://via.placeholder.com/300x200", 
+        image: item.images && item.images.length > 0 && item.images[0].image_url 
+        ? item.images[0].image_url 
+        : "https://via.placeholder.com/300x200", 
         title: item.shelter_name || "봉사 센터",
         region: item.shelter_region || "지역 정보 없음",
         date: item.date || "날짜 정보 없음",
