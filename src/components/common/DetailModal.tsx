@@ -84,7 +84,7 @@ const DetailModal: React.FC = () => {
             onClick={handleApply}
             disabled={isSubmitting || submitSuccess}
           >
-            {isSubmitting ? "신청 중..." : "신청하기"}
+            {isSubmitting ? "신청 중..." : submitError ? "수정 중입니다" : "신청하기"}
           </button>
         </div>
       </div>

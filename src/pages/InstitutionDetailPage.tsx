@@ -28,6 +28,12 @@ interface ShelterInfo {
   region: string;
 }
 
+interface ImageData {
+  id: number;
+  image_url?: string;
+  [key: string]: any;
+}
+
 interface RecruitmentResponse {
   id: number;
   shelter: number | ShelterInfo;
@@ -39,7 +45,7 @@ interface RecruitmentResponse {
   type: string[] | string;
   supplies: string;
   status: string;
-  images?: string[];
+  images?: ImageData[] | string[];
   recruitment?: RecruitmentResponse;
 }
 
@@ -75,7 +81,7 @@ const InstitutionDetailPage = () => {
         const recruitmentData: RecruitmentResponse = response.recruitment || response;
         
         console.log('원본 API 응답:', response);
-      console.log('처리된 모집 데이터:', recruitmentData);
+        console.log('처리된 모집 데이터:', recruitmentData);
         
         let mainActivities: string[] = [];
         if (recruitmentData.type) {
@@ -118,52 +124,78 @@ const InstitutionDetailPage = () => {
           shelterRegion = shelterObj.region || '';
         }
         
+        // 이미지 데이터 처리 수정
+        let imageUrls: string[] = [];
+        if (recruitmentData.images && Array.isArray(recruitmentData.images)) {
+          imageUrls = recruitmentData.images.map(img => {
+            if (typeof img === 'object' && img !== null) {
+              // image_url 속성 확인
+              if ('image_url' in img && typeof img.image_url === 'string') {
+                return img.image_url;
+              }
+              
+              // 다른 가능한 속성들 확인
+              for (const key of Object.keys(img)) {
+                if (
+                  (key.includes('url') || key.includes('src')) && 
+                  typeof img[key] === 'string' && 
+                  img[key].includes('http')
+                ) {
+                  return img[key];
+                }
+              }
+            }
+            return '';
+          }).filter(url => url); // 빈 문자열 제거
+        }
+        
         const institutionInfo: InstitutionData = {
           id: shelterId,
           title: shelterName,
           region: shelterRegion,
           mainActivities: mainActivities,
           preparations: preparations,
-          images: recruitmentData.images || []
+          images: imageUrls // 수정된 이미지 URL 배열
         };
         
         setInstitutionData(institutionInfo);
         
         try {
           const applicantsData = await getRecruitmentApplicants(parseInt(institutionId || '0'));
-console.log('지원자 데이터:', applicantsData);
+          console.log('지원자 데이터:', applicantsData);
           
-const applicantsArray = Array.isArray(applicantsData) 
-? applicantsData 
-: (applicantsData.applicants && Array.isArray(applicantsData.applicants))
-  ? applicantsData.applicants
-  : [];
-  console.log('사용할 applicants 배열:', applicantsArray);
-  const mappedVolunteers = applicantsArray.flatMap((item: ApplicantData | ApplicantData[]) => {
-    if (Array.isArray(item)) {
-      return item.map(subItem => ({
-        id: subItem.id || 0,
-        name: subItem.name || '',
-        phone: subItem.contact_number || '',
-        status: subItem.status === "approved" ? "승인" : 
-                subItem.status === "rejected" ? "반려" : "대기",
-        attendance: subItem.attendance === "attended" ? "참석" : 
-                   subItem.attendance === "absent" ? "불참석" : undefined,
-        profile_image: subItem.profile_image || ''
-      }));
-    }
-    
-    return {
-      id: item.id || 0,
-      name: item.name || '',
-      phone: item.contact_number || '',
-      status: item.status === "approved" ? "승인" : 
-             item.status === "rejected" ? "반려" : "대기",
-      attendance: item.attendance === "attended" ? "참석" : 
-                 item.attendance === "absent" ? "불참석" : undefined,
-      profile_image: item.profile_image || ''
-    };
-  });
+          const applicantsArray = Array.isArray(applicantsData) 
+            ? applicantsData 
+            : (applicantsData.applicants && Array.isArray(applicantsData.applicants))
+              ? applicantsData.applicants
+              : [];
+          
+          console.log('사용할 applicants 배열:', applicantsArray);
+          const mappedVolunteers = applicantsArray.flatMap((item: ApplicantData | ApplicantData[]) => {
+            if (Array.isArray(item)) {
+              return item.map(subItem => ({
+                id: subItem.id || 0,
+                name: subItem.name || '',
+                phone: subItem.contact_number || '',
+                status: subItem.status === "approved" ? "승인" : 
+                        subItem.status === "rejected" ? "반려" : "대기",
+                attendance: subItem.attendance === "attended" ? "참석" : 
+                           subItem.attendance === "absent" ? "불참석" : undefined,
+                profile_image: subItem.profile_image || ''
+              }));
+            }
+            
+            return {
+              id: item.id || 0,
+              name: item.name || '',
+              phone: item.contact_number || '',
+              status: item.status === "approved" ? "승인" : 
+                     item.status === "rejected" ? "반려" : "대기",
+              attendance: item.attendance === "attended" ? "참석" : 
+                         item.attendance === "absent" ? "불참석" : undefined,
+              profile_image: item.profile_image || ''
+            };
+          });
           
           console.log('매핑된 volunteers:', mappedVolunteers);
           setVolunteers(mappedVolunteers);
@@ -255,6 +287,7 @@ const applicantsArray = Array.isArray(applicantsData)
     }
   };
 
+  // 이미지 배열 처리 - 기본 이미지 사용
   const images = institutionData?.images && institutionData.images.length > 0 
     ? institutionData.images 
     : [dangimg, dangimg, dangimg];
@@ -319,8 +352,12 @@ const applicantsArray = Array.isArray(applicantsData)
               {"<"}
             </button>
             <img
-              src={typeof images[currentIndex] === 'string' ? images[currentIndex] : dangimg}
+              src={images[currentIndex] || dangimg}
               alt={`기관 이미지 ${currentIndex + 1}`}
+              onError={(e) => {
+                e.currentTarget.src = dangimg; // 이미지 로딩 실패 시 기본 이미지로
+                console.log('이미지 로딩 실패:', images[currentIndex]);
+              }}
             />
             <button className={styles.nextBtn} onClick={goToNextImage}>
               {">"}
@@ -390,6 +427,9 @@ const applicantsArray = Array.isArray(applicantsData)
                             src={volunteer.profile_image} 
                             alt={`${volunteer.name}의 프로필`} 
                             className={styles.profileImage}
+                            onError={(e) => {
+                              e.currentTarget.src = dangimg;
+                            }}
                           />
                         ) : (
                           <span>{volunteer.name[0]}</span>
