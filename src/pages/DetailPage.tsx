@@ -182,7 +182,10 @@ const formatTime = (timeString: string): string => {
         </button>
       </div>
       
-      <ShelterImageSwiper shelterId={String(shelterData.shelter)} />
+      <ShelterImageSwiper 
+  shelterId={String(shelterData.shelter)} 
+  images={shelterData.images} 
+/>
 
       <div className={styles["detail-content"]}>
         <div className={styles["shelter-info"]}>

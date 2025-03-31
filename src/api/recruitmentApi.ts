@@ -144,7 +144,6 @@ export const convertCodeToType = (code: string): string => {
   return codeMap[code] || code; 
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const fetchRecruitmentDetail = async (id: string | undefined): Promise<any> => {
   try {
     if (!id) {
@@ -166,7 +165,6 @@ export const fetchRecruitmentDetail = async (id: string | undefined): Promise<an
   }
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const getRecruitmentApplicants = async (recruitmentId: number): Promise<any[]> => {
   try {
     const response = await axiosInstance.get(`/api/recruitments/${recruitmentId}/applicants/`);
@@ -189,7 +187,6 @@ export const getRecruitmentApplicants = async (recruitmentId: number): Promise<a
   }
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const approveApplication = async (applicationId: number): Promise<any> => {
   try {
     const response = await axiosInstance.post(`/api/applications/${applicationId}/approve/`);
@@ -200,7 +197,6 @@ export const approveApplication = async (applicationId: number): Promise<any> =>
   }
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const rejectApplication = async (applicationId: number, reason: string): Promise<any> => {
   try {
     const response = await axiosInstance.post(`/api/applications/${applicationId}/reject/`, {
@@ -213,7 +209,6 @@ export const rejectApplication = async (applicationId: number, reason: string): 
   }
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const markAsAttended = async (applicationId: number): Promise<any> => {
   try {
     const response = await axiosInstance.post(`/api/applications/${applicationId}/attended/`);
@@ -224,7 +219,6 @@ export const markAsAttended = async (applicationId: number): Promise<any> => {
   }
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const markAsAbsent = async (applicationId: number): Promise<any> => {
   try {
     const response = await axiosInstance.post(`/api/applications/${applicationId}/absent/`);
@@ -235,7 +229,6 @@ export const markAsAbsent = async (applicationId: number): Promise<any> => {
   }
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const getRecruitment = async (recruitmentId: number): Promise<any> => {
   try {
     const response = await axiosInstance.get(`/api/recruitments/${recruitmentId}/`);
@@ -249,11 +242,9 @@ export const getRecruitment = async (recruitmentId: number): Promise<any> => {
 export const fetchAllRecruitments = async (): Promise<CardData[]> => {
   try {
     const response = await axiosInstance.get('/api/recruitments/');
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const data = response.data;
     
     if (Array.isArray(data)) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
       return data.map((item: any) => ({
         id: item.id,
         image: item.images && item.images.length > 0 && item.images[0].image_url 
@@ -267,9 +258,7 @@ export const fetchAllRecruitments = async (): Promise<CardData[]> => {
       }));
     }
     
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (data.recruitments && Array.isArray(data.recruitments)) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
       return data.recruitments.map((item: any) => ({
         id: item.id,
         image: item.images && item.images.length > 0 && item.images[0].image_url 
@@ -313,11 +302,8 @@ export const searchRecruitments = async (searchParams: SearchParams): Promise<Ca
     
     console.log('검색 API 응답:', response.data);
     
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (response.data && response.data.recruitments && Array.isArray(response.data.recruitments)) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       console.log('중첩 구조 발견:', response.data.recruitments.length);
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
       return response.data.recruitments.map((item: any) => ({
         id: item.id,
         image: item.images && item.images.length > 0 && item.images[0].image_url 
@@ -331,7 +317,6 @@ export const searchRecruitments = async (searchParams: SearchParams): Promise<Ca
       }));
     } else if (Array.isArray(response.data)) {
       console.log('일반 배열 구조 발견:', response.data.length);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return response.data.map((item: any) => ({
         id: item.id,
         image: item.images && item.images.length > 0 && item.images[0].image_url 
@@ -345,17 +330,11 @@ export const searchRecruitments = async (searchParams: SearchParams): Promise<Ca
       }));
     }
     
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (response.data && typeof response.data === 'object') {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
       console.log('다른 구조 발견, 키:', Object.keys(response.data));
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       for (const key in response.data) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (Array.isArray(response.data[key])) {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
           console.log(`${key} 배열 발견:`, response.data[key].length);
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
           return response.data[key].map((item: any) => ({
             id: item.id,
             image: item.images && item.images.length > 0 && item.images[0].image_url 
@@ -379,7 +358,6 @@ export const searchRecruitments = async (searchParams: SearchParams): Promise<Ca
   }
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const createRecruitment = async (data: CreateRecruitmentParams, images?: File[]): Promise<any> => {
   try {
     const formData = new FormData();
@@ -415,7 +393,6 @@ export const createRecruitment = async (data: CreateRecruitmentParams, images?: 
   }
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const applyForVolunteer = async (
   recruitmentId: string | undefined, 
   selectedTime: string,
@@ -447,7 +424,6 @@ export const fetchInstitutionRecruitments = async (): Promise<CardData[]> => {
     const response = await axiosInstance.get(`/api/recruitments/mylist/`);
     
     if (Array.isArray(response.data)) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return response.data.map((item: any) => ({
         id: item.id,
         image: item.images && item.images.length > 0 && item.images[0].image_url 
@@ -461,9 +437,7 @@ export const fetchInstitutionRecruitments = async (): Promise<CardData[]> => {
       }));
     }
     
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (response.data.recruitments && Array.isArray(response.data.recruitments)) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
       return response.data.recruitments.map((item: any) => ({
         id: item.id,
         image: item.images && item.images.length > 0 && item.images[0].image_url 
